@@ -1,0 +1,85 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-kapt'
+
+android {
+    compileSdkVersion 29
+    buildToolsVersion "29.0.3"
+
+    def localProperties = new Properties()
+    localProperties.load(new FileInputStream(rootProject.file("local.properties")))
+
+    defaultConfig {
+        applicationId "com.appsci.panda.example"
+        minSdkVersion 21
+        targetSdkVersion 29
+        versionCode 1
+        versionName "1.0.1"
+
+
+        buildConfigField "String", "PANDA_API_KEY", "\"${localProperties['apiKey']}\""
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: "libs", include: ["*.jar"])
+
+    implementation project(':sdk')
+
+    // Dagger 2
+    implementation dataDependencies.dagger
+    kapt dataDependencies.daggerCompiler
+
+    // Kotlin dependencies
+    implementation kotlinDependencies.kotlinStdLib
+    implementation kotlinDependencies.androidKtx
+    implementation kotlinDependencies.kotlinReflect
+
+    // Rx + Coroutines
+    implementation dataDependencies.rxJava
+    implementation dataDependencies.rxAndroid
+    implementation dataDependencies.rxKotlin
+
+    implementation dataDependencies.room
+    implementation dataDependencies.roomRxJava
+    kapt dataDependencies.roomCompiler
+
+    implementation "androidx.startup:startup-runtime:1.0.0-beta01"
+
+    implementation dataDependencies.threeten
+    implementation dataDependencies.gson
+    implementation dataDependencies.okHttp
+    implementation dataDependencies.okHttpInterceptor
+    implementation dataDependencies.retrofit
+    implementation dataDependencies.retrofitGsonConverter
+    implementation dataDependencies.retrofitRxJavaAdapter
+
+    implementation developmentDependencies.timber
+    debugImplementation developmentDependencies.leakCanary
+    implementation developmentDependencies.stetho
+    implementation developmentDependencies.stethoOkHttp
+    debugImplementation developmentDependencies.chuck
+    releaseImplementation developmentDependencies.chuckNoOp
+
+    implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.2'
+    testImplementation 'junit:junit:4.13'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.2'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+
+}

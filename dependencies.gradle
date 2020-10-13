@@ -1,0 +1,287 @@
+ext {
+    compileSdkVer = 29
+    minSdkVer = 23
+    targetSdkVer = 29
+
+    versionName = '1.2.0'
+    testersMails = '.ci/internal/beta_distribution_emails.txt'
+
+    // Kotlin
+    kotlinVer = '1.4.10'
+    coroutineVer = '1.2.2'
+    androidKtxVer = '1.0.2'
+    koinVer = '2.1.6'
+
+    // AndroidX
+    appCompatVer = '1.1.0'
+    legacyVer = '1.0.0'
+    materialVer = '1.2.0-alpha03'
+    cardViewVer = '1.0.0'
+    mediaVer = '1.0.1'
+    transitionVer = '1.1.0'
+    recyclerViewVier = '1.2.0-alpha05'
+    constraintLayout = '1.1.3'
+    viewModelVer = '2.0.0'
+    liveDataVer = '2.0.0'
+    workVersion = "1.0.1"
+    archComponentsTestVer = '2.0.1'
+
+    // Firebase
+    remoteConfigVer = '19.2.0'
+    messagingVer = '20.2.4'
+    firestoreVer = '21.6.0'
+
+    // Architecture components
+    roomVer = '2.1.0'
+    lifecycleVer = "2.2.0"
+    coreRuntimeVer = "2.0.1"
+
+    // Redux
+    rxReduxVer = '1.0.0'
+
+    // MultiDex
+    multiDexVer = '2.0.0'
+
+    // Dagger
+    daggerVer = '2.28.1'
+
+    // Reactive Extensions
+    rxJava2Ver = '2.2.10'
+    rxAndroid2Ver = '2.1.1'
+    rxBinding2Ver = '2.2.0'
+    rxKotlinVer = '2.3.0'
+
+
+    // Networking
+    okHttpVer = '4.0.1'
+    retrofitVer = '2.6.0'
+    coroutinesAdapterVer = '0.9.2'
+
+    // Gson
+    gsonVer = '2.8.5'
+
+    autoValueVer = '1.6.5'
+
+    // Images
+    glideVer = '4.11.0'
+    glideTransformationsVer = '3.3.0'
+
+    // UI
+    adapterDelegatesVer = '3.0.1'
+    lottieVer = '3.0.7'
+    shimmerVer = '0.5.0'
+    mpAndroidChartVer = 'v3.1.0-alpha'
+
+    // ExoPlayer
+    exoPlayerVer = '2.9.3'
+
+    circleIndicatorVer = '2.1.2'
+    circularProgressVer = '1.2.0'
+    discreteScrollVer = '1.4.9'
+    numberPickerVer = "1.1.1"
+    sleepTimePickerVer = "1.0.3"
+
+    // Billing Client
+    billingClientVer = '2.2.1'
+    rxbillingVer = '2.2.0'
+
+    // Developer-related
+    timberVer = '4.7.1'
+    leakCanaryVer = '2.4'
+    stethoVer = '1.5.1'
+    chuckVer = '3.3.0'
+    findBugsVer = '3.0.2'
+
+    // Analytics
+    crashlyticsVer = '2.10.1@aar'
+    fireBaseCoreVer = '17.0.1'
+    fireBasePerfVer = '19.0.8'
+    facebookSdkVer = '5.1.1'
+    appsFlyerVer = '4.8.19'
+    installReferrerVer = '1.0'
+    appseeVer = '2.4.5'
+    amplitudeVer = '2.23.1'
+
+    // Ads
+    facebookAudienceVer = '5.4.1'
+    fireBaseAdsVer = '18.1.0'
+
+    //Dates lib
+    threetenVer = '1.2.1'
+    threetenJavaVer = '1.4.0'
+    noodleVer = 'c3ad379767' // Change to stable release, when available
+
+    // Unit-tests
+    jUnitVer = '4.12'
+    mockitoVer = '3.0.0'
+    mockitoKotlinVer = '2.1.0'
+    mockitoAndroidVer = '2.28.2'
+    jacocoVer = '0.1.2'
+    assertJVer = '3.12.2'
+    dataProviderVer = '2.4'
+    androidXTestCore = '1.2.0'
+
+    // Instrumentation tests
+    runnerVer = '1.2.0'
+    espressoCoreVer = '3.2.0'
+    annotationsVer = '1.1.0'
+    coreTestingVer = '2.0.0-alpha1'
+    extJUnitVer = '1.1.1'
+    extTruthVer = '1.2.0'
+    rxIdlerVer = '0.9.0'
+
+    // Dependencies
+    supportDependencies = [
+            appCompat       : "androidx.appcompat:appcompat:$appCompatVer",
+            support         : "androidx.legacy:legacy-support-v4:$legacyVer",
+            design          : "com.google.android.material:material:$materialVer",
+            cardView        : "androidx.cardview:cardview:$cardViewVer",
+            recyclerView    : "androidx.recyclerview:recyclerview:$recyclerViewVier",
+            constraintLayout: "androidx.constraintlayout:constraintlayout:$constraintLayout",
+            multiDex        : "androidx.multidex:multidex:$multiDexVer",
+            viewModel       : "androidx.lifecycle:lifecycle-viewmodel:$viewModelVer",
+            liveData        : "androidx.lifecycle:lifecycle-livedata:$liveDataVer",
+            lifecycleExt    : "androidx.lifecycle:lifecycle-extensions:$lifecycleVer",
+            media           : "androidx.media:media:$mediaVer",
+            transition      : "androidx.transition:transition:$transitionVer",
+            coreRuntime     : "androidx.arch.core:core-runtime:$coreRuntimeVer",
+            workManager     : "androidx.work:work-runtime:$workVersion",
+            workManagerRx   : "androidx.work:work-rxjava2:$workVersion",
+            workManagerKtx  : "androidx.work:work-runtime-ktx:$workVersion"
+    ]
+
+    firebaseDependencies = [
+            core       : "com.google.firebase:firebase-core:$fireBaseCoreVer",
+            config     : "com.google.firebase:firebase-config:$remoteConfigVer",
+            messaging  : "com.google.firebase:firebase-messaging:$messagingVer",
+            perf       : "com.google.firebase:firebase-perf:$fireBasePerfVer",
+            store      : "com.google.firebase:firebase-firestore:$firestoreVer",
+            authUi     : "com.firebaseui:firebase-ui-auth:6.2.0",
+            auth       : "com.google.firebase:firebase-auth-ktx:19.3.2",
+            googleAuth : "com.google.android.gms:play-services-auth:18.1.0",
+            crashlytics: "com.google.firebase:firebase-crashlytics-ktx:17.2.2",
+            analytics  : "com.google.firebase:firebase-analytics:17.5.0"
+    ]
+
+    kotlinDependencies = [
+            kotlinStdLib : "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVer",
+            kotlinReflect: "org.jetbrains.kotlin:kotlin-reflect:$kotlinVer",
+            androidKtx   : "androidx.core:core-ktx:$androidKtxVer"
+    ]
+
+    developmentDependencies = [
+            timber        : "com.jakewharton.timber:timber:$timberVer",
+            leakCanary    : "com.squareup.leakcanary:leakcanary-android:$leakCanaryVer",
+            leakCanaryNoOp: "com.squareup.leakcanary:leakcanary-android-no-op:$leakCanaryVer",
+            stetho        : "com.facebook.stetho:stetho:$stethoVer",
+            stethoOkHttp  : "com.facebook.stetho:stetho-okhttp3:$stethoVer",
+            chuck         : "com.github.chuckerteam.chucker:library:$chuckVer",
+            chuckNoOp     : "com.github.chuckerteam.chucker:library-no-op:$chuckVer",
+            findBugs      : "com.google.code.findbugs:jsr305:$findBugsVer"
+    ]
+
+    analyticsDependencies = [
+            firebaseCore   : "com.google.firebase:firebase-core:$fireBaseCoreVer",
+            facebook       : "com.facebook.android:facebook-android-sdk:$facebookSdkVer",
+            appsFlyer      : "com.appsflyer:af-android-sdk:$appsFlyerVer",
+            installReferrer: "com.android.installreferrer:installreferrer:$installReferrerVer",
+            appsee         : "com.appsee:appsee-android:$appseeVer",
+            amplitude      : "com.amplitude:android-sdk:$amplitudeVer"
+    ]
+
+    adsDependencies = [
+            facebook: "com.facebook.android:audience-network-sdk:$facebookAudienceVer",
+            adMob   : "com.google.android.gms:play-services-ads:$fireBaseAdsVer"
+    ]
+
+
+    presentationDependencies = [
+            adapterDelegates    : "com.hannesdorfmann:adapterdelegates3:$adapterDelegatesVer",
+            glide               : "com.github.bumptech.glide:glide:$glideVer",
+            glideCompiler       : "com.github.bumptech.glide:compiler:$glideVer",
+            glideTransformations: "jp.wasabeef:glide-transformations:$glideTransformationsVer",
+            lottie              : "com.airbnb.android:lottie:$lottieVer",
+            lifecycleExtensions : "androidx.lifecycle:lifecycle-extensions:$lifecycleVer",
+            lifecycleCompiler   : "androidx.lifecycle:lifecycle-compiler:$lifecycleVer",
+            exoPlayer           : "com.google.android.exoplayer:exoplayer-core:$exoPlayerVer",
+            exoPlayerHls        : "com.google.android.exoplayer:exoplayer-hls:$exoPlayerVer",
+            exoPlayerUi         : "com.google.android.exoplayer:exoplayer-ui:$exoPlayerVer",
+            exoPlayerStreaming  : "com.google.android.exoplayer:exoplayer-smoothstreaming:$exoPlayerVer",
+            exoMediaExtensions  : "com.google.android.exoplayer:extension-mediasession:$exoPlayerVer",
+            circleIndicator     : "me.relex:circleindicator:$circleIndicatorVer",
+            circularProgress    : "com.github.antonKozyriatskyi:CircularProgressIndicator:$circularProgressVer",
+            discreteScrollView  : "com.yarolegovich:discrete-scrollview:$discreteScrollVer",
+            numberPicker        : "cn.carbswang.android:NumberPickerView:$numberPickerVer",
+            sleepTimePicker     : "com.sleepsci:timepicker:$sleepTimePickerVer",
+            shimmer             : "com.facebook.shimmer:shimmer:$shimmerVer",
+            mpAndroidChart      : "com.github.PhilJay:MPAndroidChart:$mpAndroidChartVer",
+            cardStackView       : "com.yuyakaido.android:card-stack-view:2.3.4",
+            rxPermissions       : "com.github.tbruyelle:rxpermissions:0.10.2",
+            svg                 : "com.caverock:androidsvg:1.2.1"
+    ]
+
+    dataDependencies = [
+            dagger                   : "com.google.dagger:dagger:$daggerVer",
+            daggerCompiler           : "com.google.dagger:dagger-compiler:$daggerVer",
+            rxJava                   : "io.reactivex.rxjava2:rxjava:$rxJava2Ver",
+            rxKotlin                 : "io.reactivex.rxjava2:rxkotlin:$rxKotlinVer",
+            rxAndroid                : "io.reactivex.rxjava2:rxandroid:$rxAndroid2Ver",
+            rxBinding                : "com.jakewharton.rxbinding2:rxbinding:$rxBinding2Ver",
+            gson                     : "com.google.code.gson:gson:$gsonVer",
+            okHttp                   : "com.squareup.okhttp3:okhttp:$okHttpVer",
+            okHttpInterceptor        : "com.squareup.okhttp3:logging-interceptor:$okHttpVer",
+            retrofit                 : "com.squareup.retrofit2:retrofit:$retrofitVer",
+            retrofitGsonConverter    : "com.squareup.retrofit2:converter-gson:$retrofitVer",
+            retrofitRxJavaAdapter    : "com.squareup.retrofit2:adapter-rxjava2:$retrofitVer",
+            retrofitCoroutinesAdapter: "com.jakewharton.retrofit:retrofit2-kotlin-coroutines-adapter:$coroutinesAdapterVer",
+            room                     : "androidx.room:room-runtime:$roomVer",
+            roomRxJava               : "androidx.room:room-rxjava2:$roomVer",
+            roomCompiler             : "androidx.room:room-compiler:$roomVer",
+            billingClient            : "com.android.billingclient:billing:$billingClientVer",
+            rxBilling                : "com.betterme:rxbilling:$rxbillingVer",
+            rxRedux                  : "com.freeletics.rxredux:rxredux:$rxReduxVer",
+            threeten                 : "com.jakewharton.threetenabp:threetenabp:$threetenVer",
+            koin                     : "org.koin:koin-core:$koinVer",
+            koinAndroid              : "org.koin:koin-android:$koinVer",
+            koinAndroidScope         : "org.koin:koin-android-scope:$koinVer",
+            koinAndroidXScope        : "org.koin:koin-androidx-scope:$koinVer",
+            koinAndroidExt           : "org.koin:koin-android-ext:$koinVer",
+            koinTest                 : "org.koin:koin-test:$koinVer",
+            autoValue                : "com.google.auto.value:auto-value-annotations:$autoValueVer",
+            autoValueProcessor       : "com.google.auto.value:auto-value:$autoValueVer"
+    ]
+
+    testDependencies = [
+            jUnit             : "junit:junit:$jUnitVer",
+            mockito           : "org.mockito:mockito-core:$mockitoVer",
+            mockitoKotlin     : "com.nhaarman.mockitokotlin2:mockito-kotlin:$mockitoKotlinVer",
+            mockitoInline     : "org.mockito:mockito-inline:$mockitoVer",
+            mockitoAndroid    : "org.mockito:mockito-android:$mockitoAndroidVer",
+            assertJ           : "org.assertj:assertj-core:$assertJVer",
+            dataProvider      : "com.tngtech.junit.dataprovider:junit4-dataprovider:$dataProviderVer",
+            archComponentsTest: "androidx.arch.core:core-testing:$archComponentsTestVer",
+            threeten          : "org.threeten:threetenbp:$threetenJavaVer"
+    ]
+
+    androidTestDependencies = [
+            testCore          : "androidx.test:core:$androidXTestCore",
+            testRunner        : "androidx.test:runner:$runnerVer",
+            espressoCore      : "androidx.test.espresso:espresso-core:$espressoCoreVer",
+            espressoIntents   : "androidx.test.espresso:espresso-intents:$espressoCoreVer",
+            extJUnit          : "androidx.test.ext:junit:$extJUnitVer",
+            extTruth          : "androidx.test.ext:truth:$extTruthVer",
+            rxIdler           : "com.squareup.rx.idler:rx2-idler:$rxIdlerVer",
+            testRules         : "androidx.test:rules:$runnerVer",
+            supportAnnotations: "androidx.annotation:annotation:$annotationsVer",
+            testRoom          : "androidx.room:room-testing:$roomVer",
+            testArchCore      : "androidx.arch.core:core-testing:$coreTestingVer",
+            workManager       : "android.arch.work:work-testing:$workVersion"
+    ]
+
+    coroutineDependencies = [
+            "core"   : "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutineVer",
+            "rx2"    : "org.jetbrains.kotlinx:kotlinx-coroutines-rx2:$coroutineVer",
+            "android": "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutineVer",
+            "test"   : "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutineVer"
+    ]
+}
