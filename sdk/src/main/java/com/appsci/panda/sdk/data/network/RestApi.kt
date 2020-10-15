@@ -36,13 +36,13 @@ interface RestApi {
             @Query("id") id: String?,
     ): Single<ScreenResponse>
 
-    @POST("/v1/android/verify/{user_id}")
+    @POST("/v1/android/products/{user_id}")
     fun sendProduct(
             @Body request: ProductRequest,
             @Path("user_id") userId: String
     ): Completable
 
-    @POST("/v1/android/verify/{user_id}")
+    @POST("/v1/android/subscriptions/{user_id}")
     fun sendSubscription(
             @Body request: SubscriptionRequest,
             @Path("user_id") userId: String

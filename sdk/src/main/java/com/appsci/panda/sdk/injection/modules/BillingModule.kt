@@ -10,6 +10,7 @@ import com.appsci.panda.sdk.data.subscriptions.SubscriptionsRepositoryImpl
 import com.appsci.panda.sdk.data.subscriptions.google.BillingValidatorImpl
 import com.appsci.panda.sdk.data.subscriptions.google.PurchasesGoogleStore
 import com.appsci.panda.sdk.data.subscriptions.google.PurchasesGoogleStoreImpl
+import com.appsci.panda.sdk.data.subscriptions.local.FileStoreImpl
 import com.appsci.panda.sdk.data.subscriptions.local.PurchasesLocalStore
 import com.appsci.panda.sdk.data.subscriptions.local.PurchasesLocalStoreImpl
 import com.appsci.panda.sdk.data.subscriptions.rest.PurchasesRestStore
@@ -49,7 +50,8 @@ class BillingModule(private val context: Context) {
                 restStore,
                 mapper,
                 BillingValidatorImpl(),
-                deviceDao
+                deviceDao,
+                FileStoreImpl(context)
         )
     }
 

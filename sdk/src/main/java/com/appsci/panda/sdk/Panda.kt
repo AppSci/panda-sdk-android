@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import androidx.fragment.app.Fragment
+import com.appsci.panda.sdk.domain.subscriptions.ScreenType
 import com.appsci.panda.sdk.domain.subscriptions.SubscriptionState
 import com.appsci.panda.sdk.domain.utils.rx.DefaultCompletableObserver
 import com.appsci.panda.sdk.domain.utils.rx.DefaultSchedulerProvider
@@ -77,21 +78,26 @@ object Panda {
                     .observeOn(Schedulers.mainThread())
 
     @kotlin.jvm.JvmStatic
-    fun prefetchSubscriptionScreen() =
+    fun prefetchSubscriptionScreen(type: ScreenType = ScreenType.Sales, id: String? = null) =
             panda.prefetchSubscriptionScreen()
                     .subscribeOn(Schedulers.io())
                     .subscribe(DefaultCompletableObserver())
 
     @kotlin.jvm.JvmStatic
-    fun getSubscriptionScreen(): Single<Fragment> =
-            panda.getSubscriptionScreen()
+    fun getSubscriptionScreen(type: ScreenType? = null, id: String? = null): Single<Fragment> =
+            panda.getSubscriptionScreen(type, id)
                     .subscribeOn(Schedulers.io())
                     .observeOn(Schedulers.mainThread())
                     .map { SubscriptionFragment.create(ScreenExtra.create(it)) }
 
     @kotlin.jvm.JvmStatic
-    fun showSubscriptionScreen(activity: Activity? = null, theme: Int? = null): Completable =
-            panda.getSubscriptionScreen()
+    fun showSubscriptionScreen(
+            type: ScreenType? = null,
+            id: String? = null,
+            activity: Activity? = null,
+            theme: Int? = null
+    ): Completable =
+            panda.getSubscriptionScreen(type, id)
                     .subscribeOn(Schedulers.io())
                     .observeOn(Schedulers.mainThread())
                     .doOnSuccess {

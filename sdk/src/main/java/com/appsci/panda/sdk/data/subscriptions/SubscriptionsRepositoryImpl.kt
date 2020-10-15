@@ -3,16 +3,20 @@ package com.appsci.panda.sdk.data.subscriptions
 import com.appsci.panda.sdk.data.device.DeviceDao
 import com.appsci.panda.sdk.data.subscriptions.google.BillingValidator
 import com.appsci.panda.sdk.data.subscriptions.google.PurchasesGoogleStore
+import com.appsci.panda.sdk.data.subscriptions.local.FileStore
 import com.appsci.panda.sdk.data.subscriptions.local.PurchasesLocalStore
 import com.appsci.panda.sdk.data.subscriptions.rest.PurchasesRestStore
 import com.appsci.panda.sdk.data.subscriptions.rest.ScreenResponse
+import com.appsci.panda.sdk.domain.subscriptions.ScreenType
 import com.appsci.panda.sdk.domain.subscriptions.SubscriptionScreen
 import com.appsci.panda.sdk.domain.subscriptions.SubscriptionState
 import com.appsci.panda.sdk.domain.subscriptions.SubscriptionsRepository
+import com.appsci.panda.sdk.domain.utils.rx.Schedulers
 import io.reactivex.Completable
 import io.reactivex.Flowable
 import io.reactivex.Single
 import timber.log.Timber
+import java.util.concurrent.TimeUnit
 
 class SubscriptionsRepositoryImpl(
         private val localStore: PurchasesLocalStore,
@@ -20,7 +24,8 @@ class SubscriptionsRepositoryImpl(
         private val restStore: PurchasesRestStore,
         private val mapper: PurchasesMapper,
         private val intentValidator: BillingValidator,
-        private val deviceDao: DeviceDao
+        private val deviceDao: DeviceDao,
+        private val fileStore: FileStore
 ) : SubscriptionsRepository {
 
     private val loadedScreens = mutableMapOf<ScreenKey, ScreenResponse>()
@@ -46,25 +51,29 @@ class SubscriptionsRepositoryImpl(
             googleStore.consumeProducts()
                     .andThen(googleStore.fetchHistory())
 
-    override fun prefetchSubscriptionScreen(type: String?, id: String?): Completable {
+    override fun prefetchSubscriptionScreen(type: ScreenType?, id: String?): Completable {
         return loadSubscriptionScreen(type, id)
                 .ignoreElement()
     }
 
-    override fun getSubscriptionScreen(type: String?, id: String?): Single<SubscriptionScreen> {
+    override fun getSubscriptionScreen(type: ScreenType?, id: String?, timeoutMs: Long): Single<SubscriptionScreen> {
         val key = ScreenKey(id = id, type = type)
         val cachedScreen = loadedScreens[key]
         return (if (cachedScreen != null) {
             Single.just(cachedScreen)
         } else {
             loadSubscriptionScreen(type, id)
-        }).map {
-            SubscriptionScreen(
-                    id = it.id,
-                    name = it.name,
-                    screenHtml = it.screenHtml
-            )
-        }
+        }).timeout(timeoutMs, TimeUnit.MILLISECONDS, Schedulers.computation())
+                .map {
+                    SubscriptionScreen(
+                            id = it.id,
+                            name = it.name,
+                            screenHtml = it.screenHtml
+                    )
+                }
+                .onErrorResumeNext {
+                    fileStore.getSubscriptionScreen()
+                }
 
     }
 
@@ -95,13 +104,13 @@ class SubscriptionsRepositoryImpl(
                 }.ignoreElement()
     }
 
-    private fun loadSubscriptionScreen(type: String?, id: String?): Single<ScreenResponse> {
+    private fun loadSubscriptionScreen(type: ScreenType?, id: String?): Single<ScreenResponse> {
         val key = ScreenKey(id = id, type = type)
         return deviceDao.requireUserId()
                 .flatMap {
                     restStore.getSubscriptionScreen(
                             userId = it,
-                            type = type,
+                            type = type?.requestName,
                             id = id)
                 }.doOnSuccess {
                     loadedScreens[key] = it
@@ -109,7 +118,12 @@ class SubscriptionsRepositoryImpl(
     }
 }
 
+val ScreenType.requestName: String
+    get() = when (this) {
+        ScreenType.Sales -> "sales"
+    }
+
 data class ScreenKey(
         val id: String?,
-        val type: String?
+        val type: ScreenType?
 )

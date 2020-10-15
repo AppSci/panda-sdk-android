@@ -5,3 +5,7 @@ data class SubscriptionScreen(
         val name: String,
         val id: String
 )
+
+sealed class ScreenType {
+    object Sales : ScreenType()
+}
