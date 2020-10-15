@@ -8,7 +8,7 @@ interface SubscriptionsRepository {
     /**
      * returns [SubscriptionState] based on purchases from billing and local store
      */
-    fun getSubscriptionState(userId: String): Single<SubscriptionState>
+    fun getSubscriptionState(): Single<SubscriptionState>
 
     /**
      * Fetches purchases from billing and sends to rest store
@@ -22,5 +22,7 @@ interface SubscriptionsRepository {
 
     fun fetchHistory(): Completable
 
-    fun prefetchSubscriptionScreen(userId: String, type: String?, id: String?): Completable
+    fun prefetchSubscriptionScreen(type: String?, id: String?): Completable
+
+    fun getSubscriptionScreen(type: String?, id: String?): Single<SubscriptionScreen>
 }

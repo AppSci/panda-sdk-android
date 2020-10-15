@@ -6,7 +6,7 @@ import com.appsci.panda.sdk.data.subscriptions.PurchasesMapper
 import com.appsci.panda.sdk.data.subscriptions.local.PurchaseEntity
 import com.appsci.panda.sdk.data.subscriptions.local.TYPE_PRODUCT
 import com.appsci.panda.sdk.data.subscriptions.local.TYPE_SUBSCRIPTION
-import com.appsci.panda.sdk.domain.utils.rx.AppSchedulers
+import com.appsci.panda.sdk.domain.utils.rx.Schedulers
 import com.gen.rxbilling.client.RxBilling
 import io.reactivex.Completable
 import io.reactivex.Flowable
@@ -40,7 +40,7 @@ class PurchasesGoogleStoreImpl(
                 .doOnSuccess { Timber.d("getPurchases $it") }
                 .doOnError { Timber.e(it) }
                 //by default billing client pushes result to UI thread, so we need to switch it to IO
-                .observeOn(AppSchedulers.io())
+                .observeOn(Schedulers.io())
     }
 
     override fun consumeProducts(): Completable {
@@ -51,7 +51,7 @@ class PurchasesGoogleStoreImpl(
                             .setPurchaseToken(it.purchaseToken)
                             .build())
                 }
-                .observeOn(AppSchedulers.io())
+                .observeOn(Schedulers.io())
     }
 
     override fun fetchHistory(): Completable {
@@ -59,7 +59,7 @@ class PurchasesGoogleStoreImpl(
                 .ignoreElement()
                 .andThen(rxBilling.getPurchaseHistory(BillingClient.SkuType.INAPP))
                 .ignoreElement()
-                .observeOn(AppSchedulers.io())
+                .observeOn(Schedulers.io())
     }
 
 }

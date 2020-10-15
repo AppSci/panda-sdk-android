@@ -44,8 +44,8 @@ class DeviceRepositoryImpl @Inject constructor(
     /**
      *  perform device authorization or returns existing device from local storage
      */
-    override fun ensureAuthorized(): Single<Device> =
-            ensureAuthorizedSingle
+    override fun ensureAuthorized(): Completable =
+            ensureAuthorizedSingle.ignoreElement()
 
     override fun getAuthState(): Single<AuthState> {
         return deviceDao.selectDevice().toSingle()

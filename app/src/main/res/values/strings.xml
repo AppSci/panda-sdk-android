@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name">PandaSDK</string>
+
+    <string-array name="panda_subscriptions">
+        <item>10w_weekly_4.99</item>
+    </string-array>
+    <string-array name="panda_products">
+        <item>tenwords_lifetime_9.99</item>
+    </string-array>
+    <string name="panda_policy_url">https://words.boosters.company/agreements/privacy-policy/</string>
+    <string name="panda_terms_url">https://words.boosters.company/agreements/terms-and-conditions/</string>
 </resources>

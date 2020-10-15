@@ -1,12 +1,15 @@
 package com.appsci.panda.sdk
 
 import com.appsci.panda.sdk.domain.device.DeviceRepository
+import com.appsci.panda.sdk.domain.subscriptions.SubscriptionScreen
 import com.appsci.panda.sdk.domain.subscriptions.SubscriptionState
 import com.appsci.panda.sdk.domain.subscriptions.SubscriptionsRepository
 import com.appsci.panda.sdk.domain.utils.DeviceManager
 import com.appsci.panda.sdk.domain.utils.Preferences
+import com.appsci.panda.sdk.domain.utils.rx.Schedulers
 import io.reactivex.Completable
 import io.reactivex.Single
+import java.util.concurrent.TimeUnit
 
 interface IPanda {
     fun start()
@@ -15,6 +18,7 @@ interface IPanda {
     fun syncSubscriptions(): Completable
     fun getSubscriptionState(): Single<SubscriptionState>
     fun prefetchSubscriptionScreen(): Completable
+    fun getSubscriptionScreen(): Single<SubscriptionScreen>
 }
 
 class PandaImpl(
@@ -37,26 +41,24 @@ class PandaImpl(
 
     override fun setCustomUserId(id: String): Completable =
             deviceRepository.ensureAuthorized()
-                    .ignoreElement()
                     .andThen(deviceRepository.setCustomUserId(id))
 
     override fun syncSubscriptions(): Completable {
         return deviceRepository.ensureAuthorized()
-                .flatMapCompletable {
-                    subscriptionsRepository.sync()
-                }
+                .andThen(subscriptionsRepository.sync())
     }
 
     override fun getSubscriptionState(): Single<SubscriptionState> =
             deviceRepository.ensureAuthorized()
-                    .flatMap {
-                        subscriptionsRepository.getSubscriptionState(it.id)
-                    }
+                    .andThen(subscriptionsRepository.getSubscriptionState())
 
     override fun prefetchSubscriptionScreen(): Completable =
             deviceRepository.ensureAuthorized()
-                    .flatMapCompletable {
-                        subscriptionsRepository.prefetchSubscriptionScreen(it.id, null, null)
-                    }
+                    .andThen(subscriptionsRepository.prefetchSubscriptionScreen(null, null))
+
+    override fun getSubscriptionScreen(): Single<SubscriptionScreen> =
+            deviceRepository.ensureAuthorized()
+                    .andThen(subscriptionsRepository.getSubscriptionScreen(null, null))
+                    .timeout(5, TimeUnit.SECONDS, Schedulers.computation())
 
 }

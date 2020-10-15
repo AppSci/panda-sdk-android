@@ -7,7 +7,7 @@ interface DeviceRepository {
 
     fun authorize(): Single<Device>
 
-    fun ensureAuthorized(): Single<Device>
+    fun ensureAuthorized(): Completable
 
     fun getAuthState(): Single<AuthState>
 

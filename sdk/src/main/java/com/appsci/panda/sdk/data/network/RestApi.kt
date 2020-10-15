@@ -12,10 +12,6 @@ import retrofit2.http.*
 
 interface RestApi {
 
-    companion object {
-        const val PATTERN_SERVER_TIME = "yyyy-MM-dd HH:mm:ss"
-    }
-
     @POST("/v1/users")
     fun registerDevice(@Body deviceRequest: DeviceRequest): Single<DeviceResponse>
 
@@ -27,9 +23,6 @@ interface RestApi {
 
     @DELETE("/v1/devices")
     fun deleteDevice(): Completable
-
-    @POST("/v1/android/subscriptions")
-    fun sendSubscription(@Body request: SubscriptionRequest): Completable
 
     @GET("/v1/subscription-status/{user_id}")
     fun getSubscriptionStatus(
@@ -43,7 +36,16 @@ interface RestApi {
             @Query("id") id: String?,
     ): Single<ScreenResponse>
 
-    @POST("/v1/android/products")
-    fun sendProduct(@Body request: ProductRequest): Completable
+    @POST("/v1/android/verify/{user_id}")
+    fun sendProduct(
+            @Body request: ProductRequest,
+            @Path("user_id") userId: String
+    ): Completable
+
+    @POST("/v1/android/verify/{user_id}")
+    fun sendSubscription(
+            @Body request: SubscriptionRequest,
+            @Path("user_id") userId: String
+    ): Completable
 
 }
