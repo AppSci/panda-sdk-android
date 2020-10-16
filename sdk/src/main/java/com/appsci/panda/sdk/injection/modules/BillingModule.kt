@@ -2,6 +2,7 @@ package com.appsci.panda.sdk.injection.modules
 
 import android.content.Context
 import com.appsci.panda.sdk.data.db.PandaDatabase
+import com.appsci.panda.sdk.data.device.DeviceDao
 import com.appsci.panda.sdk.data.network.RestApi
 import com.appsci.panda.sdk.data.subscriptions.PurchasesMapper
 import com.appsci.panda.sdk.data.subscriptions.PurchasesMapperImpl
@@ -9,6 +10,7 @@ import com.appsci.panda.sdk.data.subscriptions.SubscriptionsRepositoryImpl
 import com.appsci.panda.sdk.data.subscriptions.google.BillingValidatorImpl
 import com.appsci.panda.sdk.data.subscriptions.google.PurchasesGoogleStore
 import com.appsci.panda.sdk.data.subscriptions.google.PurchasesGoogleStoreImpl
+import com.appsci.panda.sdk.data.subscriptions.local.FileStoreImpl
 import com.appsci.panda.sdk.data.subscriptions.local.PurchasesLocalStore
 import com.appsci.panda.sdk.data.subscriptions.local.PurchasesLocalStoreImpl
 import com.appsci.panda.sdk.data.subscriptions.rest.PurchasesRestStore
@@ -39,14 +41,18 @@ class BillingModule(private val context: Context) {
             localStore: PurchasesLocalStore,
             googleStore: PurchasesGoogleStore,
             restStore: PurchasesRestStore,
-            mapper: PurchasesMapper
+            mapper: PurchasesMapper,
+            deviceDao: DeviceDao
     ): SubscriptionsRepository {
         return SubscriptionsRepositoryImpl(
                 localStore,
                 googleStore,
                 restStore,
                 mapper,
-                BillingValidatorImpl())
+                BillingValidatorImpl(),
+                deviceDao,
+                FileStoreImpl(context)
+        )
     }
 
     @Provides

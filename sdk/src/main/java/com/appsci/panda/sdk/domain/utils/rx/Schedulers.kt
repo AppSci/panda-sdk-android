@@ -3,11 +3,11 @@ package com.appsci.panda.sdk.domain.utils.rx
 import io.reactivex.Scheduler
 
 @Suppress("unused")
-object AppSchedulers {
+object Schedulers {
     private lateinit var instance: SchedulerProvider
 
     fun setInstance(instance: SchedulerProvider) {
-        AppSchedulers.instance = instance
+        Schedulers.instance = instance
     }
 
     @JvmStatic

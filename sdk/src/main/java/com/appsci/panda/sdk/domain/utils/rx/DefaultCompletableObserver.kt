@@ -1,4 +1,4 @@
-package com.appsci.tenwords.domain.utils
+package com.appsci.panda.sdk.domain.utils.rx
 
 import io.reactivex.observers.DisposableCompletableObserver
 import timber.log.Timber

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="panda_subscriptions" type="array" />
+    <item name="panda_products" type="array" />
+    <item name="panda_policy_url" type="string" />
+    <item name="panda_terms_url" type="string" />
+    <item name="panda_screen_bg" type="color" />
+</resources>
