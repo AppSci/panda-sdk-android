@@ -39,6 +39,9 @@ object Panda {
     private val purchaseListeners: MutableList<(id: String) -> Unit> = mutableListOf()
     private val restoreListeners: MutableList<(ids: List<String>) -> Unit> = mutableListOf()
 
+    /**
+     * Call this function on App start to configure Panda SDK
+     */
     @kotlin.jvm.JvmStatic
     fun configure(
             context: Context,
@@ -51,6 +54,9 @@ object Panda {
             .doOnError { onError?.invoke(it) }
             .subscribe(DefaultSingleObserver())
 
+    /**
+     * Call this function on App start to configure Panda SDK
+     */
     @kotlin.jvm.JvmStatic
     fun configure(
             context: Context,
@@ -86,6 +92,9 @@ object Panda {
                 .observeOn(Schedulers.mainThread())
     }
 
+    /**
+     * Set custom user id to current user
+     */
     @kotlin.jvm.JvmStatic
     fun setCustomUserId(id: String,
                         onComplete: (() -> Unit)? = null,
@@ -95,12 +104,18 @@ object Panda {
             .doOnError { onError?.invoke(it) }
             .subscribe(DefaultCompletableObserver())
 
+    /**
+     * Set custom user id to current user
+     */
     @kotlin.jvm.JvmStatic
     fun setCustomUserIdRx(id: String): Completable =
             panda.setCustomUserId(id)
                     .subscribeOn(Schedulers.io())
                     .observeOn(Schedulers.mainThread())
 
+    /**
+     * Gets subscriptions from google and sends to Panda server
+     */
     @kotlin.jvm.JvmStatic
     fun syncSubscriptions(
             onComplete: (() -> Unit)? = null,
@@ -110,12 +125,18 @@ object Panda {
             .doOnError { onError?.invoke(it) }
             .subscribe(DefaultCompletableObserver())
 
+    /**
+     * Gets subscriptions from google and sends to Panda server
+     */
     @kotlin.jvm.JvmStatic
     fun syncSubscriptionsRx(): Completable =
             panda.syncSubscriptions()
                     .subscribeOn(Schedulers.io())
                     .observeOn(Schedulers.mainThread())
 
+    /**
+     * Get user's subscription state from Panda server
+     */
     @kotlin.jvm.JvmStatic
     fun getSubscriptionState(
             onSuccess: ((SubscriptionState) -> Unit)? = null,
@@ -125,12 +146,18 @@ object Panda {
             .doOnError { onError?.invoke(it) }
             .subscribe(DefaultSingleObserver())
 
+    /**
+     * Get user's subscription state from Panda server
+     */
     @kotlin.jvm.JvmStatic
     fun getSubscriptionStateRx(): Single<SubscriptionState> =
             panda.getSubscriptionState()
                     .subscribeOn(Schedulers.io())
                     .observeOn(Schedulers.mainThread())
 
+    /**
+     * Get subscription screen and save it to memory cache
+     */
     @kotlin.jvm.JvmStatic
     fun prefetchSubscriptionScreen(
             type: ScreenType = ScreenType.Sales,
@@ -142,12 +169,18 @@ object Panda {
             .doOnError { onError?.invoke(it) }
             .subscribe(DefaultCompletableObserver())
 
+    /**
+     * Get subscription screen and save it to memory cache
+     */
     @kotlin.jvm.JvmStatic
     fun prefetchSubscriptionScreenRx(type: ScreenType = ScreenType.Sales, id: String? = null) =
             panda.prefetchSubscriptionScreen(type, id)
                     .subscribeOn(Schedulers.io())
                     .observeOn(Schedulers.mainThread())
 
+    /**
+     * Get Fragment with subscription UI that handles billing flow
+     */
     @kotlin.jvm.JvmStatic
     fun getSubscriptionScreen(
             type: ScreenType? = null,
@@ -159,6 +192,9 @@ object Panda {
             .doOnError { onError?.invoke(it) }
             .subscribe(DefaultSingleObserver())
 
+    /**
+     * Get Fragment with subscription UI that handles billing flow
+     */
     @kotlin.jvm.JvmStatic
     fun getSubscriptionScreenRx(type: ScreenType? = null, id: String? = null): Single<Fragment> =
             panda.getSubscriptionScreen(type, id)
@@ -166,6 +202,9 @@ object Panda {
                     .observeOn(Schedulers.mainThread())
                     .map { SubscriptionFragment.create(ScreenExtra.create(it)) }
 
+    /**
+     * Show Activity with subscription screen
+     */
     @kotlin.jvm.JvmStatic
     fun showSubscriptionScreen(
             type: ScreenType? = null,
@@ -179,6 +218,9 @@ object Panda {
             .doOnError { onError?.invoke(it) }
             .subscribe(DefaultCompletableObserver())
 
+    /**
+     * Show Activity with subscription screen
+     */
     @kotlin.jvm.JvmStatic
     fun showSubscriptionScreenRx(
             type: ScreenType? = null,

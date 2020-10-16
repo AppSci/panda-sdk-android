@@ -28,7 +28,6 @@ class MainActivity : AppCompatActivity() {
         }
 
         Panda.setCustomUserId(id="super-unique-custom-id")
-        Panda.setCustomUserId("id")
 
         Panda.getSubscriptionStateRx()
                 .doOnSuccess {
