@@ -33,6 +33,7 @@ android {
         release {
             postprocessing {
                 obfuscate false
+                proguardFiles = ['proguard-android-optimize.txt', 'proguard-rules.pro']
             }
         }
     }
