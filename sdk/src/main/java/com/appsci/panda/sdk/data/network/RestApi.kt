@@ -2,10 +2,7 @@ package com.appsci.panda.sdk.data.network
 
 import com.appsci.panda.sdk.data.device.DeviceRequest
 import com.appsci.panda.sdk.data.device.DeviceResponse
-import com.appsci.panda.sdk.data.subscriptions.rest.ProductRequest
-import com.appsci.panda.sdk.data.subscriptions.rest.ScreenResponse
-import com.appsci.panda.sdk.data.subscriptions.rest.SubscriptionRequest
-import com.appsci.panda.sdk.data.subscriptions.rest.SubscriptionResponse
+import com.appsci.panda.sdk.data.subscriptions.rest.*
 import io.reactivex.Completable
 import io.reactivex.Single
 import retrofit2.http.*
@@ -27,7 +24,7 @@ interface RestApi {
     @GET("/v1/subscription-status/{user_id}")
     fun getSubscriptionStatus(
             @Path("user_id") userId: String
-    ): Single<SubscriptionResponse>
+    ): Single<SubscriptionStateResponse>
 
     @GET("/v1/screen")
     fun getSubscriptionScreen(
@@ -40,12 +37,12 @@ interface RestApi {
     fun sendProduct(
             @Body request: ProductRequest,
             @Path("user_id") userId: String
-    ): Completable
+    ): Single<SubscriptionResponse>
 
     @POST("/v1/android/subscriptions/{user_id}")
     fun sendSubscription(
             @Body request: SubscriptionRequest,
             @Path("user_id") userId: String
-    ): Completable
+    ): Single<SubscriptionResponse>
 
 }

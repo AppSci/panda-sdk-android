@@ -21,6 +21,12 @@ class SubscriptionActivity : AppCompatActivity() {
     private val onDismiss = {
         finish()
     }
+    private val onRestore: (ids: List<String>) -> Unit = {
+        if (it.isNotEmpty()) finish()
+    }
+    private val onPurchase: (id: String) -> Unit = {
+        finish()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         intent.getIntExtra(EXTRA_THEME, -1).let {
@@ -42,10 +48,14 @@ class SubscriptionActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
         Panda.addDismissListener(onDismiss)
+        Panda.addRestoreListener(onRestore)
+        Panda.addPurchaseListener(onPurchase)
     }
 
     override fun onStop() {
         Panda.removeDismissListener(onDismiss)
+        Panda.removeRestoreListener(onRestore)
+        Panda.removePurchaseListener(onPurchase)
         super.onStop()
     }
 }

@@ -17,7 +17,7 @@ class GetScreenActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_get_screen)
-        Panda.getSubscriptionScreen()
+        Panda.getSubscriptionScreenRx()
                 .doOnSuccess {
                     supportFragmentManager.beginTransaction()
                             .replace(R.id.container, it)

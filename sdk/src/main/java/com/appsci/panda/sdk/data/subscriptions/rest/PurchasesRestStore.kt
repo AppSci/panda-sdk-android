@@ -9,7 +9,7 @@ import io.reactivex.Single
 
 interface PurchasesRestStore {
 
-    fun sendPurchase(purchase: Purchase, userId: String): Completable
+    fun sendPurchase(purchase: Purchase, userId: String): Single<Boolean>
 
     fun getSubscriptionState(userId: String): Single<SubscriptionState>
 
@@ -20,7 +20,7 @@ class PurchasesRestStoreImpl(
         private val restApi: RestApi
 ) : PurchasesRestStore {
 
-    override fun sendPurchase(purchase: Purchase, userId: String): Completable {
+    override fun sendPurchase(purchase: Purchase, userId: String): Single<Boolean> {
         return when (purchase.type) {
             SkuType.SUBSCRIPTION ->
                 restApi.sendSubscription(
@@ -38,7 +38,7 @@ class PurchasesRestStoreImpl(
                                 purchaseToken = purchase.token,
                         ),
                         userId = userId)
-        }
+        }.map { it.active }
     }
 
     override fun getSubscriptionState(userId: String): Single<SubscriptionState> =

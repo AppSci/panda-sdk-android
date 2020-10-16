@@ -7,10 +7,7 @@ import com.appsci.panda.sdk.data.subscriptions.local.FileStore
 import com.appsci.panda.sdk.data.subscriptions.local.PurchasesLocalStore
 import com.appsci.panda.sdk.data.subscriptions.rest.PurchasesRestStore
 import com.appsci.panda.sdk.data.subscriptions.rest.ScreenResponse
-import com.appsci.panda.sdk.domain.subscriptions.ScreenType
-import com.appsci.panda.sdk.domain.subscriptions.SubscriptionScreen
-import com.appsci.panda.sdk.domain.subscriptions.SubscriptionState
-import com.appsci.panda.sdk.domain.subscriptions.SubscriptionsRepository
+import com.appsci.panda.sdk.domain.subscriptions.*
 import com.appsci.panda.sdk.domain.utils.rx.Schedulers
 import io.reactivex.Completable
 import io.reactivex.Flowable
@@ -31,7 +28,8 @@ class SubscriptionsRepositoryImpl(
     private val loadedScreens = mutableMapOf<ScreenKey, ScreenResponse>()
 
     override fun sync(): Completable {
-        return saveGooglePurchases()
+        return fetchHistory()
+                .andThen(saveGooglePurchases())
                 .andThen(deviceDao.requireUserId())
                 .flatMapCompletable { userId ->
                     localStore.getNotSentPurchases()
@@ -39,13 +37,40 @@ class SubscriptionsRepositoryImpl(
                             .concatMapCompletable { entity ->
                                 val purchase = mapper.mapToDomain(entity)
                                 return@concatMapCompletable restStore.sendPurchase(purchase, userId)
-                                        .doOnComplete {
+                                        .doOnSuccess {
                                             localStore.markSynced(entity.productId)
-                                        }
+                                        }.ignoreElement()
                             }
-
                 }
     }
+
+    override fun validatePurchase(purchase: Purchase): Single<Boolean> {
+        return saveGooglePurchases()
+                .andThen(deviceDao.requireUserId())
+                .flatMap {
+                    restStore.sendPurchase(purchase, it)
+                            .doOnSuccess {
+                                localStore.markSynced(purchase.id)
+                            }
+                }
+    }
+
+    override fun restore(): Single<List<String>> =
+            fetchHistory()
+                    .andThen(saveGooglePurchases())
+                    .andThen(deviceDao.requireUserId())
+                    .flatMap { userId ->
+                        googleStore.getPurchases()
+                                .flatMapPublisher { Flowable.fromIterable(it) }
+                                .flatMapMaybe { entity ->
+                                    val purchase = mapper.mapToDomain(entity)
+                                    return@flatMapMaybe restStore.sendPurchase(purchase, userId)
+                                            .doOnSuccess {
+                                                localStore.markSynced(entity.productId)
+                                            }.filter { it }
+                                            .map { entity.productId }
+                                }.toList()
+                    }
 
     override fun consumeProducts(): Completable =
             googleStore.consumeProducts()

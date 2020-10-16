@@ -15,6 +15,10 @@ interface SubscriptionsRepository {
      */
     fun sync(): Completable
 
+    fun restore(): Single<List<String>>
+
+    fun validatePurchase(purchase: Purchase): Single<Boolean>
+
     /**
      * Consumes all available products and refreshes all purchases
      */

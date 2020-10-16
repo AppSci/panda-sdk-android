@@ -2,6 +2,7 @@ package com.appsci.panda.sdk.injection.components
 
 import com.appsci.panda.sdk.PandaDependencies
 import com.appsci.panda.sdk.injection.modules.*
+import com.appsci.panda.sdk.ui.SubscriptionFragment
 import dagger.Component
 import javax.inject.Singleton
 
@@ -17,5 +18,6 @@ import javax.inject.Singleton
 interface PandaComponent {
 
     fun inject(app: PandaDependencies)
+    fun inject(fragment: SubscriptionFragment)
 
 }
