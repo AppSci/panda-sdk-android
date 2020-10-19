@@ -39,6 +39,8 @@ object Panda {
     private val purchaseListeners: MutableList<(id: String) -> Unit> = mutableListOf()
     private val restoreListeners: MutableList<(ids: List<String>) -> Unit> = mutableListOf()
 
+    private val pandaListeners: MutableList<PandaListener> = mutableListOf()
+
     /**
      * Call this function on App start to configure Panda SDK
      */
@@ -303,8 +305,25 @@ object Panda {
         restoreListeners.remove(onRestore)
     }
 
+    fun addListener(listener: PandaListener) {
+        pandaListeners.add(listener)
+    }
+
+    fun removeListener(listener: PandaListener) {
+        pandaListeners.remove(listener)
+    }
+
     internal fun onDismiss() {
         dismissListeners.forEach { it() }
+        pandaListeners.forEach { it.onDismiss() }
+    }
+
+    internal fun onTermsClick() {
+        pandaListeners.forEach { it.onTermsClick() }
+    }
+
+    internal fun onPolicyClick() {
+        pandaListeners.forEach { it.onPolicyClick() }
     }
 
     internal fun restore(): Single<List<String>> =
@@ -312,13 +331,13 @@ object Panda {
                     .subscribeOn(Schedulers.io())
                     .observeOn(Schedulers.mainThread())
                     .doOnSuccess { ids ->
-                        restoreListeners.forEach { it(ids) }
+                        notifyRestore(ids)
                         if (ids.isEmpty()) {
-                            purchaseListeners.forEach { it(ids.first()) }
+                            notifyPurchase(ids.first())
                         }
                     }
                     .doOnError { e ->
-                        errorListeners.forEach { it(e) }
+                        notifyError(e)
                     }
 
     internal fun onPurchase(purchase: GooglePurchase, @BillingClient.SkuType type: String) {
@@ -336,14 +355,29 @@ object Panda {
                 .subscribeOn(Schedulers.io())
                 .observeOn(Schedulers.mainThread())
                 .doOnError { t ->
-                    errorListeners.forEach { it(t) }
+                    notifyError(t)
                 }.doOnSuccess {
-                    purchaseListeners.forEach { it(purchase.sku) }
+                    notifyPurchase(purchase.sku)
                 }.subscribe(DefaultSingleObserver())
     }
 
     internal fun onError(throwable: Throwable) {
+        notifyError(throwable)
+    }
+
+    private fun notifyError(throwable: Throwable) {
         errorListeners.forEach { it(throwable) }
+        pandaListeners.forEach { it.onError(throwable) }
+    }
+
+    private fun notifyPurchase(skuId: String) {
+        purchaseListeners.forEach { it(skuId) }
+        pandaListeners.forEach { it.onPurchase(skuId) }
+    }
+
+    private fun notifyRestore(ids: List<String>) {
+        restoreListeners.forEach { it(ids) }
+        pandaListeners.forEach { it.onRestore(ids) }
     }
 
 }

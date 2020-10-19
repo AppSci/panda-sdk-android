@@ -129,11 +129,13 @@ class SubscriptionFragment : Fragment(R.layout.panda_fragment_subscription) {
             }
             url.contains("/subscription?type=terms") -> {
                 Timber.d("terms click")
+                Panda.onTermsClick()
                 openExternalUrl(getString(R.string.panda_terms_url))
                 true
             }
             url.contains("/subscription?type=policy") -> {
                 Timber.d("policy click")
+                Panda.onPolicyClick()
                 openExternalUrl(getString(R.string.panda_policy_url))
                 true
             }
