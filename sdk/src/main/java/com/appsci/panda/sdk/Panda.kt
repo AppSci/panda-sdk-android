@@ -165,6 +165,27 @@ object Panda {
                     .observeOn(Schedulers.mainThread())
 
     /**
+     * Consume all products owned by user
+     */
+    @kotlin.jvm.JvmStatic
+    fun consumeProductsRx(): Completable =
+            panda.consumeProducts()
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(Schedulers.mainThread())
+
+    /**
+     * Consume all products owned by user
+     */
+    @kotlin.jvm.JvmStatic
+    fun consumeProducts(
+            onComplete: (() -> Unit)? = null,
+            onError: ((Throwable) -> Unit)? = null
+    ) = panda.consumeProducts()
+            .doOnComplete(onComplete)
+            .doOnError(onError)
+            .subscribe(DefaultCompletableObserver())
+
+    /**
      * Get subscription screen and save it to memory cache
      */
     @kotlin.jvm.JvmStatic
