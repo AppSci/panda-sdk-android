@@ -332,7 +332,7 @@ object Panda {
                     .observeOn(Schedulers.mainThread())
                     .doOnSuccess { ids ->
                         notifyRestore(ids)
-                        if (ids.isEmpty()) {
+                        if (ids.isNotEmpty()) {
                             notifyPurchase(ids.first())
                         }
                     }
