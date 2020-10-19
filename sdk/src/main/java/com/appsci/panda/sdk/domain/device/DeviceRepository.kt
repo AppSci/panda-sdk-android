@@ -5,6 +5,8 @@ import io.reactivex.Single
 
 interface DeviceRepository {
 
+    val pandaUserId: String?
+
     fun authorize(): Single<Device>
 
     fun ensureAuthorized(): Completable

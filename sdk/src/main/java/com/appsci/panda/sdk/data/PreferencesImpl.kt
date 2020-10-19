@@ -12,6 +12,7 @@ class PreferencesImpl(context: Context) : Preferences {
     companion object {
         private const val KEY_START_VERSION: String = "startVersion"
         private const val KEY_CUSTOM_USER_ID: String = "customUserId"
+        private const val KEY_PANDA_USER_ID: String = "pandaUserId"
     }
 
     private val sharedPreferences: SharedPreferences =
@@ -23,4 +24,7 @@ class PreferencesImpl(context: Context) : Preferences {
     override var customUserId: String?
         get() = sharedPreferences.getString(KEY_CUSTOM_USER_ID, null)
         set(value) = sharedPreferences.edit { putString(KEY_CUSTOM_USER_ID, value) }
+    override var pandaUserId: String?
+        get() = sharedPreferences.getString(KEY_PANDA_USER_ID, null)
+        set(value) = sharedPreferences.edit { putString(KEY_PANDA_USER_ID, value) }
 }

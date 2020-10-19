@@ -93,7 +93,14 @@ object Panda {
     }
 
     /**
+     * @returns
+     */
+    val pandaUserId: String?
+        get() = panda.pandaUserId
+
+    /**
      * Set custom user id to current user
+     * @param id - your custom userId,
      */
     @kotlin.jvm.JvmStatic
     fun setCustomUserId(id: String,
@@ -106,6 +113,7 @@ object Panda {
 
     /**
      * Set custom user id to current user
+     * @param id - your custom userId,
      */
     @kotlin.jvm.JvmStatic
     fun setCustomUserIdRx(id: String): Completable =

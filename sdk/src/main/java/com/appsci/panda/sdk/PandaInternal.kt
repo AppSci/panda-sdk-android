@@ -8,6 +8,8 @@ import io.reactivex.Completable
 import io.reactivex.Single
 
 interface IPanda {
+    val pandaUserId: String?
+
     fun start()
     fun authorize(): Single<String>
     fun setCustomUserId(id: String): Completable
@@ -25,6 +27,9 @@ class PandaImpl(
         private val deviceRepository: DeviceRepository,
         private val subscriptionsRepository: SubscriptionsRepository
 ) : IPanda {
+
+    override val pandaUserId: String?
+        get() = deviceRepository.pandaUserId
 
     override fun start() {
         if (preferences.startVersion.isNullOrEmpty()) {
