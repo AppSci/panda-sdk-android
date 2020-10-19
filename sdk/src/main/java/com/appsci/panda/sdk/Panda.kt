@@ -340,12 +340,15 @@ object Panda {
                         notifyError(e)
                     }
 
-    internal fun onPurchase(purchase: GooglePurchase, @BillingClient.SkuType type: String) {
+    internal fun onPurchase(
+            purchase: GooglePurchase,
+            @BillingClient.SkuType type: String
+    ): Single<Boolean> {
         val purchaseType = when (type) {
             BillingClient.SkuType.SUBS -> SkuType.SUBSCRIPTION
             else -> SkuType.INAPP
         }
-        panda.validatePurchase(
+        return panda.validatePurchase(
                 Purchase(
                         id = purchase.sku,
                         type = purchaseType,
@@ -358,7 +361,7 @@ object Panda {
                     notifyError(t)
                 }.doOnSuccess {
                     notifyPurchase(purchase.sku)
-                }.subscribe(DefaultSingleObserver())
+                }
     }
 
     internal fun onError(throwable: Throwable) {

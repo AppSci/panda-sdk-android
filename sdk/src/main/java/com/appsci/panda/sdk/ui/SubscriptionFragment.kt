@@ -109,9 +109,15 @@ class SubscriptionFragment : Fragment(R.layout.panda_fragment_subscription) {
             val type = rcToType.getValue(requestCode)
             disposeOnDestroyView.add(
                     billingFlow.handleActivityResult(data)
-                            .subscribe({
-                                Panda.onPurchase(it, type)
+                            .flatMap {
                                 Timber.d("handleActivityResult $it")
+                                loading.visibility = View.VISIBLE
+                                Panda.onPurchase(it, type)
+                                        .doAfterTerminate {
+                                            loading.visibility = View.GONE
+                                        }
+                            }.subscribe({
+                                Timber.d("onPurchase success=$it")
                             }, {
                                 Panda.onError(it)
                                 Timber.e(it)
