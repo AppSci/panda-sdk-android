@@ -81,6 +81,7 @@ object Panda {
         panda.start()
 
         panda.syncSubscriptions()
+                .subscribeOn(Schedulers.io())
                 .observeOn(Schedulers.mainThread())
                 .subscribe(DefaultCompletableObserver())
 
