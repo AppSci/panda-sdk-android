@@ -26,7 +26,7 @@ interface SubscriptionsRepository {
 
     fun fetchHistory(): Completable
 
-    fun prefetchSubscriptionScreen(type: ScreenType?, id: String?): Completable
+    fun prefetchSubscriptionScreen(type: ScreenType?, id: String?): Single<SubscriptionScreen>
 
     fun getSubscriptionScreen(type: ScreenType?, id: String?, timeoutMs: Long = 5000L): Single<SubscriptionScreen>
 }

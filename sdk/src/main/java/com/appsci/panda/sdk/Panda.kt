@@ -1,8 +1,12 @@
 package com.appsci.panda.sdk
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.view.View
+import android.webkit.WebView
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.android.billingclient.api.BillingClient
 import com.appsci.panda.sdk.domain.subscriptions.Purchase
@@ -204,11 +208,20 @@ object Panda {
     /**
      * Get subscription screen and save it to memory cache
      */
+    @SuppressLint("SetJavaScriptEnabled")
     @kotlin.jvm.JvmStatic
-    fun prefetchSubscriptionScreenRx(type: ScreenType = ScreenType.Sales, id: String? = null) =
+    fun prefetchSubscriptionScreenRx(type: ScreenType? = null, id: String? = null): Completable =
             panda.prefetchSubscriptionScreen(type, id)
                     .subscribeOn(Schedulers.io())
                     .observeOn(Schedulers.mainThread())
+//                    .doOnSuccess {
+//                        WebView(context).apply {
+//                            setBackgroundColor(ContextCompat.getColor(context, R.color.panda_screen_bg))
+//                            settings.javaScriptEnabled = true
+//                            loadDataWithBaseURL("file:///android_asset/", it.screenHtml, null, null, null)
+//                        }
+//                    }
+                    .ignoreElement()
 
     /**
      * Get Fragment with subscription UI that handles billing flow
@@ -233,6 +246,20 @@ object Panda {
                     .subscribeOn(Schedulers.io())
                     .observeOn(Schedulers.mainThread())
                     .map { SubscriptionFragment.create(ScreenExtra.create(it)) }
+
+    @SuppressLint("SetJavaScriptEnabled")
+    @kotlin.jvm.JvmStatic
+    fun getSubscriptionViewRx(type: ScreenType? = null, id: String? = null): Single<View> =
+            panda.getSubscriptionScreen(type, id)
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(Schedulers.mainThread())
+                    .map {
+                        WebView(context).apply {
+                            setBackgroundColor(ContextCompat.getColor(context, R.color.panda_screen_bg))
+                            settings.javaScriptEnabled = true
+                            loadDataWithBaseURL("file:///android_asset/", it.screenHtml, null, null, null)
+                        }
+                    }
 
     /**
      * Show Activity with subscription screen

@@ -76,9 +76,15 @@ class SubscriptionsRepositoryImpl(
             googleStore.consumeProducts()
                     .andThen(googleStore.fetchHistory())
 
-    override fun prefetchSubscriptionScreen(type: ScreenType?, id: String?): Completable {
+    override fun prefetchSubscriptionScreen(type: ScreenType?, id: String?): Single<SubscriptionScreen> {
         return loadSubscriptionScreen(type, id)
-                .ignoreElement()
+                .map {
+                    SubscriptionScreen(
+                            id = it.id,
+                            name = it.name,
+                            screenHtml = it.screenHtml
+                    )
+                }
     }
 
     override fun getSubscriptionScreen(type: ScreenType?, id: String?, timeoutMs: Long): Single<SubscriptionScreen> {
@@ -130,6 +136,7 @@ class SubscriptionsRepositoryImpl(
     }
 
     private fun loadSubscriptionScreen(type: ScreenType?, id: String?): Single<ScreenResponse> {
+        Timber.d("loadSubscriptionScreen $type\n$id")
         val key = ScreenKey(id = id, type = type)
         return deviceDao.requireUserId()
                 .flatMap {

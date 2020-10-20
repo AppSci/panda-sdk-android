@@ -17,7 +17,7 @@ interface IPanda {
     fun validatePurchase(purchase: Purchase): Single<Boolean>
     fun restore(): Single<List<String>>
     fun getSubscriptionState(): Single<SubscriptionState>
-    fun prefetchSubscriptionScreen(type: ScreenType? = null, id: String? = null): Completable
+    fun prefetchSubscriptionScreen(type: ScreenType? = null, id: String? = null): Single<SubscriptionScreen>
     fun getSubscriptionScreen(type: ScreenType? = null, id: String? = null): Single<SubscriptionScreen>
     fun consumeProducts(): Completable
 }
@@ -64,7 +64,7 @@ class PandaImpl(
             deviceRepository.ensureAuthorized()
                     .andThen(subscriptionsRepository.getSubscriptionState())
 
-    override fun prefetchSubscriptionScreen(type: ScreenType?, id: String?): Completable =
+    override fun prefetchSubscriptionScreen(type: ScreenType?, id: String?): Single<SubscriptionScreen> =
             deviceRepository.ensureAuthorized()
                     .andThen(subscriptionsRepository.prefetchSubscriptionScreen(type, id))
 
