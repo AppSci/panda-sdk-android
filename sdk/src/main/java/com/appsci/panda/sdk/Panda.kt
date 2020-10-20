@@ -247,20 +247,6 @@ object Panda {
                     .observeOn(Schedulers.mainThread())
                     .map { SubscriptionFragment.create(ScreenExtra.create(it)) }
 
-    @SuppressLint("SetJavaScriptEnabled")
-    @kotlin.jvm.JvmStatic
-    fun getSubscriptionViewRx(type: ScreenType? = null, id: String? = null): Single<View> =
-            panda.getSubscriptionScreen(type, id)
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(Schedulers.mainThread())
-                    .map {
-                        WebView(context).apply {
-                            setBackgroundColor(ContextCompat.getColor(context, R.color.panda_screen_bg))
-                            settings.javaScriptEnabled = true
-                            loadDataWithBaseURL("file:///android_asset/", it.screenHtml, null, null, null)
-                        }
-                    }
-
     /**
      * Show Activity with subscription screen
      */
