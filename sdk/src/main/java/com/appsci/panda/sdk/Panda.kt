@@ -214,13 +214,13 @@ object Panda {
             panda.prefetchSubscriptionScreen(type, id)
                     .subscribeOn(Schedulers.io())
                     .observeOn(Schedulers.mainThread())
-//                    .doOnSuccess {
-//                        WebView(context).apply {
-//                            setBackgroundColor(ContextCompat.getColor(context, R.color.panda_screen_bg))
-//                            settings.javaScriptEnabled = true
-//                            loadDataWithBaseURL("file:///android_asset/", it.screenHtml, null, null, null)
-//                        }
-//                    }
+                    .doOnSuccess {
+                        WebView(context).apply {
+                            setBackgroundColor(ContextCompat.getColor(context, R.color.panda_screen_bg))
+                            settings.javaScriptEnabled = true
+                            loadDataWithBaseURL("file:///android_asset/", it.screenHtml, null, null, null)
+                        }
+                    }
                     .ignoreElement()
 
     /**
