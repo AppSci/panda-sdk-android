@@ -9,6 +9,7 @@ import android.view.View
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.activity.OnBackPressedCallback
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
@@ -18,8 +19,6 @@ import com.appsci.panda.sdk.R
 import com.appsci.panda.sdk.domain.subscriptions.SubscriptionScreen
 import com.appsci.panda.sdk.domain.utils.rx.DefaultCompletableObserver
 import com.appsci.panda.sdk.domain.utils.rx.DefaultSingleObserver
-import com.appsci.panda.sdk.domain.utils.rx.Schedulers
-import com.gen.rxbilling.client.RxBilling
 import com.gen.rxbilling.flow.BuyItemRequest
 import com.gen.rxbilling.flow.RxBillingFlow
 import com.gen.rxbilling.flow.delegate.FragmentFlowDelegate
@@ -34,9 +33,6 @@ class SubscriptionFragment : Fragment(R.layout.panda_fragment_subscription) {
 
     @Inject
     lateinit var billingFlow: RxBillingFlow
-
-    @Inject
-    lateinit var billing: RxBilling
 
     private val disposeOnDestroyView = CompositeDisposable()
 
@@ -65,21 +61,16 @@ class SubscriptionFragment : Fragment(R.layout.panda_fragment_subscription) {
         super.onCreate(savedInstanceState)
         Panda.pandaComponent.inject(this)
         lifecycle.addObserver(BillingConnectionManager(billingFlow))
-        lifecycle.addObserver(BillingConnectionManager(billing))
+        requireActivity().onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                Panda.onDismiss(screenExtra)
+            }
+        })
     }
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        disposeOnDestroyView.add(
-                billing.observeUpdates()
-                        .observeOn(Schedulers.mainThread())
-                        .subscribe({
-                            Timber.d("observeUpdates ${it.purchases}")
-                        }, {
-                            Timber.e(it)
-                        })
-        )
         webView.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.panda_screen_bg))
         webView.settings.javaScriptEnabled = true
         webView.webViewClient = object : WebViewClient() {
