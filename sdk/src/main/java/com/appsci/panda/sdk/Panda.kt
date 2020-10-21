@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.view.View
 import android.webkit.WebView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -44,6 +43,7 @@ object Panda {
     private val restoreListeners: MutableList<(ids: List<String>) -> Unit> = mutableListOf()
 
     private val pandaListeners: MutableList<PandaListener> = mutableListOf()
+    private val analyticsListeners: MutableList<PandaAnalyticsListener> = mutableListOf()
 
     /**
      * Call this function on App start to configure Panda SDK
@@ -326,27 +326,41 @@ object Panda {
         pandaListeners.remove(listener)
     }
 
-    internal fun onDismiss() {
+    fun addAnalyticsListener(listener: PandaAnalyticsListener) {
+        analyticsListeners.add(listener)
+    }
+
+    fun removeAnalyticsListener(listener: PandaAnalyticsListener) {
+        analyticsListeners.remove(listener)
+    }
+
+    internal fun onDismiss(screen: ScreenExtra) {
         dismissListeners.forEach { it() }
-        pandaListeners.forEach { it.onDismiss() }
+        pandaListeners.forEach { it.onDismissClick() }
+        analyticsListeners.forEach {
+            it(PandaEvent.DismissClick(
+                    screenId = screen.id,
+                    screenName = screen.name
+            ))
+        }
     }
 
     internal fun onTermsClick() {
-        pandaListeners.forEach { it.onTermsClick() }
+        analyticsListeners.forEach { it(PandaEvent.TermsClick) }
     }
 
     internal fun onPolicyClick() {
-        pandaListeners.forEach { it.onPolicyClick() }
+        analyticsListeners.forEach { it(PandaEvent.PolicyClick) }
     }
 
-    internal fun restore(): Single<List<String>> =
+    internal fun restore(screenExtra: ScreenExtra): Single<List<String>> =
             panda.restore()
                     .subscribeOn(Schedulers.io())
                     .observeOn(Schedulers.mainThread())
                     .doOnSuccess { ids ->
                         notifyRestore(ids)
                         if (ids.isNotEmpty()) {
-                            notifyPurchase(ids.first())
+                            notifyPurchase(screenExtra, ids.first())
                         }
                     }
                     .doOnError { e ->
@@ -354,6 +368,7 @@ object Panda {
                     }
 
     internal fun onPurchase(
+            screenExtra: ScreenExtra,
             purchase: GooglePurchase,
             @BillingClient.SkuType type: String
     ): Single<Boolean> {
@@ -373,7 +388,7 @@ object Panda {
                 .doOnError { t ->
                     notifyError(t)
                 }.doOnSuccess {
-                    notifyPurchase(purchase.sku)
+                    notifyPurchase(screenExtra, purchase.sku)
                 }
     }
 
@@ -381,14 +396,33 @@ object Panda {
         notifyError(throwable)
     }
 
+    internal fun screenShowed(screenExtra: ScreenExtra) {
+        analyticsListeners.forEach {
+            it(PandaEvent.ScreenShowed(
+                    screenId = screenExtra.id,
+                    screenName = screenExtra.name
+            ))
+        }
+    }
+
     private fun notifyError(throwable: Throwable) {
         errorListeners.forEach { it(throwable) }
         pandaListeners.forEach { it.onError(throwable) }
     }
 
-    private fun notifyPurchase(skuId: String) {
+    private fun notifyPurchase(
+            screenExtra: ScreenExtra,
+            skuId: String
+    ) {
         purchaseListeners.forEach { it(skuId) }
         pandaListeners.forEach { it.onPurchase(skuId) }
+        analyticsListeners.forEach {
+            it(PandaEvent.SuccessfulPurchase(
+                    screenId = screenExtra.id,
+                    screenName = screenExtra.name,
+                    productId = skuId
+            ))
+        }
     }
 
     private fun notifyRestore(ids: List<String>) {

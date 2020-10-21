@@ -96,6 +96,7 @@ class SubscriptionFragment : Fragment(R.layout.panda_fragment_subscription) {
 
         }
         webView.loadDataWithBaseURL("file:///android_asset/", screenExtra.html, null, null, null)
+        Panda.screenShowed(screenExtra)
     }
 
     override fun onDestroyView() {
@@ -112,7 +113,7 @@ class SubscriptionFragment : Fragment(R.layout.panda_fragment_subscription) {
                             .flatMap {
                                 Timber.d("handleActivityResult $it")
                                 loading.visibility = View.VISIBLE
-                                Panda.onPurchase(it, type)
+                                Panda.onPurchase(screenExtra, it, type)
                                         .doAfterTerminate {
                                             loading.visibility = View.GONE
                                         }
@@ -151,7 +152,7 @@ class SubscriptionFragment : Fragment(R.layout.panda_fragment_subscription) {
             }
             url.contains("/dismiss?type=dismiss") -> {
                 Timber.d("dismiss click")
-                Panda.onDismiss()
+                Panda.onDismiss(screenExtra)
                 true
             }
             else -> false
@@ -160,7 +161,7 @@ class SubscriptionFragment : Fragment(R.layout.panda_fragment_subscription) {
 
     private fun restore() {
         loading.visibility = View.VISIBLE
-        Panda.restore()
+        Panda.restore(screenExtra)
                 .doOnSuccess {
                     Timber.d("restore $it")
                 }
