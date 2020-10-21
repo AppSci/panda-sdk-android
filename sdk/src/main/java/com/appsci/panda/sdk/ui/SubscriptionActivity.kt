@@ -18,11 +18,12 @@ class SubscriptionActivity : AppCompatActivity() {
                         }
     }
 
+    private val screenExtra: ScreenExtra by lazy {
+        intent.getParcelableExtra(SubscriptionFragment.EXTRA_SCREEN)!!
+    }
+
     private val onDismiss = {
         finish()
-    }
-    private val onRestore: (ids: List<String>) -> Unit = {
-        if (it.isNotEmpty()) finish()
     }
     private val onPurchase: (id: String) -> Unit = {
         finish()
@@ -42,19 +43,17 @@ class SubscriptionActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        Panda.onDismiss()
+        Panda.onDismiss(screenExtra)
     }
 
     override fun onStart() {
         super.onStart()
         Panda.addDismissListener(onDismiss)
-        Panda.addRestoreListener(onRestore)
         Panda.addPurchaseListener(onPurchase)
     }
 
     override fun onStop() {
         Panda.removeDismissListener(onDismiss)
-        Panda.removeRestoreListener(onRestore)
         Panda.removePurchaseListener(onPurchase)
         super.onStop()
     }
