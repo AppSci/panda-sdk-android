@@ -173,10 +173,15 @@ class SubscriptionFragment : Fragment(R.layout.panda_fragment_subscription) {
     private fun purchaseClick(url: String) {
         val subscriptions = resources.getStringArray(R.array.panda_subscriptions)
         val products = resources.getStringArray(R.array.panda_products)
-//        val id = url.toUri().getQueryParameter("product_id")!!
-        val id = subscriptions.first()
+        val id = url.toUri().getQueryParameter("product_id")!!
         Timber.d("purchase click $id")
-        val type = BillingClient.SkuType.SUBS
+
+        val type = when {
+            products.contains(id) -> {
+                BillingClient.SkuType.INAPP
+            }
+            else -> BillingClient.SkuType.SUBS
+        }
         val rc = rcToType.entries.first {
             it.value == type
         }.key
