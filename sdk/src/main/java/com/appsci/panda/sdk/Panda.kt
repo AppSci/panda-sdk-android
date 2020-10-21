@@ -405,6 +405,16 @@ object Panda {
         }
     }
 
+    internal fun subscriptionSelect(screenExtra: ScreenExtra, id: String) {
+        analyticsListeners.forEach {
+            it(PandaEvent.SubscriptionSelect(
+                    productId = id,
+                    screenId = screenExtra.id,
+                    screenName = screenExtra.name
+            ))
+        }
+    }
+
     private fun notifyError(throwable: Throwable) {
         errorListeners.forEach { it(throwable) }
         pandaListeners.forEach { it.onError(throwable) }

@@ -175,6 +175,7 @@ class SubscriptionFragment : Fragment(R.layout.panda_fragment_subscription) {
         val subscriptions = resources.getStringArray(R.array.panda_subscriptions)
         val products = resources.getStringArray(R.array.panda_products)
         val id = url.toUri().getQueryParameter("product_id")!!
+        Panda.subscriptionSelect(screenExtra, id)
         Timber.d("purchase click $id")
 
         val type = when {
