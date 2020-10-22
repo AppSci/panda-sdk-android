@@ -4,8 +4,10 @@ import com.appsci.panda.sdk.domain.device.DeviceRepository
 import com.appsci.panda.sdk.domain.subscriptions.*
 import com.appsci.panda.sdk.domain.utils.DeviceManager
 import com.appsci.panda.sdk.domain.utils.Preferences
+import com.appsci.panda.sdk.domain.utils.rx.Schedulers
 import io.reactivex.Completable
 import io.reactivex.Single
+import java.util.concurrent.TimeUnit
 
 interface IPanda {
     val pandaUserId: String?
@@ -18,7 +20,7 @@ interface IPanda {
     fun restore(): Single<List<String>>
     fun getSubscriptionState(): Single<SubscriptionState>
     fun prefetchSubscriptionScreen(type: ScreenType? = null, id: String? = null): Single<SubscriptionScreen>
-    fun getSubscriptionScreen(type: ScreenType? = null, id: String? = null): Single<SubscriptionScreen>
+    fun getSubscriptionScreen(type: ScreenType? = null, id: String? = null, timeoutMs: Long = 5000L): Single<SubscriptionScreen>
     fun consumeProducts(): Completable
 }
 
@@ -68,9 +70,13 @@ class PandaImpl(
             deviceRepository.ensureAuthorized()
                     .andThen(subscriptionsRepository.prefetchSubscriptionScreen(type, id))
 
-    override fun getSubscriptionScreen(type: ScreenType?, id: String?): Single<SubscriptionScreen> =
+    override fun getSubscriptionScreen(type: ScreenType?, id: String?, timeoutMs: Long): Single<SubscriptionScreen> =
             deviceRepository.ensureAuthorized()
                     .andThen(subscriptionsRepository.getSubscriptionScreen(type, id))
+                    .timeout(timeoutMs, TimeUnit.MILLISECONDS, Schedulers.computation())
+                    .onErrorResumeNext {
+                        subscriptionsRepository.getFallbackScreen()
+                    }
 
     override fun consumeProducts(): Completable =
             deviceRepository.ensureAuthorized()

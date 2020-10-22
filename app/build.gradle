@@ -59,8 +59,6 @@ dependencies {
     implementation dataDependencies.roomRxJava
     kapt dataDependencies.roomCompiler
 
-    implementation "androidx.startup:startup-runtime:1.0.0-beta01"
-
     implementation supportDependencies.support
     implementation supportDependencies.transition
     implementation supportDependencies.design

@@ -87,26 +87,25 @@ class SubscriptionsRepositoryImpl(
                 }
     }
 
-    override fun getSubscriptionScreen(type: ScreenType?, id: String?, timeoutMs: Long): Single<SubscriptionScreen> {
+    override fun getSubscriptionScreen(type: ScreenType?, id: String?): Single<SubscriptionScreen> {
         val key = ScreenKey(id = id, type = type)
         val cachedScreen = loadedScreens[key]
         return (if (cachedScreen != null) {
             Single.just(cachedScreen)
         } else {
             loadSubscriptionScreen(type, id)
-        }).timeout(timeoutMs, TimeUnit.MILLISECONDS, Schedulers.computation())
-                .map {
+        }).map {
                     SubscriptionScreen(
                             id = it.id,
                             name = it.name,
                             screenHtml = it.screenHtml
                     )
                 }
-                .onErrorResumeNext {
-                    fileStore.getSubscriptionScreen()
-                }
 
     }
+
+    override fun getFallbackScreen(): Single<SubscriptionScreen> =
+            fileStore.getSubscriptionScreen()
 
     override fun getSubscriptionState(): Single<SubscriptionState> =
             deviceDao.requireUserId()

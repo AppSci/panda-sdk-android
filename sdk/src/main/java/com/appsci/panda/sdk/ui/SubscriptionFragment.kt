@@ -73,6 +73,8 @@ class SubscriptionFragment : Fragment(R.layout.panda_fragment_subscription) {
         super.onViewCreated(view, savedInstanceState)
         webView.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.panda_screen_bg))
         webView.settings.javaScriptEnabled = true
+        webView.isHorizontalScrollBarEnabled = false
+        webView.isVerticalScrollBarEnabled = false
         webView.webViewClient = object : WebViewClient() {
 
             override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest): Boolean {
