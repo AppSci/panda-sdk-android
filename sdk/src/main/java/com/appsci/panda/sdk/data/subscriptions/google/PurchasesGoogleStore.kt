@@ -1,5 +1,6 @@
 package com.appsci.panda.sdk.data.subscriptions.google
 
+import com.android.billingclient.api.AcknowledgePurchaseParams
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.ConsumeParams
 import com.appsci.panda.sdk.data.subscriptions.PurchasesMapper
@@ -20,6 +21,8 @@ interface PurchasesGoogleStore {
     fun consumeProducts(): Completable
 
     fun fetchHistory(): Completable
+
+    fun acknowledge(): Completable
 
 }
 
@@ -61,5 +64,22 @@ class PurchasesGoogleStoreImpl(
                 .ignoreElement()
                 .observeOn(Schedulers.io())
     }
+
+    override fun acknowledge(): Completable =
+            rxBilling.getPurchases(BillingClient.SkuType.SUBS)
+                    .flatMap { subscriptions ->
+                        rxBilling.getPurchases(BillingClient.SkuType.INAPP)
+                                .map { products ->
+                                    subscriptions + products
+                                }
+                    }.map { it.filter { !it.isAcknowledged } }
+                    .flatMapPublisher { Flowable.fromIterable(it) }
+                    .flatMapCompletable {
+                        rxBilling.acknowledge(AcknowledgePurchaseParams
+                                .newBuilder()
+                                .setPurchaseToken(it.purchaseToken)
+                                .build())
+                    }
+                    .observeOn(Schedulers.io())
 
 }

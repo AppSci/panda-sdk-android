@@ -8,12 +8,11 @@ import com.appsci.panda.sdk.data.subscriptions.local.PurchasesLocalStore
 import com.appsci.panda.sdk.data.subscriptions.rest.PurchasesRestStore
 import com.appsci.panda.sdk.data.subscriptions.rest.ScreenResponse
 import com.appsci.panda.sdk.domain.subscriptions.*
-import com.appsci.panda.sdk.domain.utils.rx.Schedulers
+import com.appsci.panda.sdk.domain.utils.rx.DefaultCompletableObserver
 import io.reactivex.Completable
 import io.reactivex.Flowable
 import io.reactivex.Single
 import timber.log.Timber
-import java.util.concurrent.TimeUnit
 
 class SubscriptionsRepositoryImpl(
         private val localStore: PurchasesLocalStore,
@@ -30,6 +29,9 @@ class SubscriptionsRepositoryImpl(
     override fun sync(): Completable {
         return fetchHistory()
                 .andThen(saveGooglePurchases())
+                .doOnComplete {
+                    acknowledge()
+                }
                 .andThen(deviceDao.requireUserId())
                 .flatMapCompletable { userId ->
                     localStore.getNotSentPurchases()
@@ -45,6 +47,7 @@ class SubscriptionsRepositoryImpl(
     }
 
     override fun validatePurchase(purchase: Purchase): Single<Boolean> {
+
         return saveGooglePurchases()
                 .andThen(deviceDao.requireUserId())
                 .flatMap {
@@ -52,6 +55,8 @@ class SubscriptionsRepositoryImpl(
                             .doOnSuccess {
                                 localStore.markSynced(purchase.id)
                             }
+                }.doAfterSuccess {
+                    acknowledge()
                 }
     }
 
@@ -95,12 +100,12 @@ class SubscriptionsRepositoryImpl(
         } else {
             loadSubscriptionScreen(type, id)
         }).map {
-                    SubscriptionScreen(
-                            id = it.id,
-                            name = it.name,
-                            screenHtml = it.screenHtml
-                    )
-                }
+            SubscriptionScreen(
+                    id = it.id,
+                    name = it.name,
+                    screenHtml = it.screenHtml
+            )
+        }
 
     }
 
@@ -118,6 +123,11 @@ class SubscriptionsRepositoryImpl(
                 }.doOnError {
                     Timber.e(it)
                 }
+    }
+
+    private fun acknowledge() {
+        googleStore.acknowledge()
+                .subscribe(DefaultCompletableObserver())
     }
 
     private fun saveGooglePurchases(): Completable {

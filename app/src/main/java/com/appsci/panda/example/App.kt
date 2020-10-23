@@ -2,6 +2,7 @@ package com.appsci.panda.example
 
 import android.app.Application
 import com.appsci.panda.sdk.Panda
+import com.appsci.panda.sdk.domain.utils.rx.DefaultSingleObserver
 import com.facebook.stetho.Stetho
 import timber.log.Timber
 
@@ -13,5 +14,6 @@ class App : Application() {
         }
         Stetho.initializeWithDefaults(this)
         Panda.configure(this, BuildConfig.PANDA_API_KEY, true)
+                .subscribe(DefaultSingleObserver())
     }
 }
