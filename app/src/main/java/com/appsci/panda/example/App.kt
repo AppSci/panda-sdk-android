@@ -13,7 +13,7 @@ class App : Application() {
             Timber.plant(Timber.DebugTree())
         }
         Stetho.initializeWithDefaults(this)
-        Panda.configure(this, BuildConfig.PANDA_API_KEY, true)
+        Panda.configureRx(this, BuildConfig.PANDA_API_KEY, true)
                 .subscribe(DefaultSingleObserver())
     }
 }

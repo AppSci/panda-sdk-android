@@ -55,7 +55,7 @@ object Panda {
             debug: Boolean = BuildConfig.DEBUG,
             onSuccess: ((String) -> Unit)? = null,
             onError: ((Throwable) -> Unit)? = null
-    ) = configure(context, apiKey, debug)
+    ) = configureRx(context, apiKey, debug)
             .doOnSuccess { onSuccess?.invoke(it) }
             .doOnError { onError?.invoke(it) }
             .subscribe(DefaultSingleObserver())
@@ -64,7 +64,7 @@ object Panda {
      * Call this function on App start to configure Panda SDK
      */
     @kotlin.jvm.JvmStatic
-    fun configure(
+    fun configureRx(
             context: Context,
             apiKey: String,
             debug: Boolean = BuildConfig.DEBUG
