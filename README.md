@@ -45,39 +45,37 @@ If you wanna prefetch screen to ensure that it will be ready before displaying i
 func prefetchScreen(type: ScreenType?, id: String?, onSuccess: ((Fragment) -> Unit)?, onError: ((Throwable) -> Unit)?)
 ```
 
-//TODO
-
 We recommend you prefetch screen right after Panda SDK is configured:
 
-```swift
-func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-    // Override point for customization after application launch.
-    Panda.configure(token: YOUR_SDK_TOKEN, isDebug: true) { (result) in
-        print("Configured: \(result)")
-        if configured {
-            Panda.shared.prefetchScreen(screenId: YOUR_SCREEN_ID)
-        }
-    }
-    return true
+```
+override fun onCreate() {
+    Panda.configureRx(application, BuildConfig.PANDA_API_KEY, BuildConfig.DEBUG)
+                .flatMapCompletable { Panda.prefetchSubscriptionScreenRx() }
+                .subscribe(DefaultCompletableObserver())
 }
 ```
 
-You can use Default screen in case of any errors - e.g. no inet connection - if you want, you can embed "PandaSDK-Default.html" screen in bundle - name is critical  - it should be named exactly "PandaSDK-Default.html" - we will use it for displaying this screen in case of any errors
+PandaSDK uses Default screen in case of any errors - e.g. no inet connection - you should add "panda-index.html" screen in assets folder - name is critical  - it should be named exactly "panda-index.html" - we will use it for displaying this screen in case of any errors
 
 
-## Plist structure
+## Resources
 
-To have all set, you need to add this info in your `PandaSDK-Info.plist` - you can create it by your own or download  `PandaSDK-Info.plist` from Example - structure of `PandaSDK-Info.plist` is crutial, please, add 
+To have all set, you need to add this info in your strings resources file - you can create it by your own or download  `panda-strings.xml` from Example - resourcess are mandatory and names are critical
 
-| Plist property   | value                                        |                                                    |
-|------------------|----------------------------------------------|----------------------------------------------------|
-| BILLING_URL      | https://apps.apple.com/account/billing       | add your URL for Billing page or leave it as it is |
-| POLICY_URL       | https://policy.com                           | add your URL for Policy & Privacy page             |
-| TERMS_URL        | https://terms.html                           | add your URL for Terms & Conditions page           |
-| SERVER_URL       | https://sdk-api.panda.boosters.company       | URL of Panda Server - please, do not remove         |
-| SERVER_URL_DEBUG | https://sdk-api.panda-stage.boosters.company | Debug URL of Panda Server - please, do not remove   |
-| productIds       | Array                                        | Array of your Purchase product ids                 |
-
+```
+<resources>
+    <string-array name="panda_subscriptions">
+        <item>your_subscription_1</item>
+        <item>your_subscription_2</item>
+    </string-array>
+    <string-array name="panda_products">
+        <item>your_product_1</item>
+        <item>your_product_2</item>
+    </string-array>
+    <string name="panda_policy_url">https://policy.com/</string>
+    <string name="panda_terms_url">https://terms.html</string>
+</resources>
+```
 
 ## Handle Subscriptions
 
@@ -85,64 +83,56 @@ Panda SDK provides a set of methods to manage subscriptions.
 
 ### Fetch Products
 
-Panda SDK automatically fetches SKProduct objects upon launch. Products identifiers must be added in "PandaSDK-Info.plist". You can download example for .plist from Example app in Source code.
-
+Panda SDK automatically fetches google purchases upon launch and verifies them on server. You can call 'sync' function if user made purchase out of Panda SDK: 
+```
+Panda.syncSubscriptions()
+```
 ### Make a Purchase
 
 To make a purchase - you are creating html with products_ids for Purchases - Panda SDK upon clicking on concreate button or view gets this product_id for purchase & you just need to implement callbacks for successful purchase or error :
 
-```swift
-var onPurchase: ((String) -> Void)? { get set }
-var onError: ((Error) -> Void)? { get set }
+```
+private val listener = object : PandaListener {
+        override fun onDismissClick() {
+        }
+
+        override fun onError(t: Throwable) {
+        }
+
+        override fun onPurchase(id: String) {  
+        }
+
+        override fun onRestore(ids: List<String>) {
+        }
+    }
+    
+    override fun onStart() { 
+        super.onStart()
+        Panda.addListener(listener)
+    }
+
+    override fun onStop() {
+        Panda.removeListener(listener)
+        super.onStop()
+    }
 ```
 
 ### Restore Purchases
 
- Restore Purchase is called when user tap on `Restore purchase` button on html screen. You can handle this restore by implementing this callback
- Returns product_id for Restore Purchase
+ Restore Purchase is called when user tap on `Restore purchase` button on html screen. You can handle this restore by implementing callback
+ ```
+ fun onRestore(ids: List<String>)
+ ```
 
-```swift
-var onRestorePurchase: ((String) -> Void)? { get set }
-```
-
-Basically it just sends App Store Receipt to AppStore .
+Basically it just fetches google purchases and sends to backend.
 
 ### Skipping Purchase Process
 You can allow your users to skip all purchase process - when user tap cross on Screen, you can allow user to go futher into your app - this callback is called 
 
-```swift
-var onDismiss: (() -> Void)? { get set }
 ```
-## Push Notification Support
-
-You can add push motification support from Panda - so your app will react on Apple Subscription Events - e.g. User can recieve notification in case on Subscription Cancellation
-
-To register User for Push notification add this in your AppDelegate
-
-```swift
-func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-    Panda.shared.registerDevice(token: deviceToken)
-}
+fun onDismissClick()
 ```
 
-Than add this line in your UNUserNotificationCenterDelegate: 
-
-```swift
-func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-    if Panda.shared.userNotificationCenter(center, willPresent: notification, withCompletionHandler: completionHandler) {
-        return
-    }
-    completionHandler([])
-}
-
-
-func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
-    if Panda.shared.userNotificationCenter(center, didReceive: response, withCompletionHandler: completionHandler) {
-        return
-    }
-    completionHandler()
-}
-```
 ## Having troubles?
 
 If you have any questions or troubles with SDK integration feel free to contact us. We are online.
