@@ -39,10 +39,12 @@ For getting screen from Panda Web you should use
 func getScreen(type: ScreenType?, id: String?, onSuccess: ((Fragment) -> Unit)?, onError: ((Throwable) -> Unit)?)
 ```
 
+It returns Fragment with you subscription screen. Just add this fragment to you activity or another Fragment.
+
 If you wanna prefetch screen to ensure that it will be ready before displaying it, you can use 
 
 ```
-func prefetchScreen(type: ScreenType?, id: String?, onSuccess: ((Fragment) -> Unit)?, onError: ((Throwable) -> Unit)?)
+func prefetchScreen(type: ScreenType?, id: String?, onComplete: (() -> Unit)?, onError: ((Throwable) -> Unit)?)
 ```
 
 We recommend you prefetch screen right after Panda SDK is configured:
