@@ -26,7 +26,7 @@ To set up Panda SDK you will need API Key. [Register](https://app.panda.boosters
 class App : Application() {
     override fun onCreate() {
         super.onCreate()
-        Panda.configure(this, BuildConfig.PANDA_API_KEY, true)
+        Panda.configure(application, BuildConfig.PANDA_API_KEY, BuildConfig.DEBUG)
     }
 }
 
