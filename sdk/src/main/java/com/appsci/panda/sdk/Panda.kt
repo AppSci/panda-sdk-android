@@ -5,7 +5,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.webkit.WebView
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.android.billingclient.api.BillingClient
 import com.appsci.panda.sdk.domain.subscriptions.Purchase
@@ -213,14 +212,13 @@ object Panda {
     fun prefetchSubscriptionScreenRx(type: ScreenType? = null, id: String? = null): Completable =
             panda.prefetchSubscriptionScreen(type, id)
                     .subscribeOn(Schedulers.io())
-                    .observeOn(Schedulers.mainThread())
                     .doOnSuccess {
                         WebView(context).apply {
-                            setBackgroundColor(ContextCompat.getColor(context, R.color.panda_screen_bg))
                             settings.javaScriptEnabled = true
                             loadDataWithBaseURL("file:///android_asset/", it.screenHtml, null, null, null)
                         }
                     }
+                    .observeOn(Schedulers.mainThread())
                     .ignoreElement()
 
     /**
