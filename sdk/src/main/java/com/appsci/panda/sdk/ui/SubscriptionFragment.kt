@@ -9,6 +9,7 @@ import android.view.View
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.activity.OnBackPressedCallback
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
@@ -18,8 +19,6 @@ import com.appsci.panda.sdk.R
 import com.appsci.panda.sdk.domain.subscriptions.SubscriptionScreen
 import com.appsci.panda.sdk.domain.utils.rx.DefaultCompletableObserver
 import com.appsci.panda.sdk.domain.utils.rx.DefaultSingleObserver
-import com.appsci.panda.sdk.domain.utils.rx.Schedulers
-import com.gen.rxbilling.client.RxBilling
 import com.gen.rxbilling.flow.BuyItemRequest
 import com.gen.rxbilling.flow.RxBillingFlow
 import com.gen.rxbilling.flow.delegate.FragmentFlowDelegate
@@ -34,9 +33,6 @@ class SubscriptionFragment : Fragment(R.layout.panda_fragment_subscription) {
 
     @Inject
     lateinit var billingFlow: RxBillingFlow
-
-    @Inject
-    lateinit var billing: RxBilling
 
     private val disposeOnDestroyView = CompositeDisposable()
 
@@ -65,23 +61,20 @@ class SubscriptionFragment : Fragment(R.layout.panda_fragment_subscription) {
         super.onCreate(savedInstanceState)
         Panda.pandaComponent.inject(this)
         lifecycle.addObserver(BillingConnectionManager(billingFlow))
-        lifecycle.addObserver(BillingConnectionManager(billing))
+        requireActivity().onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                Panda.onDismiss(screenExtra)
+            }
+        })
     }
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        disposeOnDestroyView.add(
-                billing.observeUpdates()
-                        .observeOn(Schedulers.mainThread())
-                        .subscribe({
-                            Timber.d("observeUpdates ${it.purchases}")
-                        }, {
-                            Timber.e(it)
-                        })
-        )
         webView.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.panda_screen_bg))
         webView.settings.javaScriptEnabled = true
+        webView.isHorizontalScrollBarEnabled = false
+        webView.isVerticalScrollBarEnabled = false
         webView.webViewClient = object : WebViewClient() {
 
             override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest): Boolean {
@@ -96,6 +89,7 @@ class SubscriptionFragment : Fragment(R.layout.panda_fragment_subscription) {
 
         }
         webView.loadDataWithBaseURL("file:///android_asset/", screenExtra.html, null, null, null)
+        Panda.screenShowed(screenExtra)
     }
 
     override fun onDestroyView() {
@@ -109,9 +103,15 @@ class SubscriptionFragment : Fragment(R.layout.panda_fragment_subscription) {
             val type = rcToType.getValue(requestCode)
             disposeOnDestroyView.add(
                     billingFlow.handleActivityResult(data)
-                            .subscribe({
-                                Panda.onPurchase(it, type)
+                            .flatMap {
                                 Timber.d("handleActivityResult $it")
+                                loading.visibility = View.VISIBLE
+                                Panda.onPurchase(screenExtra, it, type)
+                                        .doAfterTerminate {
+                                            loading.visibility = View.GONE
+                                        }
+                            }.subscribe({
+                                Timber.d("onPurchase success=$it")
                             }, {
                                 Panda.onError(it)
                                 Timber.e(it)
@@ -129,11 +129,13 @@ class SubscriptionFragment : Fragment(R.layout.panda_fragment_subscription) {
             }
             url.contains("/subscription?type=terms") -> {
                 Timber.d("terms click")
+                Panda.onTermsClick()
                 openExternalUrl(getString(R.string.panda_terms_url))
                 true
             }
             url.contains("/subscription?type=policy") -> {
                 Timber.d("policy click")
+                Panda.onPolicyClick()
                 openExternalUrl(getString(R.string.panda_policy_url))
                 true
             }
@@ -143,7 +145,7 @@ class SubscriptionFragment : Fragment(R.layout.panda_fragment_subscription) {
             }
             url.contains("/dismiss?type=dismiss") -> {
                 Timber.d("dismiss click")
-                Panda.onDismiss()
+                Panda.onDismiss(screenExtra)
                 true
             }
             else -> false
@@ -152,7 +154,7 @@ class SubscriptionFragment : Fragment(R.layout.panda_fragment_subscription) {
 
     private fun restore() {
         loading.visibility = View.VISIBLE
-        Panda.restore()
+        Panda.restore(screenExtra)
                 .doOnSuccess {
                     Timber.d("restore $it")
                 }
@@ -165,10 +167,16 @@ class SubscriptionFragment : Fragment(R.layout.panda_fragment_subscription) {
     private fun purchaseClick(url: String) {
         val subscriptions = resources.getStringArray(R.array.panda_subscriptions)
         val products = resources.getStringArray(R.array.panda_products)
-//        val id = url.toUri().getQueryParameter("product_id")!!
-        val id = subscriptions.first()
+        val id = url.toUri().getQueryParameter("product_id")!!
+        Panda.subscriptionSelect(screenExtra, id)
         Timber.d("purchase click $id")
-        val type = BillingClient.SkuType.SUBS
+
+        val type = when {
+            products.contains(id) -> {
+                BillingClient.SkuType.INAPP
+            }
+            else -> BillingClient.SkuType.SUBS
+        }
         val rc = rcToType.entries.first {
             it.value == type
         }.key

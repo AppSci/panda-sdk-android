@@ -5,13 +5,25 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.appsci.panda.sdk.Panda
+import com.appsci.panda.sdk.PandaEvent
+import com.appsci.panda.sdk.SimplePandaListener
 import com.appsci.panda.sdk.domain.utils.rx.DefaultSingleObserver
+import timber.log.Timber
 
 class GetScreenActivity : AppCompatActivity() {
 
     companion object {
         fun createIntent(activity: Activity) =
                 Intent(activity, GetScreenActivity::class.java)
+    }
+
+    private val analyticsListener: (PandaEvent) -> Unit = {
+        Timber.d("PandaEvent $it")
+    }
+    private val pandaListener = object : SimplePandaListener() {
+        override fun onDismissClick() {
+            finish()
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -24,5 +36,14 @@ class GetScreenActivity : AppCompatActivity() {
                             .commitNow()
                 }
                 .subscribe(DefaultSingleObserver())
+
+        Panda.addAnalyticsListener(analyticsListener)
+        Panda.addListener(pandaListener)
+    }
+
+    override fun onDestroy() {
+        Panda.removeAnalyticsListener(analyticsListener)
+        Panda.removeListener(pandaListener)
+        super.onDestroy()
     }
 }

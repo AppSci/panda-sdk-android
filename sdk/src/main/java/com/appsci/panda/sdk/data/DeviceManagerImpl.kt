@@ -10,7 +10,7 @@ import com.google.android.gms.ads.identifier.AdvertisingIdClient
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException
 import com.google.android.gms.common.GooglePlayServicesRepairableException
 import com.google.android.gms.tasks.Tasks
-import com.google.firebase.iid.FirebaseInstanceId
+import com.google.firebase.messaging.FirebaseMessaging
 import timber.log.Timber
 import java.io.IOException
 import java.util.*
@@ -45,7 +45,7 @@ class DeviceManagerImpl constructor(
 
     override fun getFcmToken(): String? =
             try {
-                Tasks.await(FirebaseInstanceId.getInstance().instanceId).token
+                Tasks.await(FirebaseMessaging.getInstance().token)
             } catch (e: Exception) {
                 null
             }

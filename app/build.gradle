@@ -59,8 +59,6 @@ dependencies {
     implementation dataDependencies.roomRxJava
     kapt dataDependencies.roomCompiler
 
-    implementation "androidx.startup:startup-runtime:1.0.0-beta01"
-
     implementation supportDependencies.support
     implementation supportDependencies.transition
     implementation supportDependencies.design
@@ -81,8 +79,6 @@ dependencies {
     releaseImplementation developmentDependencies.chuckNoOp
 
     implementation 'androidx.appcompat:appcompat:1.2.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.2'
-    testImplementation 'junit:junit:4.13'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
 

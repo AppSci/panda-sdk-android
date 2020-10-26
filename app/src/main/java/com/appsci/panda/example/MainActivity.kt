@@ -27,7 +27,7 @@ class MainActivity : AppCompatActivity() {
             startActivity(GetScreenActivity.createIntent(this))
         }
 
-        Panda.setCustomUserId(id="super-unique-custom-id")
+        Panda.setCustomUserId(id = "super-unique-custom-id")
 
         Panda.getSubscriptionStateRx()
                 .doOnSuccess {
@@ -35,7 +35,8 @@ class MainActivity : AppCompatActivity() {
                 }
                 .doOnError { Timber.e(it) }
                 .subscribe(DefaultSingleObserver())
-        Panda.prefetchSubscriptionScreen()
+        Panda.prefetchSubscriptionScreenRx()
+                .subscribe(DefaultCompletableObserver())
 
         Panda.addErrorListener(onError)
     }

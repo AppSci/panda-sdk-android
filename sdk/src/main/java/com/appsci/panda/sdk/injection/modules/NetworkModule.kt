@@ -1,6 +1,7 @@
 package com.appsci.panda.sdk.injection.modules
 
 import android.content.Context
+import android.content.pm.ApplicationInfo
 import com.appsci.panda.sdk.BuildConfig
 import com.appsci.panda.sdk.data.network.HeaderInterceptor
 import com.appsci.panda.sdk.data.network.RestApi
@@ -50,13 +51,15 @@ class NetworkModule(
     @Provides
     @Singleton
     fun provideOkHttpClient(
+            context: Context,
             cache: Cache,
             httpLoggingInterceptor: HttpLoggingInterceptor,
             deviceManager: DeviceManager
     ): OkHttpClient {
 
         val clientBuilder = OkHttpClient.Builder()
-        if (debug) {
+        val isDebuggable = context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
+        if (isDebuggable) {
             clientBuilder
                     .addNetworkInterceptor(httpLoggingInterceptor)
         }

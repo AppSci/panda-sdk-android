@@ -36,6 +36,9 @@ class DeviceRepositoryImpl @Inject constructor(
      */
     private val ensureAuthorizedSingle = createEnsureAuthObservable().shareSingle()
 
+    override val pandaUserId: String?
+        get() = preferences.pandaUserId
+
     /**
      *  perform device authorization, or update device if changed, or returns existing device from local storage
      */
@@ -82,7 +85,10 @@ class DeviceRepositoryImpl @Inject constructor(
             Timber.d("registerDevice $authData")
             return@defer restApi.registerDevice(deviceMapper.mapToRequest(authData))
                     .map { deviceMapper.mapToLocal(it, authData) }
-                    .doOnSuccess { deviceDao.putDevice(it) }
+                    .doOnSuccess {
+                        preferences.pandaUserId = it.id
+                        deviceDao.putDevice(it)
+                    }
                     .doOnError { Timber.e(it) }
                     .map { deviceMapper.mapToDomain(it) }
         }
@@ -98,7 +104,10 @@ class DeviceRepositoryImpl @Inject constructor(
             } else {
                 return@defer restApi.updateDevice(deviceMapper.mapToRequest(authData), deviceEntity.id)
                         .map { deviceMapper.mapToLocal(it, authData) }
-                        .doOnSuccess { deviceDao.putDevice(it) }
+                        .doOnSuccess {
+                            preferences.pandaUserId = it.id
+                            deviceDao.putDevice(it)
+                        }
                         .map { deviceMapper.mapToDomain(it) }
             }
         }.onErrorReturn { deviceMapper.mapToDomain(deviceEntity) }

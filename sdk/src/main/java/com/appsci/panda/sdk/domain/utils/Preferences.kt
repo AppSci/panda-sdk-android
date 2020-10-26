@@ -4,5 +4,7 @@ interface Preferences {
 
     var startVersion: String?
 
-    var customUserId : String?
+    var customUserId: String?
+
+    var pandaUserId: String?
 }

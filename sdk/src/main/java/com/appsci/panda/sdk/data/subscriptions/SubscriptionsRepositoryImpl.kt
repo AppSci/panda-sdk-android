@@ -8,12 +8,11 @@ import com.appsci.panda.sdk.data.subscriptions.local.PurchasesLocalStore
 import com.appsci.panda.sdk.data.subscriptions.rest.PurchasesRestStore
 import com.appsci.panda.sdk.data.subscriptions.rest.ScreenResponse
 import com.appsci.panda.sdk.domain.subscriptions.*
-import com.appsci.panda.sdk.domain.utils.rx.Schedulers
+import com.appsci.panda.sdk.domain.utils.rx.DefaultCompletableObserver
 import io.reactivex.Completable
 import io.reactivex.Flowable
 import io.reactivex.Single
 import timber.log.Timber
-import java.util.concurrent.TimeUnit
 
 class SubscriptionsRepositoryImpl(
         private val localStore: PurchasesLocalStore,
@@ -30,6 +29,9 @@ class SubscriptionsRepositoryImpl(
     override fun sync(): Completable {
         return fetchHistory()
                 .andThen(saveGooglePurchases())
+                .doOnComplete {
+                    acknowledge()
+                }
                 .andThen(deviceDao.requireUserId())
                 .flatMapCompletable { userId ->
                     localStore.getNotSentPurchases()
@@ -45,6 +47,7 @@ class SubscriptionsRepositoryImpl(
     }
 
     override fun validatePurchase(purchase: Purchase): Single<Boolean> {
+
         return saveGooglePurchases()
                 .andThen(deviceDao.requireUserId())
                 .flatMap {
@@ -52,6 +55,8 @@ class SubscriptionsRepositoryImpl(
                             .doOnSuccess {
                                 localStore.markSynced(purchase.id)
                             }
+                }.doAfterSuccess {
+                    acknowledge()
                 }
     }
 
@@ -76,19 +81,8 @@ class SubscriptionsRepositoryImpl(
             googleStore.consumeProducts()
                     .andThen(googleStore.fetchHistory())
 
-    override fun prefetchSubscriptionScreen(type: ScreenType?, id: String?): Completable {
+    override fun prefetchSubscriptionScreen(type: ScreenType?, id: String?): Single<SubscriptionScreen> {
         return loadSubscriptionScreen(type, id)
-                .ignoreElement()
-    }
-
-    override fun getSubscriptionScreen(type: ScreenType?, id: String?, timeoutMs: Long): Single<SubscriptionScreen> {
-        val key = ScreenKey(id = id, type = type)
-        val cachedScreen = loadedScreens[key]
-        return (if (cachedScreen != null) {
-            Single.just(cachedScreen)
-        } else {
-            loadSubscriptionScreen(type, id)
-        }).timeout(timeoutMs, TimeUnit.MILLISECONDS, Schedulers.computation())
                 .map {
                     SubscriptionScreen(
                             id = it.id,
@@ -96,11 +90,27 @@ class SubscriptionsRepositoryImpl(
                             screenHtml = it.screenHtml
                     )
                 }
-                .onErrorResumeNext {
-                    fileStore.getSubscriptionScreen()
-                }
+    }
+
+    override fun getSubscriptionScreen(type: ScreenType?, id: String?): Single<SubscriptionScreen> {
+        val key = ScreenKey(id = id, type = type)
+        val cachedScreen = loadedScreens[key]
+        return (if (cachedScreen != null) {
+            Single.just(cachedScreen)
+        } else {
+            loadSubscriptionScreen(type, id)
+        }).map {
+            SubscriptionScreen(
+                    id = it.id,
+                    name = it.name,
+                    screenHtml = it.screenHtml
+            )
+        }
 
     }
+
+    override fun getFallbackScreen(): Single<SubscriptionScreen> =
+            fileStore.getSubscriptionScreen()
 
     override fun getSubscriptionState(): Single<SubscriptionState> =
             deviceDao.requireUserId()
@@ -113,6 +123,11 @@ class SubscriptionsRepositoryImpl(
                 }.doOnError {
                     Timber.e(it)
                 }
+    }
+
+    private fun acknowledge() {
+        googleStore.acknowledge()
+                .subscribe(DefaultCompletableObserver())
     }
 
     private fun saveGooglePurchases(): Completable {
@@ -130,6 +145,7 @@ class SubscriptionsRepositoryImpl(
     }
 
     private fun loadSubscriptionScreen(type: ScreenType?, id: String?): Single<ScreenResponse> {
+        Timber.d("loadSubscriptionScreen $type\n$id")
         val key = ScreenKey(id = id, type = type)
         return deviceDao.requireUserId()
                 .flatMap {
