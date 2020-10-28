@@ -84,11 +84,6 @@ object Panda {
         panda = wrapper.panda
         panda.start()
 
-        panda.syncSubscriptions()
-                .subscribeOn(Schedulers.io())
-                .observeOn(Schedulers.mainThread())
-                .subscribe(DefaultCompletableObserver())
-
         return panda.authorize()
                 .subscribeOn(Schedulers.io())
                 .doOnSuccess {
