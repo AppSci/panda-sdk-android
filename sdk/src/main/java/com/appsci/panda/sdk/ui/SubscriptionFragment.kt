@@ -154,14 +154,16 @@ class SubscriptionFragment : Fragment(R.layout.panda_fragment_subscription) {
 
     private fun restore() {
         loading.visibility = View.VISIBLE
-        Panda.restore(screenExtra)
-                .doOnSuccess {
-                    Timber.d("restore $it")
-                }
-                .doAfterTerminate {
-                    loading.visibility = View.GONE
-                }
-                .subscribe(DefaultSingleObserver())
+        disposeOnDestroyView.add(
+                Panda.restore(screenExtra)
+                        .doOnSuccess {
+                            Timber.d("restore $it")
+                        }
+                        .doAfterTerminate {
+                            loading.visibility = View.GONE
+                        }
+                        .subscribeWith(DefaultSingleObserver())
+        )
     }
 
     private fun purchaseClick(url: String) {
