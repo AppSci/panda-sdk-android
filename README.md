@@ -83,12 +83,7 @@ To have all set, you need to add this info in your strings resources file - you 
 
 Panda SDK provides a set of methods to manage subscriptions. 
 
-### Fetch Products
 
-Panda SDK automatically fetches google purchases upon launch and verifies them on server. You can call 'sync' function if user made purchase out of Panda SDK: 
-```
-Panda.syncSubscriptions()
-```
 ### Make a Purchase
 
 To make a purchase - you are creating html with products_ids for Purchases - Panda SDK upon clicking on concreate button or view gets this product_id for purchase & you just need to implement callbacks for successful purchase or error :
@@ -117,6 +112,13 @@ private val listener = object : PandaListener {
         Panda.removeListener(listener)
         super.onStop()
     }
+```
+
+### Sync Purchases
+
+You can call 'sync' function if user made purchase out of Panda SDK: 
+```
+Panda.syncSubscriptions()
 ```
 
 ### Restore Purchases
