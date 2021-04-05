@@ -29,6 +29,8 @@ data class DeviceRequest(
         val pushToken: String? = null,
         @SerializedName("custom_user_id")
         val customUserId: String? = null,
+        @SerializedName("appsflyer_id")
+        val appsflyerId: String? = null,
         @SerializedName("time_zone")
         val idfv: String? = null
 )

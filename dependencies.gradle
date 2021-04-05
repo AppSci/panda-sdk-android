@@ -111,8 +111,9 @@ ext {
     threetenJavaVer = '1.4.0'
 
     // Unit-tests
-    jUnitVer = '4.13.1'
-    mockitoVer = '3.0.0'
+    jUnitVer = '4.13.2'
+    jupiterVer = '5.7.1'
+    mockitoVer = '3.8.0'
     mockitoKotlinVer = '2.1.0'
     mockitoAndroidVer = '2.28.2'
     jacocoVer = '0.1.2'
@@ -199,7 +200,11 @@ ext {
             assertJ           : "org.assertj:assertj-core:$assertJVer",
             dataProvider      : "com.tngtech.junit.dataprovider:junit4-dataprovider:$dataProviderVer",
             archComponentsTest: "androidx.arch.core:core-testing:$archComponentsTestVer",
-            threeten          : "org.threeten:threetenbp:$threetenJavaVer"
+            threeten          : "org.threeten:threetenbp:$threetenJavaVer",
+            jupiterApi        : "org.junit.jupiter:junit-jupiter-api:$jupiterVer",
+            jupiterEngine     : "org.junit.jupiter:junit-jupiter-engine:$jupiterVer",
+            jupiterParams     : "org.junit.jupiter:junit-jupiter-params:$jupiterVer",
+            vintageEngine     : "org.junit.vintage:junit-vintage-engine:$jupiterVer"
     ]
 
     androidTestDependencies = [

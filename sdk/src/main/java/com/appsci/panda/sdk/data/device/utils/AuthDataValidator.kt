@@ -13,6 +13,7 @@ class AuthDataValidatorImpl @Inject constructor() : AuthDataValidator {
     override fun isDeviceValid(device: DeviceEntity, authData: AuthorizationData): Boolean {
 
         return device.customUserId == authData.customUserId
+                && device.appsflyerId == authData.appsflyerId
                 && device.pushToken == authData.pushToken
                 && device.idfa == authData.idfa
                 && device.timeZone == authData.timeZone

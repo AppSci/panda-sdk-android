@@ -14,5 +14,6 @@ data class AuthorizationData(
         val pushToken: String? = null,
         val deviceModel: String,
         val platform: String = "Android",
-        val customUserId: String? = null
+        val customUserId: String? = null,
+        val appsflyerId: String? = null
 )

@@ -122,4 +122,14 @@ class DeviceRepositoryImpl @Inject constructor(
                     .flatMapSingleElement { updateDevice(it) }
         }.ignoreElement()
     }
+
+    override fun setAppsflyerId(id: String): Completable {
+        Timber.d("setAppsflyerId")
+        if (preferences.appsflyerId == id) return Completable.complete()
+        return Maybe.defer {
+            preferences.appsflyerId = id
+            deviceDao.selectDevice()
+                    .flatMapSingleElement { updateDevice(it) }
+        }.ignoreElement()
+    }
 }

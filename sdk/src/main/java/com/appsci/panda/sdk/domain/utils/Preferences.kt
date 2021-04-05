@@ -6,5 +6,7 @@ interface Preferences {
 
     var customUserId: String?
 
+    var appsflyerId: String?
+
     var pandaUserId: String?
 }
