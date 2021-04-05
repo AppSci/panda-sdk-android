@@ -21,7 +21,9 @@ data class SubscriptionState(
             val mapSubscription: (SubscriptionResponse) -> Subscription = {
                 Subscription(
                         isTrial = it.isTrial,
-                        productId = it.productId
+                        productId = it.productId,
+                        subscriptionId = it.subscriptionId,
+                        state = it.state
                 )
             }
             return SubscriptionState(
@@ -67,6 +69,8 @@ data class Subscriptions(
 )
 
 data class Subscription(
+        val subscriptionId: String,
         val isTrial: Boolean,
-        val productId: String
+        val productId: String,
+        val state: String
 )
