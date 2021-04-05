@@ -19,6 +19,8 @@ data class SubscriptionsResponse(
 )
 
 data class SubscriptionResponse(
+        @SerializedName("subscription_id")
+        val subscriptionId: String,
         @SerializedName("is_trial_period")
         val isTrial: Boolean,
         @SerializedName("product_id")
