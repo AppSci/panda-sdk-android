@@ -4,16 +4,20 @@ apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 
 android {
-    compileSdkVersion 29
+    compileSdkVersion 30
     buildToolsVersion "29.0.3"
 
     resourcePrefix 'panda_'
 
+    sourceSets {
+        androidTest.assets.srcDirs += files("$projectDir/schemas".toString())
+    }
+
     defaultConfig {
         minSdkVersion 21
-        targetSdkVersion 29
+        targetSdkVersion 30
         versionCode 1
-        versionName "1.0.1"
+        versionName "1.1.0"
 
         buildConfigField "String", "PANDA_ENDPOINT_PROD", "\"https://api.panda.boosters.company/\""
         buildConfigField "String", "PANDA_ENDPOINT_STAGE", "\"https://api.panda-stage.boosters.company/\""
@@ -35,15 +39,6 @@ android {
                 obfuscate false
                 proguardFiles = ['proguard-android-optimize.txt', 'proguard-rules.pro']
             }
-        }
-    }
-
-    signingConfigs {
-        debug {
-            storeFile rootProject.file('debug.keystore')
-            keyAlias 'androiddebugkey'
-            keyPassword 'android'
-            storePassword 'android'
         }
     }
 
@@ -101,7 +96,17 @@ dependencies {
     implementation developmentDependencies.timber
 
 
+    testImplementation testDependencies.jupiterApi
+    testImplementation testDependencies.jupiterEngine
+    testImplementation testDependencies.jupiterParams
+
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+    androidTestImplementation androidTestDependencies.testRunner
+    androidTestImplementation androidTestDependencies.espressoCore
+    androidTestImplementation androidTestDependencies.supportAnnotations
+    androidTestImplementation androidTestDependencies.testRoom, {
+        exclude group: 'com.android.support'
+    }
 
 }

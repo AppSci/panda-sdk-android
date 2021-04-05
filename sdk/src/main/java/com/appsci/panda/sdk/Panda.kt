@@ -2,14 +2,11 @@ package com.appsci.panda.sdk
 
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.content.Context
+import android.app.Application
 import android.content.Intent
 import androidx.fragment.app.Fragment
 import com.android.billingclient.api.BillingClient
-import com.appsci.panda.sdk.domain.subscriptions.Purchase
-import com.appsci.panda.sdk.domain.subscriptions.ScreenType
-import com.appsci.panda.sdk.domain.subscriptions.SkuType
-import com.appsci.panda.sdk.domain.subscriptions.SubscriptionState
+import com.appsci.panda.sdk.domain.subscriptions.*
 import com.appsci.panda.sdk.domain.utils.rx.DefaultCompletableObserver
 import com.appsci.panda.sdk.domain.utils.rx.DefaultSchedulerProvider
 import com.appsci.panda.sdk.domain.utils.rx.DefaultSingleObserver
@@ -32,7 +29,7 @@ import com.android.billingclient.api.Purchase as GooglePurchase
 object Panda {
 
     private lateinit var panda: IPanda
-    private lateinit var context: Context
+    private lateinit var context: Application
     internal lateinit var pandaComponent: PandaComponent
 
     private val dismissListeners: MutableList<() -> Unit> = mutableListOf()
@@ -48,7 +45,7 @@ object Panda {
      */
     @kotlin.jvm.JvmStatic
     fun configure(
-            context: Context,
+            context: Application,
             apiKey: String,
             debug: Boolean = BuildConfig.DEBUG,
             onSuccess: ((String) -> Unit)? = null,
@@ -63,7 +60,7 @@ object Panda {
      */
     @kotlin.jvm.JvmStatic
     fun configureRx(
-            context: Context,
+            context: Application,
             apiKey: String,
             debug: Boolean = BuildConfig.DEBUG
     ): Single<String> {
@@ -112,12 +109,35 @@ object Panda {
             .subscribe(DefaultCompletableObserver())
 
     /**
+     * Set appsflyer id to current user
+     * @param id - your appsflyer Id,
+     */
+    @kotlin.jvm.JvmStatic
+    fun setAppsflyerId(id: String,
+                        onComplete: (() -> Unit)? = null,
+                        onError: ((Throwable) -> Unit)? = null
+    ) = setCustomUserIdRx(id)
+            .doOnComplete { onComplete?.invoke() }
+            .doOnError { onError?.invoke(it) }
+            .subscribe(DefaultCompletableObserver())
+
+    /**
      * Set custom user id to current user
      * @param id - your custom userId,
      */
     @kotlin.jvm.JvmStatic
     fun setCustomUserIdRx(id: String): Completable =
             panda.setCustomUserId(id)
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(Schedulers.mainThread())
+
+    /**
+     * Set appsflyer id to current user
+     * @param id - your appsflyer Id,
+     */
+    @kotlin.jvm.JvmStatic
+    fun setAppsflyerIdRx(id: String): Completable =
+            panda.setAppsflyerId(id)
                     .subscribeOn(Schedulers.io())
                     .observeOn(Schedulers.mainThread())
 

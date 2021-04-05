@@ -4,7 +4,6 @@ import com.appsci.panda.sdk.data.network.RestApi
 import com.appsci.panda.sdk.domain.subscriptions.Purchase
 import com.appsci.panda.sdk.domain.subscriptions.SkuType
 import com.appsci.panda.sdk.domain.subscriptions.SubscriptionState
-import io.reactivex.Completable
 import io.reactivex.Single
 
 interface PurchasesRestStore {
@@ -43,7 +42,7 @@ class PurchasesRestStoreImpl(
 
     override fun getSubscriptionState(userId: String): Single<SubscriptionState> =
             restApi.getSubscriptionStatus(userId)
-                    .map { SubscriptionState.map(it.state) }
+                    .map { SubscriptionState.map(it) }
 
     override fun getSubscriptionScreen(userId: String, type: String?, id: String?): Single<ScreenResponse> =
             restApi.getSubscriptionScreen(
