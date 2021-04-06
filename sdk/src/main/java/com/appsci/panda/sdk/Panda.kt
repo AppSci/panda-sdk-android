@@ -48,9 +48,15 @@ object Panda {
             context: Application,
             apiKey: String,
             debug: Boolean = BuildConfig.DEBUG,
+            appsflyerId: String? = null,
             onSuccess: ((String) -> Unit)? = null,
             onError: ((Throwable) -> Unit)? = null
-    ) = configureRx(context, apiKey, debug)
+    ) = configureRx(
+            context = context,
+            apiKey = apiKey,
+            debug = debug,
+            appsflyerId = appsflyerId
+    )
             .doOnSuccess { onSuccess?.invoke(it) }
             .doOnError { onError?.invoke(it) }
             .subscribe(DefaultSingleObserver())
@@ -62,7 +68,8 @@ object Panda {
     fun configureRx(
             context: Application,
             apiKey: String,
-            debug: Boolean = BuildConfig.DEBUG
+            debug: Boolean = BuildConfig.DEBUG,
+            appsflyerId: String? = null,
     ): Single<String> {
         this.context = context
         Schedulers.setInstance(DefaultSchedulerProvider())
@@ -80,6 +87,10 @@ object Panda {
         pandaComponent.inject(wrapper)
         panda = wrapper.panda
         panda.start()
+
+        appsflyerId?.let {
+            panda.saveAppsflyerId(appsflyerId)
+        }
 
         return panda.authorize()
                 .subscribeOn(Schedulers.io())
@@ -114,8 +125,8 @@ object Panda {
      */
     @kotlin.jvm.JvmStatic
     fun setAppsflyerId(id: String,
-                        onComplete: (() -> Unit)? = null,
-                        onError: ((Throwable) -> Unit)? = null
+                       onComplete: (() -> Unit)? = null,
+                       onError: ((Throwable) -> Unit)? = null
     ) = setCustomUserIdRx(id)
             .doOnComplete { onComplete?.invoke() }
             .doOnError { onError?.invoke(it) }

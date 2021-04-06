@@ -23,6 +23,11 @@ interface IPanda {
     fun getSubscriptionScreen(type: ScreenType? = null, id: String? = null, timeoutMs: Long = 5000L): Single<SubscriptionScreen>
     fun consumeProducts(): Completable
     fun setAppsflyerId(id: String): Completable
+
+    /**
+     * save appsflyer id in local storage, will be used in next update request
+     */
+    fun saveAppsflyerId(id: String)
 }
 
 class PandaImpl(
@@ -52,6 +57,10 @@ class PandaImpl(
     override fun setAppsflyerId(id: String): Completable  =
             deviceRepository.ensureAuthorized()
                     .andThen(deviceRepository.setAppsflyerId(id))
+
+    override fun saveAppsflyerId(id: String) {
+        preferences.appsflyerId = id
+    }
 
     override fun syncSubscriptions(): Completable {
         return deviceRepository.ensureAuthorized()
