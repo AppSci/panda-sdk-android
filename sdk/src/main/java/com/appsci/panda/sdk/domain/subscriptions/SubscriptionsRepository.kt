@@ -6,7 +6,7 @@ import io.reactivex.Single
 interface SubscriptionsRepository {
 
     /**
-     * returns [SubscriptionState] based on purchases from billing and local store
+     * returns [SubscriptionStatus] based on purchases from billing and local store
      */
     fun getSubscriptionState(): Single<SubscriptionState>
 

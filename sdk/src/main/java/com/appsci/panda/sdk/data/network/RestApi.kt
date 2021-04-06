@@ -37,12 +37,12 @@ interface RestApi {
     fun sendProduct(
             @Body request: ProductRequest,
             @Path("user_id") userId: String
-    ): Single<SubscriptionResponse>
+    ): Single<SendSubscriptionResponse>
 
     @POST("/v1/android/subscriptions/{user_id}")
     fun sendSubscription(
             @Body request: SubscriptionRequest,
             @Path("user_id") userId: String
-    ): Single<SubscriptionResponse>
+    ): Single<SendSubscriptionResponse>
 
 }
