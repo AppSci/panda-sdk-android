@@ -65,7 +65,8 @@ class DeviceMapperImpl @Inject constructor() : DeviceMapper {
                 platform = authData.platform,
                 pushToken = authData.pushToken,
                 timeZone = authData.timeZone,
-                customUserId = authData.customUserId
+                customUserId = authData.customUserId,
+                appsflyerId = authData.appsflyerId
         )
     }
 }
