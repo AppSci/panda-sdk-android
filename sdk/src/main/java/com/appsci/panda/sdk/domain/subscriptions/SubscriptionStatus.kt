@@ -8,8 +8,8 @@ data class SubscriptionState(
         val subscriptions: Subscriptions
 ) {
     companion object {
-        fun map(response: SubscriptionStateResponse): SubscriptionState {
-            val status = when (response.state) {
+        private fun mapStatus(status: String): SubscriptionStatus {
+            return when (status) {
                 "empty" -> SubscriptionStatus.Empty
                 "ok" -> SubscriptionStatus.Success
                 "canceled" -> SubscriptionStatus.Canceled
@@ -18,12 +18,16 @@ data class SubscriptionState(
                 "refund" -> SubscriptionStatus.Refund
                 else -> SubscriptionStatus.Empty
             }
+        }
+
+        fun map(response: SubscriptionStateResponse): SubscriptionState {
+            val status = mapStatus(response.state)
             val mapSubscription: (SubscriptionResponse) -> Subscription = {
                 Subscription(
                         isTrial = it.isTrial,
                         productId = it.productId,
                         subscriptionId = it.subscriptionId,
-                        state = it.state
+                        status = mapStatus(it.state)
                 )
             }
             return SubscriptionState(
@@ -72,5 +76,5 @@ data class Subscription(
         val subscriptionId: String,
         val isTrial: Boolean,
         val productId: String,
-        val state: String
+        val status: SubscriptionStatus
 )
