@@ -109,6 +109,17 @@ class SubscriptionsRepositoryImpl(
 
     }
 
+    override fun getCachedSubscriptionScreen(id: String): SubscriptionScreen? =
+            loadedScreens.values.firstOrNull {
+                it.id == id
+            }?.let {
+                SubscriptionScreen(
+                        id = it.id,
+                        name = it.name,
+                        screenHtml = it.screenHtml
+                )
+            }
+
     override fun getFallbackScreen(): Single<SubscriptionScreen> =
             fileStore.getSubscriptionScreen()
 
