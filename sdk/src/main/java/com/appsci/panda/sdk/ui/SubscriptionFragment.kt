@@ -17,6 +17,7 @@ import com.android.billingclient.api.BillingClient
 import com.appsci.panda.sdk.Panda
 import com.appsci.panda.sdk.R
 import com.appsci.panda.sdk.domain.subscriptions.SubscriptionScreen
+import com.appsci.panda.sdk.domain.subscriptions.SubscriptionsRepository
 import com.appsci.panda.sdk.domain.utils.rx.DefaultCompletableObserver
 import com.appsci.panda.sdk.domain.utils.rx.DefaultSingleObserver
 import com.gen.rxbilling.flow.BuyItemRequest
@@ -33,6 +34,9 @@ class SubscriptionFragment : Fragment(R.layout.panda_fragment_subscription) {
 
     @Inject
     lateinit var billingFlow: RxBillingFlow
+
+    @Inject
+    lateinit var subscriptionsRepository: SubscriptionsRepository
 
     private val disposeOnDestroyView = CompositeDisposable()
 
@@ -88,7 +92,9 @@ class SubscriptionFragment : Fragment(R.layout.panda_fragment_subscription) {
             }
 
         }
-        webView.loadDataWithBaseURL("file:///android_asset/", screenExtra.html, null, null, null)
+        subscriptionsRepository.getCachedSubscriptionScreen(screenExtra.id)?.let {
+            webView.loadDataWithBaseURL("file:///android_asset/", it.screenHtml, null, null, null)
+        }
         Panda.screenShowed(screenExtra)
     }
 
@@ -207,15 +213,13 @@ class SubscriptionFragment : Fragment(R.layout.panda_fragment_subscription) {
 @Parcelize
 data class ScreenExtra(
         val id: String,
-        val name: String,
-        val html: String
+        val name: String
 ) : Parcelable {
     companion object {
         fun create(screen: SubscriptionScreen) =
                 ScreenExtra(
                         id = screen.id,
-                        name = screen.name,
-                        html = screen.screenHtml
+                        name = screen.name
                 )
     }
 }
