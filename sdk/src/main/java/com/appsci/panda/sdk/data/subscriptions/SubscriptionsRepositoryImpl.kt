@@ -11,6 +11,7 @@ import com.appsci.panda.sdk.domain.subscriptions.*
 import com.appsci.panda.sdk.domain.utils.rx.DefaultCompletableObserver
 import io.reactivex.Completable
 import io.reactivex.Flowable
+import io.reactivex.Maybe
 import io.reactivex.Single
 import timber.log.Timber
 
@@ -109,16 +110,23 @@ class SubscriptionsRepositoryImpl(
 
     }
 
-    override fun getCachedSubscriptionScreen(id: String): SubscriptionScreen? =
-            loadedScreens.values.firstOrNull {
-                it.id == id
-            }?.let {
-                SubscriptionScreen(
-                        id = it.id,
-                        name = it.name,
-                        screenHtml = it.screenHtml
-                )
-            }
+    override fun getCachedOrDefaultScreen(id: String): Single<SubscriptionScreen> {
+        val cachedScreen = loadedScreens.values.firstOrNull {
+            it.id == id
+        }?.let {
+            SubscriptionScreen(
+                    id = it.id,
+                    name = it.name,
+                    screenHtml = it.screenHtml
+            )
+        }
+        val cachedMaybe = cachedScreen?.let {
+            Maybe.just(it)
+        } ?: Maybe.empty()
+        return cachedMaybe
+                .switchIfEmpty(getFallbackScreen().toMaybe())
+                .toSingle()
+    }
 
     override fun getFallbackScreen(): Single<SubscriptionScreen> =
             fileStore.getSubscriptionScreen()
