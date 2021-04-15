@@ -20,6 +20,7 @@ import com.appsci.panda.sdk.domain.subscriptions.SubscriptionScreen
 import com.appsci.panda.sdk.domain.subscriptions.SubscriptionsRepository
 import com.appsci.panda.sdk.domain.utils.rx.DefaultCompletableObserver
 import com.appsci.panda.sdk.domain.utils.rx.DefaultSingleObserver
+import com.appsci.panda.sdk.domain.utils.rx.Schedulers
 import com.gen.rxbilling.flow.BuyItemRequest
 import com.gen.rxbilling.flow.RxBillingFlow
 import com.gen.rxbilling.flow.delegate.FragmentFlowDelegate
@@ -92,9 +93,14 @@ class SubscriptionFragment : Fragment(R.layout.panda_fragment_subscription) {
             }
 
         }
-        subscriptionsRepository.getCachedSubscriptionScreen(screenExtra.id)?.let {
-            webView.loadDataWithBaseURL("file:///android_asset/", it.screenHtml, null, null, null)
-        }
+        disposeOnDestroyView.add(
+                subscriptionsRepository.getCachedOrDefaultScreen(screenExtra.id)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(Schedulers.mainThread())
+                        .doOnSuccess {
+                            webView.loadDataWithBaseURL("file:///android_asset/", it.screenHtml, null, null, null)
+                        }
+                        .subscribeWith(DefaultSingleObserver()))
         Panda.screenShowed(screenExtra)
     }
 

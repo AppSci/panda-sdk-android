@@ -33,9 +33,9 @@ data class SubscriptionState(
             return SubscriptionState(
                     status = status,
                     subscriptions = Subscriptions(
-                            android = response.subscriptions.android.map(mapSubscription),
-                            ios = response.subscriptions.ios.map(mapSubscription),
-                            web = response.subscriptions.web.map(mapSubscription)
+                            android = response.subscriptions.android.orEmpty().map(mapSubscription),
+                            ios = response.subscriptions.ios.orEmpty().map(mapSubscription),
+                            web = response.subscriptions.web.orEmpty().map(mapSubscription)
                     )
             )
         }

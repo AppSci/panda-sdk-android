@@ -11,11 +11,11 @@ data class SubscriptionStateResponse(
 
 data class SubscriptionsResponse(
         @SerializedName("android")
-        val android: List<SubscriptionResponse>,
+        val android: List<SubscriptionResponse>?,
         @SerializedName("ios")
-        val ios: List<SubscriptionResponse>,
+        val ios: List<SubscriptionResponse>?,
         @SerializedName("web")
-        val web: List<SubscriptionResponse>
+        val web: List<SubscriptionResponse>?
 )
 
 data class SubscriptionResponse(
