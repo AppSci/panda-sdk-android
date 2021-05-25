@@ -36,7 +36,11 @@ data class DeviceEntity(
         @ColumnInfo(name = "customUserId")
         val customUserId: String?,
         @ColumnInfo(name = "appsflyerId")
-        val appsflyerId: String?
+        val appsflyerId: String?,
+        @ColumnInfo(name = "fbc")
+        val fbc: String?,
+        @ColumnInfo(name = "fbp")
+        val fbp: String?
 ) {
     companion object {
         const val TABLE_NAME = "Device"

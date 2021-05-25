@@ -23,6 +23,7 @@ interface IPanda {
     fun getSubscriptionScreen(type: ScreenType? = null, id: String? = null, timeoutMs: Long = 5000L): Single<SubscriptionScreen>
     fun consumeProducts(): Completable
     fun setAppsflyerId(id: String): Completable
+    fun setFbIds(fbc: String?, fbp: String?): Completable
 
     /**
      * save appsflyer id in local storage, will be used in next update request
@@ -50,13 +51,23 @@ class PandaImpl(
             deviceRepository.authorize()
                     .map { it.id }
 
+    //TODO save to prefs before 'ensureAuth'
     override fun setCustomUserId(id: String): Completable =
             deviceRepository.ensureAuthorized()
                     .andThen(deviceRepository.setCustomUserId(id))
 
-    override fun setAppsflyerId(id: String): Completable  =
+    //TODO save to prefs before 'ensureAuth'
+    override fun setAppsflyerId(id: String): Completable =
             deviceRepository.ensureAuthorized()
                     .andThen(deviceRepository.setAppsflyerId(id))
+
+    override fun setFbIds(fbc: String?, fbp: String?): Completable {
+        if (preferences.fbc == fbc && preferences.fbp == fbp) return Completable.complete()
+        preferences.fbc = fbc
+        preferences.fbp = fbp
+        return deviceRepository.ensureAuthorized()
+                .andThen(deviceRepository.setFbIds(fbc = fbc, fbp = fbp))
+    }
 
     override fun saveAppsflyerId(id: String) {
         preferences.appsflyerId = id

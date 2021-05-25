@@ -132,6 +132,17 @@ object Panda {
             .doOnError { onError?.invoke(it) }
             .subscribe(DefaultCompletableObserver())
 
+    @kotlin.jvm.JvmStatic
+    fun setFbIdsRx(
+            fbc: String?,
+            fbp: String?,
+            onComplete: (() -> Unit)? = null,
+            onError: ((Throwable) -> Unit)? = null
+    ) = setFbIdsRx(fbc = fbc, fbp = fbp)
+            .doOnComplete { onComplete?.invoke() }
+            .doOnError { onError?.invoke(it) }
+            .subscribe(DefaultCompletableObserver())
+
     /**
      * Set custom user id to current user
      * @param id - your custom userId,
@@ -139,6 +150,15 @@ object Panda {
     @kotlin.jvm.JvmStatic
     fun setCustomUserIdRx(id: String): Completable =
             panda.setCustomUserId(id)
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(Schedulers.mainThread())
+
+    @kotlin.jvm.JvmStatic
+    fun setFbIdsRx(
+            fbc: String?,
+            fbp: String?
+    ): Completable =
+            panda.setFbIds(fbc = fbc, fbp = fbp)
                     .subscribeOn(Schedulers.io())
                     .observeOn(Schedulers.mainThread())
 

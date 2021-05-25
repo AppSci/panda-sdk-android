@@ -32,5 +32,9 @@ data class DeviceRequest(
         @SerializedName("appsflyer_id")
         val appsflyerId: String? = null,
         @SerializedName("time_zone")
-        val idfv: String? = null
+        val idfv: String? = null,
+        @SerializedName("fbc")
+        val fbc: String? = null,
+        @SerializedName("fbp")
+        val fbp: String? = null
 )

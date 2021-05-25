@@ -113,6 +113,13 @@ class DeviceRepositoryImpl @Inject constructor(
         }.onErrorReturn { deviceMapper.mapToDomain(deviceEntity) }
     }
 
+    override fun setFbIds(fbc: String?, fbp: String?): Completable {
+        return Maybe.defer {
+            deviceDao.selectDevice()
+                    .flatMapSingleElement { updateDevice(it) }
+        }.ignoreElement()
+    }
+
     override fun setCustomUserId(id: String?): Completable {
         Timber.d("setCustomUserId")
         if (preferences.customUserId == id) return Completable.complete()
