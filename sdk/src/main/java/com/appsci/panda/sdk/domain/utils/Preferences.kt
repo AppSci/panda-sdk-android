@@ -9,4 +9,8 @@ interface Preferences {
     var appsflyerId: String?
 
     var pandaUserId: String?
+
+    var fbc:String?
+
+    var fbp:String?
 }

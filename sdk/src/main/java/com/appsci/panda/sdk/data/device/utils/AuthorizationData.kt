@@ -15,5 +15,7 @@ data class AuthorizationData(
         val deviceModel: String,
         val platform: String = "Android",
         val customUserId: String? = null,
-        val appsflyerId: String? = null
+        val appsflyerId: String? = null,
+        val fbc: String? = null,
+        val fbp: String? = null
 )

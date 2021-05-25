@@ -38,7 +38,9 @@ class DeviceMapperImpl @Inject constructor() : DeviceMapper {
                 pushToken = authData.pushToken,
                 timeZone = authData.timeZone,
                 customUserId = authData.customUserId,
-                appsflyerId = authData.appsflyerId
+                appsflyerId = authData.appsflyerId,
+                fbc = authData.fbc,
+                fbp = authData.fbp
         )
     }
 
@@ -66,7 +68,9 @@ class DeviceMapperImpl @Inject constructor() : DeviceMapper {
                 pushToken = authData.pushToken,
                 timeZone = authData.timeZone,
                 customUserId = authData.customUserId,
-                appsflyerId = authData.appsflyerId
+                appsflyerId = authData.appsflyerId,
+                fbc = authData.fbc,
+                fbp = authData.fbp
         )
     }
 }
