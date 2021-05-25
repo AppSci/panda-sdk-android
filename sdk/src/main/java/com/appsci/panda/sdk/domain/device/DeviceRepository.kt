@@ -18,8 +18,5 @@ interface DeviceRepository {
     fun clearData(): Completable
 
     fun setAppsflyerId(id: String): Completable
-
-    fun setFbIds(fbc: String?, fbp:String?): Completable
-
 }
 

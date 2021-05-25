@@ -66,7 +66,8 @@ class PandaImpl(
         preferences.fbc = fbc
         preferences.fbp = fbp
         return deviceRepository.ensureAuthorized()
-                .andThen(deviceRepository.setFbIds(fbc = fbc, fbp = fbp))
+                .andThen(deviceRepository.authorize())
+                .ignoreElement()
     }
 
     override fun saveAppsflyerId(id: String) {
