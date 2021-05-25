@@ -133,7 +133,7 @@ object Panda {
             .subscribe(DefaultCompletableObserver())
 
     @kotlin.jvm.JvmStatic
-    fun setFbIdsRx(
+    fun setFbIds(
             fbc: String?,
             fbp: String?,
             onComplete: (() -> Unit)? = null,
