@@ -14,6 +14,8 @@ class PreferencesImpl(context: Context) : Preferences {
         private const val KEY_CUSTOM_USER_ID: String = "customUserId"
         private const val KEY_PANDA_USER_ID: String = "pandaUserId"
         private const val KEY_APPSFLYER_ID: String = "appsflyerId"
+        private const val KEY_FBC: String = "fbc"
+        private const val KEY_FBP: String = "fbp"
     }
 
     private val sharedPreferences: SharedPreferences =
@@ -31,4 +33,10 @@ class PreferencesImpl(context: Context) : Preferences {
     override var pandaUserId: String?
         get() = sharedPreferences.getString(KEY_PANDA_USER_ID, null)
         set(value) = sharedPreferences.edit { putString(KEY_PANDA_USER_ID, value) }
+    override var fbc: String?
+        get() = sharedPreferences.getString(KEY_FBC, null)
+        set(value) = sharedPreferences.edit { putString(KEY_FBC, value) }
+    override var fbp: String?
+        get() = sharedPreferences.getString(KEY_FBP, null)
+        set(value) = sharedPreferences.edit { putString(KEY_FBP, value) }
 }

@@ -19,6 +19,8 @@ class AuthDataValidatorImpl @Inject constructor() : AuthDataValidator {
                 && device.timeZone == authData.timeZone
                 && device.locale == authData.locale
                 && device.appVersion == authData.appVersion
+                && device.fbc == authData.fbc
+                && device.fbp == authData.fbp
     }
 
 }

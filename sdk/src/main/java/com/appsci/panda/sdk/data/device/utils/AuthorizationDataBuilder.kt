@@ -28,7 +28,9 @@ class AuthorizationDataBuilderImpl @Inject constructor(
                 locale = device.getLocale().toString(),
                 startAppVersion = device.startVersion,
                 customUserId = preferences.customUserId,
-                appsflyerId = preferences.appsflyerId
+                appsflyerId = preferences.appsflyerId,
+                fbc = preferences.fbc,
+                fbp = preferences.fbp
         )
     }
 }

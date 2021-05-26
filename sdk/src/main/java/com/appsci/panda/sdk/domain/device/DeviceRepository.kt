@@ -18,6 +18,5 @@ interface DeviceRepository {
     fun clearData(): Completable
 
     fun setAppsflyerId(id: String): Completable
-
 }
 
