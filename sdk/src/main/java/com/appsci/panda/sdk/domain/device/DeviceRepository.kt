@@ -13,10 +13,6 @@ interface DeviceRepository {
 
     fun getAuthState(): Single<AuthState>
 
-    fun setCustomUserId(id: String?): Completable
-
     fun clearData(): Completable
-
-    fun setAppsflyerId(id: String): Completable
 }
 
