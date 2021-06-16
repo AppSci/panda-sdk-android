@@ -14,7 +14,7 @@ interface IPanda {
 
     fun start()
     fun authorize(): Single<String>
-    fun setCustomUserId(id: String): Completable
+    fun setCustomUserId(id: String?): Completable
     fun syncSubscriptions(): Completable
     fun validatePurchase(purchase: Purchase): Single<Boolean>
     fun restore(): Single<List<String>>
@@ -51,23 +51,33 @@ class PandaImpl(
             deviceRepository.authorize()
                     .map { it.id }
 
-    //TODO save to prefs before 'ensureAuth'
-    override fun setCustomUserId(id: String): Completable =
-            deviceRepository.ensureAuthorized()
-                    .andThen(deviceRepository.setCustomUserId(id))
+    override fun setCustomUserId(id: String?): Completable {
+        if (preferences.customUserId == id) return Completable.complete()
+        preferences.customUserId = id
+        return Completable.defer {
+            deviceRepository.authorize()
+                    .ignoreElement()
+        }
+    }
 
-    //TODO save to prefs before 'ensureAuth'
-    override fun setAppsflyerId(id: String): Completable =
-            deviceRepository.ensureAuthorized()
-                    .andThen(deviceRepository.setAppsflyerId(id))
+    override fun setAppsflyerId(id: String): Completable {
+        if (preferences.appsflyerId == id) return Completable.complete()
+        preferences.appsflyerId = id
+        return Completable.defer {
+            deviceRepository.authorize()
+                    .ignoreElement()
+        }
+    }
 
     override fun setFbIds(fbc: String?, fbp: String?): Completable {
         if (preferences.fbc == fbc && preferences.fbp == fbp) return Completable.complete()
         preferences.fbc = fbc
         preferences.fbp = fbp
-        return deviceRepository.ensureAuthorized()
-                .andThen(deviceRepository.authorize())
-                .ignoreElement()
+        return Completable.defer {
+            deviceRepository.ensureAuthorized()
+                    .andThen(deviceRepository.authorize())
+                    .ignoreElement()
+        }
     }
 
     override fun saveAppsflyerId(id: String) {

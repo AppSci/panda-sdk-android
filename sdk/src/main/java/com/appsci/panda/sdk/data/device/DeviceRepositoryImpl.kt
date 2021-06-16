@@ -10,7 +10,6 @@ import com.appsci.panda.sdk.domain.device.DeviceRepository
 import com.appsci.panda.sdk.domain.utils.Preferences
 import com.appsci.panda.sdk.domain.utils.rx.shareSingle
 import io.reactivex.Completable
-import io.reactivex.Maybe
 import io.reactivex.Single
 import timber.log.Timber
 import javax.inject.Inject
@@ -111,25 +110,5 @@ class DeviceRepositoryImpl @Inject constructor(
                         .map { deviceMapper.mapToDomain(it) }
             }
         }.onErrorReturn { deviceMapper.mapToDomain(deviceEntity) }
-    }
-
-    override fun setCustomUserId(id: String?): Completable {
-        Timber.d("setCustomUserId")
-        if (preferences.customUserId == id) return Completable.complete()
-        return Maybe.defer {
-            preferences.customUserId = id
-            deviceDao.selectDevice()
-                    .flatMapSingleElement { updateDevice(it) }
-        }.ignoreElement()
-    }
-
-    override fun setAppsflyerId(id: String): Completable {
-        Timber.d("setAppsflyerId")
-        if (preferences.appsflyerId == id) return Completable.complete()
-        return Maybe.defer {
-            preferences.appsflyerId = id
-            deviceDao.selectDevice()
-                    .flatMapSingleElement { updateDevice(it) }
-        }.ignoreElement()
     }
 }

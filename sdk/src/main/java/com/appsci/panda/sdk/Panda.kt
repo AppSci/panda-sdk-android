@@ -111,9 +111,10 @@ object Panda {
      * @param id - your custom userId,
      */
     @kotlin.jvm.JvmStatic
-    fun setCustomUserId(id: String,
-                        onComplete: (() -> Unit)? = null,
-                        onError: ((Throwable) -> Unit)? = null
+    fun setCustomUserId(
+            id: String?,
+            onComplete: (() -> Unit)? = null,
+            onError: ((Throwable) -> Unit)? = null
     ) = setCustomUserIdRx(id)
             .doOnComplete { onComplete?.invoke() }
             .doOnError { onError?.invoke(it) }
@@ -148,7 +149,7 @@ object Panda {
      * @param id - your custom userId,
      */
     @kotlin.jvm.JvmStatic
-    fun setCustomUserIdRx(id: String): Completable =
+    fun setCustomUserIdRx(id: String?): Completable =
             panda.setCustomUserId(id)
                     .subscribeOn(Schedulers.io())
                     .observeOn(Schedulers.mainThread())
