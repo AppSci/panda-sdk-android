@@ -155,6 +155,12 @@ object Panda {
                     .observeOn(Schedulers.mainThread())
 
     @kotlin.jvm.JvmStatic
+    fun clearAdvId(): Completable =
+            panda.clearAdvId()
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(Schedulers.mainThread())
+
+    @kotlin.jvm.JvmStatic
     fun setFbIdsRx(
             fbc: String?,
             fbp: String?

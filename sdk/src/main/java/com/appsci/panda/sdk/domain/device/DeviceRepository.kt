@@ -9,6 +9,8 @@ interface DeviceRepository {
 
     fun authorize(): Single<Device>
 
+    fun clearAdvId(): Completable
+
     fun ensureAuthorized(): Completable
 
     fun getAuthState(): Single<AuthState>
