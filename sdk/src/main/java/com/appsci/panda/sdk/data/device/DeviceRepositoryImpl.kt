@@ -10,6 +10,7 @@ import com.appsci.panda.sdk.domain.device.DeviceRepository
 import com.appsci.panda.sdk.domain.utils.Preferences
 import com.appsci.panda.sdk.domain.utils.rx.shareSingle
 import io.reactivex.Completable
+import io.reactivex.Maybe
 import io.reactivex.Single
 import timber.log.Timber
 import javax.inject.Inject
@@ -110,5 +111,20 @@ class DeviceRepositoryImpl @Inject constructor(
                         .map { deviceMapper.mapToDomain(it) }
             }
         }.onErrorReturn { deviceMapper.mapToDomain(deviceEntity) }
+    }
+
+    override fun clearAdvId(): Completable {
+        return Maybe.defer {
+            deviceDao.selectDevice()
+                    .flatMapSingleElement { deviceEntity ->
+                        val authData = authorizationDataBuilder.createAuthData()
+                                .copy(idfa = "")
+                        return@flatMapSingleElement restApi.updateDevice(deviceMapper.mapToRequest(authData), deviceEntity.id)
+                                .map { deviceMapper.mapToLocal(it, authData) }
+                                .doOnSuccess {
+                                    deviceDao.putDevice(it)
+                                }
+                    }
+        }.ignoreElement()
     }
 }

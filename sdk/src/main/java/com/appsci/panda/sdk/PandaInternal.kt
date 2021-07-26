@@ -15,6 +15,7 @@ interface IPanda {
     fun start()
     fun authorize(): Single<String>
     fun setCustomUserId(id: String?): Completable
+    fun clearAdvId(): Completable
     fun syncSubscriptions(): Completable
     fun validatePurchase(purchase: Purchase): Single<Boolean>
     fun restore(): Single<List<String>>
@@ -57,6 +58,12 @@ class PandaImpl(
         return Completable.defer {
             deviceRepository.authorize()
                     .ignoreElement()
+        }
+    }
+
+    override fun clearAdvId(): Completable {
+        return Completable.defer {
+            deviceRepository.clearAdvId()
         }
     }
 
