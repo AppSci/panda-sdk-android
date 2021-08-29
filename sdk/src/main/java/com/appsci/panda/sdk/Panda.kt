@@ -28,6 +28,9 @@ import com.android.billingclient.api.Purchase as GooglePurchase
 
 object Panda {
 
+    private @Volatile
+    var initialized: Boolean = false
+
     private lateinit var panda: IPanda
     private lateinit var context: Application
     internal lateinit var pandaComponent: PandaComponent
@@ -71,26 +74,12 @@ object Panda {
             debug: Boolean = BuildConfig.DEBUG,
             appsflyerId: String? = null,
     ): Single<String> {
-        this.context = context
-        Schedulers.setInstance(DefaultSchedulerProvider())
-        AndroidThreeTen.init(context)
-        val wrapper = PandaDependencies()
-        pandaComponent = DaggerPandaComponent
-                .builder()
-                .appModule(AppModule(context.applicationContext))
-                .billingModule(BillingModule(context))
-                .networkModule(NetworkModule(
-                        debug = debug,
-                        apiKey = apiKey
-                ))
-                .build()
-        pandaComponent.inject(wrapper)
-        panda = wrapper.panda
-        panda.start()
-
-        appsflyerId?.let {
-            panda.saveAppsflyerId(appsflyerId)
-        }
+        initialize(
+                context,
+                apiKey,
+                debug,
+                appsflyerId
+        )
 
         return panda.authorize()
                 .subscribeOn(Schedulers.io())
@@ -422,7 +411,7 @@ object Panda {
         }
         return panda.validatePurchase(
                 Purchase(
-                        id = purchase.sku,
+                        id = purchase.skus.first(),
                         type = purchaseType,
                         orderId = purchase.orderId,
                         token = purchase.purchaseToken
@@ -432,7 +421,7 @@ object Panda {
                 .doOnError { t ->
                     notifyError(t)
                 }.doOnSuccess {
-                    notifyPurchase(screenExtra, purchase.sku)
+                    notifyPurchase(screenExtra, purchase.skus.first())
                 }
     }
 
@@ -482,6 +471,36 @@ object Panda {
     private fun notifyRestore(ids: List<String>) {
         restoreListeners.forEach { it(ids) }
         pandaListeners.forEach { it.onRestore(ids) }
+    }
+
+    private fun initialize(
+            context: Application,
+            apiKey: String,
+            debug: Boolean = BuildConfig.DEBUG,
+            appsflyerId: String? = null
+    ) {
+        if (initialized) return
+        this.context = context
+        Schedulers.setInstance(DefaultSchedulerProvider())
+        AndroidThreeTen.init(context)
+        val wrapper = PandaDependencies()
+        pandaComponent = DaggerPandaComponent
+                .builder()
+                .appModule(AppModule(context.applicationContext))
+                .billingModule(BillingModule(context))
+                .networkModule(NetworkModule(
+                        debug = debug,
+                        apiKey = apiKey
+                ))
+                .build()
+        pandaComponent.inject(wrapper)
+        panda = wrapper.panda
+        panda.start()
+
+        appsflyerId?.let {
+            panda.saveAppsflyerId(appsflyerId)
+        }
+        initialized = true
     }
 
 }

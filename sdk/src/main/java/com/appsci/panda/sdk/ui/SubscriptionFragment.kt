@@ -5,7 +5,9 @@ import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.os.Bundle
 import android.os.Parcelable
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -14,45 +16,43 @@ import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import com.android.billingclient.api.BillingClient
+import com.android.billingclient.api.BillingFlowParams
+import com.android.billingclient.api.SkuDetailsParams
 import com.appsci.panda.sdk.Panda
 import com.appsci.panda.sdk.R
+import com.appsci.panda.sdk.databinding.PandaFragmentSubscriptionBinding
 import com.appsci.panda.sdk.domain.subscriptions.SubscriptionScreen
 import com.appsci.panda.sdk.domain.subscriptions.SubscriptionsRepository
 import com.appsci.panda.sdk.domain.utils.rx.DefaultCompletableObserver
 import com.appsci.panda.sdk.domain.utils.rx.DefaultSingleObserver
 import com.appsci.panda.sdk.domain.utils.rx.Schedulers
-import com.gen.rxbilling.flow.BuyItemRequest
-import com.gen.rxbilling.flow.RxBillingFlow
-import com.gen.rxbilling.flow.delegate.FragmentFlowDelegate
+import com.gen.rxbilling.client.PurchasesUpdate
+import com.gen.rxbilling.client.RxBilling
 import com.gen.rxbilling.lifecycle.BillingConnectionManager
 import io.reactivex.disposables.CompositeDisposable
-import kotlinx.android.parcel.Parcelize
-import kotlinx.android.synthetic.main.panda_fragment_subscription.*
+import kotlinx.parcelize.Parcelize
 import timber.log.Timber
 import javax.inject.Inject
 
-class SubscriptionFragment : Fragment(R.layout.panda_fragment_subscription) {
+class SubscriptionFragment : Fragment() {
 
     @Inject
-    lateinit var billingFlow: RxBillingFlow
+    lateinit var billing: RxBilling
 
     @Inject
     lateinit var subscriptionsRepository: SubscriptionsRepository
 
     private val disposeOnDestroyView = CompositeDisposable()
 
+    private var _binding: PandaFragmentSubscriptionBinding? = null
+    private val binding: PandaFragmentSubscriptionBinding
+        get() = _binding!!
+
     private val screenExtra: ScreenExtra by lazy {
         requireArguments().getParcelable(EXTRA_SCREEN)!!
     }
 
-    private val rcToType = mapOf(
-            RC_SUBSCRIPTION to BillingClient.SkuType.SUBS,
-            RC_PRODUCT to BillingClient.SkuType.INAPP
-    )
-
     companion object {
-        const val RC_SUBSCRIPTION = 101
-        const val RC_PRODUCT = 102
         const val EXTRA_SCREEN = "screenExtra"
         fun create(screenExtra: ScreenExtra) =
                 SubscriptionFragment().apply {
@@ -65,7 +65,7 @@ class SubscriptionFragment : Fragment(R.layout.panda_fragment_subscription) {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Panda.pandaComponent.inject(this)
-        lifecycle.addObserver(BillingConnectionManager(billingFlow))
+        lifecycle.addObserver(BillingConnectionManager(billing))
         requireActivity().onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 Panda.onDismiss(screenExtra)
@@ -73,14 +73,20 @@ class SubscriptionFragment : Fragment(R.layout.panda_fragment_subscription) {
         })
     }
 
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        return PandaFragmentSubscriptionBinding.inflate(inflater).apply {
+            _binding = this
+        }.root
+    }
+
     @SuppressLint("SetJavaScriptEnabled")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        webView.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.panda_screen_bg))
-        webView.settings.javaScriptEnabled = true
-        webView.isHorizontalScrollBarEnabled = false
-        webView.isVerticalScrollBarEnabled = false
-        webView.webViewClient = object : WebViewClient() {
+        binding.webView.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.panda_screen_bg))
+        binding.webView.settings.javaScriptEnabled = true
+        binding.webView.isHorizontalScrollBarEnabled = false
+        binding.webView.isVerticalScrollBarEnabled = false
+        binding.webView.webViewClient = object : WebViewClient() {
 
             override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest): Boolean {
                 Timber.d("shouldOverrideUrlLoading1 ${request.url}")
@@ -93,43 +99,51 @@ class SubscriptionFragment : Fragment(R.layout.panda_fragment_subscription) {
             }
 
         }
+        disposeOnDestroyView.addAll(
+                billing.observeSuccess()
+                        .observeOn(Schedulers.mainThread())
+                        .flatMapSingle {
+                            Timber.d("observeSuccess $it")
+                            binding.loading.root.visibility = View.VISIBLE
+                            val purchase = it.purchases.first()
+                            val sku = purchase.skus.first()
+                            Panda.onPurchase(screenExtra, purchase, getType(sku))
+                                    .doAfterTerminate {
+                                        binding.loading.root.visibility = View.GONE
+                                    }
+                        }.subscribe({
+                            Timber.d("onPurchase success=$it")
+                        }, {
+                            Panda.onError(it)
+                            Timber.e(it)
+                        }),
+                billing.observeErrors()
+                        .subscribe({
+                            if (it is PurchasesUpdate.Failed) {
+                                val throwable = RuntimeException("Billing update error: $it")
+                                Timber.e(throwable)
+                                Panda.onError(throwable)
+                            }
+                        }, {
+                            Timber.e(it)
+                            Panda.onError(it)
+                        })
+        )
         disposeOnDestroyView.add(
                 subscriptionsRepository.getCachedOrDefaultScreen(screenExtra.id)
                         .subscribeOn(Schedulers.io())
                         .observeOn(Schedulers.mainThread())
                         .doOnSuccess {
-                            webView.loadDataWithBaseURL("file:///android_asset/", it.screenHtml, null, null, null)
+                            binding.webView.loadDataWithBaseURL("file:///android_asset/", it.screenHtml, null, null, null)
                         }
                         .subscribeWith(DefaultSingleObserver()))
         Panda.screenShowed(screenExtra)
     }
 
     override fun onDestroyView() {
+        _binding = null
         disposeOnDestroyView.clear()
         super.onDestroyView()
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode in listOf(RC_SUBSCRIPTION, RC_PRODUCT)) {
-            val type = rcToType.getValue(requestCode)
-            disposeOnDestroyView.add(
-                    billingFlow.handleActivityResult(data)
-                            .flatMap {
-                                Timber.d("handleActivityResult $it")
-                                loading.visibility = View.VISIBLE
-                                Panda.onPurchase(screenExtra, it, type)
-                                        .doAfterTerminate {
-                                            loading.visibility = View.GONE
-                                        }
-                            }.subscribe({
-                                Timber.d("onPurchase success=$it")
-                            }, {
-                                Panda.onError(it)
-                                Timber.e(it)
-                            })
-            )
-        }
     }
 
     private fun handleRedirect(url: String): Boolean {
@@ -165,40 +179,49 @@ class SubscriptionFragment : Fragment(R.layout.panda_fragment_subscription) {
     }
 
     private fun restore() {
-        loading.visibility = View.VISIBLE
+        binding.loading.root.visibility = View.VISIBLE
         disposeOnDestroyView.add(
                 Panda.restore(screenExtra)
                         .doOnSuccess {
                             Timber.d("restore $it")
                         }
                         .doAfterTerminate {
-                            loading.visibility = View.GONE
+                            binding.loading.root.visibility = View.GONE
                         }
                         .subscribeWith(DefaultSingleObserver())
         )
     }
 
-    private fun purchaseClick(url: String) {
+    private fun getType(id: String): String {
         val subscriptions = resources.getStringArray(R.array.panda_subscriptions)
         val products = resources.getStringArray(R.array.panda_products)
-        val id = url.toUri().getQueryParameter("product_id")!!
-        Panda.subscriptionSelect(screenExtra, id)
-        Timber.d("purchase click $id")
-
-        val type = when {
+        return when {
             products.contains(id) -> {
                 BillingClient.SkuType.INAPP
             }
             else -> BillingClient.SkuType.SUBS
         }
-        val rc = rcToType.entries.first {
-            it.value == type
-        }.key
-        billingFlow.buyItem(BuyItemRequest(
-                type = type,
-                id = id,
-                requestCode = rc
-        ), FragmentFlowDelegate(this))
+    }
+
+    private fun purchaseClick(url: String) {
+
+        val id = url.toUri().getQueryParameter("product_id")!!
+        Panda.subscriptionSelect(screenExtra, id)
+        Timber.d("purchase click $id")
+        val type = getType(id)
+        billing.getSkuDetails(SkuDetailsParams.newBuilder()
+                .setType(type)
+                .setSkusList(listOf(id))
+                .build())
+                .observeOn(Schedulers.mainThread())
+                .flatMapCompletable {
+                    billing.launchFlow(
+                            requireActivity(),
+                            BillingFlowParams.newBuilder()
+                                    .setSkuDetails(it.first())
+                                    .build()
+                    )
+                }
                 .doOnError {
                     Panda.onError(it)
                     Timber.e(it)
@@ -229,3 +252,12 @@ data class ScreenExtra(
                 )
     }
 }
+
+fun RxBilling.observeSuccess() =
+        this.observeUpdates()
+                .filter { it is PurchasesUpdate.Success }
+                .map { it as PurchasesUpdate.Success }
+
+fun RxBilling.observeErrors() =
+        this.observeUpdates()
+                .filter { it !is PurchasesUpdate.Success }
