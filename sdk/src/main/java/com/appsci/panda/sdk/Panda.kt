@@ -387,9 +387,7 @@ object Panda {
     }
 
     internal fun restore(screenExtra: ScreenExtra): Single<List<String>> =
-            panda.restore()
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(Schedulers.mainThread())
+            restore()
                     .doOnSuccess { ids ->
                         notifyRestore(ids)
                         if (ids.isNotEmpty()) {
@@ -399,6 +397,11 @@ object Panda {
                     .doOnError { e ->
                         notifyError(e)
                     }
+
+    fun restore(): Single<List<String>> =
+            panda.restore()
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(Schedulers.mainThread())
 
     internal fun onPurchase(
             screenExtra: ScreenExtra,
