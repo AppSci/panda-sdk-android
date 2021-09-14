@@ -170,12 +170,9 @@ object Panda {
                     .observeOn(Schedulers.mainThread())
 
     @kotlin.jvm.JvmStatic
-    fun setLoginDataRx(
+    fun saveLoginData(
             loginData: LoginData
-    ): Completable =
-            panda.setLoginData(loginData)
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(Schedulers.mainThread())
+    ) = panda.saveLoginData(loginData)
 
     /**
      * Set appsflyer id to current user
