@@ -17,5 +17,12 @@ data class AuthorizationData(
         val customUserId: String? = null,
         val appsflyerId: String? = null,
         val fbc: String? = null,
-        val fbp: String? = null
+        val fbp: String? = null,
+        val email: String? = null,
+        val facebookLoginId: String? = null,
+        val firstName: String? = null,
+        val lastName: String? = null,
+        val fullName: String? = null,
+        val gender: String? = null,
+        val phone: String? = null
 )

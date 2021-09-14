@@ -25,6 +25,7 @@ interface IPanda {
     fun consumeProducts(): Completable
     fun setAppsflyerId(id: String): Completable
     fun setFbIds(fbc: String?, fbp: String?): Completable
+    fun setLoginData(loginData: LoginData): Completable
 
     /**
      * save appsflyer id in local storage, will be used in next update request
@@ -87,6 +88,33 @@ class PandaImpl(
         }
     }
 
+    override fun setLoginData(loginData: LoginData): Completable {
+        val current = LoginData(
+                email = preferences.email,
+                facebookLoginId = preferences.facebookLoginId,
+                firstName = preferences.firstName,
+                lastName = preferences.lastName,
+                fullName = preferences.fullName,
+                gender = preferences.gender,
+                phone = preferences.phone
+        )
+        if (loginData == current) return Completable.complete()
+        preferences.apply {
+            facebookLoginId = loginData.facebookLoginId
+            email = loginData.email
+            firstName = loginData.firstName
+            lastName = loginData.lastName
+            fullName = loginData.fullName
+            gender = loginData.gender
+            phone = loginData.phone
+        }
+        return Completable.defer {
+            deviceRepository.ensureAuthorized()
+                    .andThen(deviceRepository.authorize())
+                    .ignoreElement()
+        }
+    }
+
     override fun saveAppsflyerId(id: String) {
         preferences.appsflyerId = id
     }
@@ -126,3 +154,13 @@ class PandaImpl(
                     .andThen(subscriptionsRepository.consumeProducts())
 
 }
+
+data class LoginData(
+        val email: String?,
+        val facebookLoginId: String?,
+        val firstName: String?,
+        val lastName: String?,
+        val fullName: String?,
+        val gender: String?,
+        val phone: String?
+)

@@ -16,6 +16,13 @@ class PreferencesImpl(context: Context) : Preferences {
         private const val KEY_APPSFLYER_ID: String = "appsflyerId"
         private const val KEY_FBC: String = "fbc"
         private const val KEY_FBP: String = "fbp"
+        private const val KEY_EMAIL: String = "email"
+        private const val KEY_FACEBOOK_ID: String = "facebook_id"
+        private const val KEY_FIRST_NAME: String = "first_name"
+        private const val KEY_LAST_NAME: String = "last_name"
+        private const val KEY_FULL_NAME: String = "full_name"
+        private const val KEY_GENDER: String = "gender"
+        private const val KEY_PHONE: String = "phone"
     }
 
     private val sharedPreferences: SharedPreferences =
@@ -39,4 +46,25 @@ class PreferencesImpl(context: Context) : Preferences {
     override var fbp: String?
         get() = sharedPreferences.getString(KEY_FBP, null)
         set(value) = sharedPreferences.edit { putString(KEY_FBP, value) }
+    override var email: String?
+        get() = sharedPreferences.getString(KEY_EMAIL, null)
+        set(value) = sharedPreferences.edit { putString(KEY_EMAIL, value) }
+    override var facebookLoginId: String?
+        get() = sharedPreferences.getString(KEY_FACEBOOK_ID, null)
+        set(value) = sharedPreferences.edit { putString(KEY_FACEBOOK_ID, value) }
+    override var firstName: String?
+        get() = sharedPreferences.getString(KEY_FIRST_NAME, null)
+        set(value) = sharedPreferences.edit { putString(KEY_FIRST_NAME, value) }
+    override var lastName: String?
+        get() = sharedPreferences.getString(KEY_LAST_NAME, null)
+        set(value) = sharedPreferences.edit { putString(KEY_LAST_NAME, value) }
+    override var fullName: String?
+        get() = sharedPreferences.getString(KEY_FULL_NAME, null)
+        set(value) = sharedPreferences.edit { putString(KEY_FULL_NAME, value) }
+    override var gender: String?
+        get() = sharedPreferences.getString(KEY_GENDER, null)
+        set(value) = sharedPreferences.edit { putString(KEY_GENDER, value) }
+    override var phone: String?
+        get() = sharedPreferences.getString(KEY_PHONE, null)
+        set(value) = sharedPreferences.edit { putString(KEY_PHONE, value) }
 }

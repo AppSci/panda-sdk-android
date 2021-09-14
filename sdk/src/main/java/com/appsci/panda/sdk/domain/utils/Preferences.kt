@@ -10,7 +10,21 @@ interface Preferences {
 
     var pandaUserId: String?
 
-    var fbc:String?
+    var fbc: String?
 
-    var fbp:String?
+    var fbp: String?
+
+    var email: String?
+
+    var facebookLoginId: String?
+
+    var firstName: String?
+
+    var lastName: String?
+
+    var fullName: String?
+
+    var gender: String?
+
+    var phone: String?
 }

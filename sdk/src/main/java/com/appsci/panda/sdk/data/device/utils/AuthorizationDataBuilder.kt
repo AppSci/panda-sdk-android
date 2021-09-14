@@ -30,7 +30,14 @@ class AuthorizationDataBuilderImpl @Inject constructor(
                 customUserId = preferences.customUserId,
                 appsflyerId = preferences.appsflyerId,
                 fbc = preferences.fbc,
-                fbp = preferences.fbp
+                fbp = preferences.fbp,
+                email = preferences.email,
+                facebookLoginId = preferences.facebookLoginId,
+                firstName = preferences.firstName,
+                lastName = preferences.lastName,
+                fullName = preferences.fullName,
+                gender = preferences.gender,
+                phone = preferences.phone
         )
     }
 }

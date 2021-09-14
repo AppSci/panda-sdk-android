@@ -169,6 +169,14 @@ object Panda {
                     .subscribeOn(Schedulers.io())
                     .observeOn(Schedulers.mainThread())
 
+    @kotlin.jvm.JvmStatic
+    fun setLoginDataRx(
+            loginData: LoginData
+    ): Completable =
+            panda.setLoginData(loginData)
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(Schedulers.mainThread())
+
     /**
      * Set appsflyer id to current user
      * @param id - your appsflyer Id,
