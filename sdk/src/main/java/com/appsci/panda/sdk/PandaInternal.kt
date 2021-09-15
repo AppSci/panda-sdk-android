@@ -14,7 +14,6 @@ interface IPanda {
 
     fun start()
     fun authorize(): Single<String>
-    fun setCustomUserId(id: String?): Completable
     fun clearAdvId(): Completable
     fun syncSubscriptions(): Completable
     fun validatePurchase(purchase: Purchase): Single<Boolean>
@@ -26,6 +25,7 @@ interface IPanda {
     fun setAppsflyerId(id: String): Completable
     fun setFbIds(fbc: String?, fbp: String?): Completable
     fun saveLoginData(loginData: LoginData)
+    fun saveCustomUserId(id: String?)
 
     /**
      * save appsflyer id in local storage, will be used in next update request
@@ -53,13 +53,9 @@ class PandaImpl(
             deviceRepository.authorize()
                     .map { it.id }
 
-    override fun setCustomUserId(id: String?): Completable {
-        if (preferences.customUserId == id) return Completable.complete()
+    override fun saveCustomUserId(id: String?) {
+        if (preferences.customUserId == id) return
         preferences.customUserId = id
-        return Completable.defer {
-            deviceRepository.authorize()
-                    .ignoreElement()
-        }
     }
 
     override fun clearAdvId(): Completable {
