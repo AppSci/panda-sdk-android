@@ -151,11 +151,11 @@ class PandaImpl(
 }
 
 data class LoginData(
-        val email: String?,
-        val facebookLoginId: String?,
-        val firstName: String?,
-        val lastName: String?,
-        val fullName: String?,
-        val gender: String?,
-        val phone: String?
+        val email: String? = null,
+        val facebookLoginId: String? = null,
+        val firstName: String? = null,
+        val lastName: String? = null,
+        val fullName: String? = null,
+        val gender: String? = null,
+        val phone: String? = null
 )
