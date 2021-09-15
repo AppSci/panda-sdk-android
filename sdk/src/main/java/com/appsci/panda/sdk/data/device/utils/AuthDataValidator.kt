@@ -21,6 +21,13 @@ class AuthDataValidatorImpl @Inject constructor() : AuthDataValidator {
                 && device.appVersion == authData.appVersion
                 && device.fbc == authData.fbc
                 && device.fbp == authData.fbp
+                && device.facebookLoginId == authData.facebookLoginId
+                && device.email == authData.email
+                && device.fullName == authData.fullName
+                && device.firstName == authData.firstName
+                && device.lastName == authData.lastName
+                && device.gender == authData.gender
+                && device.phone == authData.phone
     }
 
 }
