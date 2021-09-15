@@ -22,7 +22,6 @@ import com.appsci.panda.sdk.ui.SubscriptionFragment
 import com.jakewharton.threetenabp.AndroidThreeTen
 import io.reactivex.Completable
 import io.reactivex.Single
-import timber.log.Timber
 import javax.inject.Inject
 import com.android.billingclient.api.Purchase as GooglePurchase
 
@@ -47,46 +46,12 @@ object Panda {
      * Call this function on App start to configure Panda SDK
      */
     @kotlin.jvm.JvmStatic
-    fun configure(
+    fun initialize(
             context: Application,
             apiKey: String,
-            debug: Boolean = BuildConfig.DEBUG,
-            appsflyerId: String? = null,
-            onSuccess: ((String) -> Unit)? = null,
-            onError: ((Throwable) -> Unit)? = null
-    ) = configureRx(
-            context = context,
-            apiKey = apiKey,
-            debug = debug,
-            appsflyerId = appsflyerId
-    )
-            .doOnSuccess { onSuccess?.invoke(it) }
-            .doOnError { onError?.invoke(it) }
-            .subscribe(DefaultSingleObserver())
-
-    /**
-     * Call this function on App start to configure Panda SDK
-     */
-    @kotlin.jvm.JvmStatic
-    fun configureRx(
-            context: Application,
-            apiKey: String,
-            debug: Boolean = BuildConfig.DEBUG,
-            appsflyerId: String? = null,
-    ): Single<String> {
-        initialize(
-                context,
-                apiKey,
-                debug,
-                appsflyerId
-        )
-
-        return panda.authorize()
-                .subscribeOn(Schedulers.io())
-                .doOnSuccess {
-                    Timber.d("authorize success")
-                }
-                .observeOn(Schedulers.mainThread())
+            debug: Boolean = BuildConfig.DEBUG
+    ) {
+        initializeInternal(context, apiKey, debug)
     }
 
     /**
@@ -163,10 +128,11 @@ object Panda {
      * @param id - your appsflyer Id,
      */
     @kotlin.jvm.JvmStatic
-    fun setAppsflyerIdRx(id: String): Completable =
-            panda.setAppsflyerId(id)
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(Schedulers.mainThread())
+    fun saveAppsflyerId(id: String?) {
+        id?.let {
+            panda.saveAppsflyerId(id)
+        }
+    }
 
     /**
      * Gets subscriptions from google and sends to Panda server
@@ -476,11 +442,10 @@ object Panda {
         pandaListeners.forEach { it.onRestore(ids) }
     }
 
-    private fun initialize(
+    private fun initializeInternal(
             context: Application,
             apiKey: String,
-            debug: Boolean = BuildConfig.DEBUG,
-            appsflyerId: String? = null
+            debug: Boolean = BuildConfig.DEBUG
     ) {
         if (initialized) return
         this.context = context
@@ -498,11 +463,7 @@ object Panda {
                 .build()
         pandaComponent.inject(wrapper)
         panda = wrapper.panda
-        panda.start()
-
-        appsflyerId?.let {
-            panda.saveAppsflyerId(appsflyerId)
-        }
+        panda.onStart()
         initialized = true
     }
 

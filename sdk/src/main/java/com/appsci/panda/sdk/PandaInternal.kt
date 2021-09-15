@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit
 interface IPanda {
     val pandaUserId: String?
 
-    fun start()
+    fun onStart()
     fun authorize(): Single<String>
     fun setCustomUserId(id: String?): Completable
     fun clearAdvId(): Completable
@@ -42,7 +42,7 @@ class PandaImpl(
     override val pandaUserId: String?
         get() = deviceRepository.pandaUserId
 
-    override fun start() {
+    override fun onStart() {
         if (preferences.startVersion.isNullOrEmpty()) {
             preferences.startVersion = deviceManager.getAppVersionName()
         }
