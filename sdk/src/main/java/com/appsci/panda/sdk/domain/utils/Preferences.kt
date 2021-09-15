@@ -24,7 +24,7 @@ interface Preferences {
 
     var fullName: String?
 
-    var gender: String?
+    var gender: Int?
 
     var phone: String?
 }

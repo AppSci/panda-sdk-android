@@ -61,9 +61,17 @@ class PreferencesImpl(context: Context) : Preferences {
     override var fullName: String?
         get() = sharedPreferences.getString(KEY_FULL_NAME, null)
         set(value) = sharedPreferences.edit { putString(KEY_FULL_NAME, value) }
-    override var gender: String?
-        get() = sharedPreferences.getString(KEY_GENDER, null)
-        set(value) = sharedPreferences.edit { putString(KEY_GENDER, value) }
+    override var gender: Int?
+        get() {
+            return if (sharedPreferences.contains(KEY_GENDER)) {
+                sharedPreferences.getInt(KEY_GENDER, -1)
+            } else null
+        }
+        set(value) {
+            value?.let {
+                sharedPreferences.edit { putInt(KEY_GENDER, value) }
+            }
+        }
     override var phone: String?
         get() = sharedPreferences.getString(KEY_PHONE, null)
         set(value) = sharedPreferences.edit { putString(KEY_PHONE, value) }

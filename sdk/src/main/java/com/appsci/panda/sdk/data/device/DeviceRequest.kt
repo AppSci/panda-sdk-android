@@ -48,7 +48,7 @@ data class DeviceRequest(
         @SerializedName("full_name")
         val fullName: String? = null,
         @SerializedName("gender")
-        val gender: String? = null,
+        val gender: Int? = null,
         @SerializedName("phone")
         val phone: String? = null
 )

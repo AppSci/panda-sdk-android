@@ -23,6 +23,6 @@ data class AuthorizationData(
         val firstName: String? = null,
         val lastName: String? = null,
         val fullName: String? = null,
-        val gender: String? = null,
+        val gender: Int? = null,
         val phone: String? = null
 )
