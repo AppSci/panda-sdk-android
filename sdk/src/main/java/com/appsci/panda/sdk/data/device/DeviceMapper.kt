@@ -70,7 +70,14 @@ class DeviceMapperImpl @Inject constructor() : DeviceMapper {
                 customUserId = authData.customUserId,
                 appsflyerId = authData.appsflyerId,
                 fbc = authData.fbc,
-                fbp = authData.fbp
+                fbp = authData.fbp,
+                email = authData.email,
+                facebookLoginId = authData.facebookLoginId,
+                fullName = authData.fullName,
+                firstName = authData.firstName,
+                lastNameName = authData.lastName,
+                gender = authData.gender,
+                phone = authData.phone,
         )
     }
 }

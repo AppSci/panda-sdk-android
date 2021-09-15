@@ -40,7 +40,7 @@ data class DeviceRequest(
         @SerializedName("email")
         val email: String? = null,
         @SerializedName("facebook_login_id")
-        val facebookLoginId: Int? = null,
+        val facebookLoginId: String? = null,
         @SerializedName("first_name")
         val firstName: String? = null,
         @SerializedName("last_name")
