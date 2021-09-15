@@ -60,7 +60,6 @@ object Panda {
     val pandaUserId: String?
         get() = panda.pandaUserId
 
-
     @kotlin.jvm.JvmStatic
     fun setFbIds(
             fbc: String?,
@@ -72,7 +71,6 @@ object Panda {
             .doOnError { onError?.invoke(it) }
             .subscribe(DefaultCompletableObserver())
 
-
     @kotlin.jvm.JvmStatic
     fun clearAdvId(): Completable =
             panda.clearAdvId()
@@ -80,12 +78,10 @@ object Panda {
                     .observeOn(Schedulers.mainThread())
 
     @kotlin.jvm.JvmStatic
-    fun syncUser(): Completable =
+    fun syncUser(): Single<String> =
             panda.authorize()
                     .subscribeOn(Schedulers.io())
                     .observeOn(Schedulers.mainThread())
-                    .ignoreElement()
-
 
     @kotlin.jvm.JvmStatic
     fun setFbIdsRx(
