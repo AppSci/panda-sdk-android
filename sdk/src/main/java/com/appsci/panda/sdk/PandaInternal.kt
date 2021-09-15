@@ -14,7 +14,6 @@ interface IPanda {
 
     fun onStart()
     fun authorize(): Single<String>
-    fun setCustomUserId(id: String?): Completable
     fun clearAdvId(): Completable
     fun syncSubscriptions(): Completable
     fun validatePurchase(purchase: Purchase): Single<Boolean>
@@ -25,6 +24,8 @@ interface IPanda {
     fun consumeProducts(): Completable
     fun setAppsflyerId(id: String): Completable
     fun setFbIds(fbc: String?, fbp: String?): Completable
+    fun saveLoginData(loginData: LoginData)
+    fun saveCustomUserId(id: String?)
 
     /**
      * save appsflyer id in local storage, will be used in next update request
@@ -52,13 +53,9 @@ class PandaImpl(
             deviceRepository.authorize()
                     .map { it.id }
 
-    override fun setCustomUserId(id: String?): Completable {
-        if (preferences.customUserId == id) return Completable.complete()
+    override fun saveCustomUserId(id: String?) {
+        if (preferences.customUserId == id) return
         preferences.customUserId = id
-        return Completable.defer {
-            deviceRepository.authorize()
-                    .ignoreElement()
-        }
     }
 
     override fun clearAdvId(): Completable {
@@ -84,6 +81,28 @@ class PandaImpl(
             deviceRepository.ensureAuthorized()
                     .andThen(deviceRepository.authorize())
                     .ignoreElement()
+        }
+    }
+
+    override fun saveLoginData(loginData: LoginData) {
+        val current = LoginData(
+                email = preferences.email,
+                facebookLoginId = preferences.facebookLoginId,
+                firstName = preferences.firstName,
+                lastName = preferences.lastName,
+                fullName = preferences.fullName,
+                gender = preferences.gender,
+                phone = preferences.phone
+        )
+        if (loginData == current) return
+        preferences.apply {
+            facebookLoginId = loginData.facebookLoginId
+            email = loginData.email
+            firstName = loginData.firstName
+            lastName = loginData.lastName
+            fullName = loginData.fullName
+            gender = loginData.gender
+            phone = loginData.phone
         }
     }
 
@@ -126,3 +145,13 @@ class PandaImpl(
                     .andThen(subscriptionsRepository.consumeProducts())
 
 }
+
+data class LoginData(
+        val email: String? = null,
+        val facebookLoginId: String? = null,
+        val firstName: String? = null,
+        val lastName: String? = null,
+        val fullName: String? = null,
+        val gender: Int? = null,
+        val phone: String? = null
+)

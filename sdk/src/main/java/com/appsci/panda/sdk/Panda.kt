@@ -60,19 +60,6 @@ object Panda {
     val pandaUserId: String?
         get() = panda.pandaUserId
 
-    /**
-     * Set custom user id to current user
-     * @param id - your custom userId,
-     */
-    @kotlin.jvm.JvmStatic
-    fun setCustomUserId(
-            id: String?,
-            onComplete: (() -> Unit)? = null,
-            onError: ((Throwable) -> Unit)? = null
-    ) = setCustomUserIdRx(id)
-            .doOnComplete { onComplete?.invoke() }
-            .doOnError { onError?.invoke(it) }
-            .subscribe(DefaultCompletableObserver())
 
     @kotlin.jvm.JvmStatic
     fun setFbIds(
@@ -85,21 +72,20 @@ object Panda {
             .doOnError { onError?.invoke(it) }
             .subscribe(DefaultCompletableObserver())
 
-    /**
-     * Set custom user id to current user
-     * @param id - your custom userId,
-     */
-    @kotlin.jvm.JvmStatic
-    fun setCustomUserIdRx(id: String?): Completable =
-            panda.setCustomUserId(id)
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(Schedulers.mainThread())
 
     @kotlin.jvm.JvmStatic
     fun clearAdvId(): Completable =
             panda.clearAdvId()
                     .subscribeOn(Schedulers.io())
                     .observeOn(Schedulers.mainThread())
+
+    @kotlin.jvm.JvmStatic
+    fun syncUser(): Completable =
+            panda.authorize()
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(Schedulers.mainThread())
+                    .ignoreElement()
+
 
     @kotlin.jvm.JvmStatic
     fun setFbIdsRx(
@@ -109,6 +95,20 @@ object Panda {
             panda.setFbIds(fbc = fbc, fbp = fbp)
                     .subscribeOn(Schedulers.io())
                     .observeOn(Schedulers.mainThread())
+
+    /**
+     * Set custom user id to current user
+     * @param id - your custom userId,
+     */
+    @kotlin.jvm.JvmStatic
+    fun saveCustomUserId(id: String?) {
+        panda.saveCustomUserId(id)
+    }
+
+    @kotlin.jvm.JvmStatic
+    fun saveLoginData(
+            loginData: LoginData
+    ) = panda.saveLoginData(loginData)
 
     /**
      * Set appsflyer id to current user
