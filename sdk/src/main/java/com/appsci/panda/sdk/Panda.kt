@@ -74,19 +74,6 @@ object Panda {
             .doOnError { onError?.invoke(it) }
             .subscribe(DefaultCompletableObserver())
 
-    /**
-     * Set appsflyer id to current user
-     * @param id - your appsflyer Id,
-     */
-    @kotlin.jvm.JvmStatic
-    fun setAppsflyerId(id: String,
-                       onComplete: (() -> Unit)? = null,
-                       onError: ((Throwable) -> Unit)? = null
-    ) = setCustomUserIdRx(id)
-            .doOnComplete { onComplete?.invoke() }
-            .doOnError { onError?.invoke(it) }
-            .subscribe(DefaultCompletableObserver())
-
     @kotlin.jvm.JvmStatic
     fun setFbIds(
             fbc: String?,
