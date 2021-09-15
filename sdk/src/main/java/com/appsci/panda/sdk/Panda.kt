@@ -27,8 +27,8 @@ import com.android.billingclient.api.Purchase as GooglePurchase
 
 object Panda {
 
-    private @Volatile
-    var initialized: Boolean = false
+    @Volatile
+    private var initialized: Boolean = false
 
     private lateinit var panda: IPanda
     private lateinit var context: Application
