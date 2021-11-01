@@ -36,5 +36,19 @@ data class DeviceRequest(
         @SerializedName("fbc")
         val fbc: String? = null,
         @SerializedName("fbp")
-        val fbp: String? = null
+        val fbp: String? = null,
+        @SerializedName("email")
+        val email: String? = null,
+        @SerializedName("facebook_login_id")
+        val facebookLoginId: String? = null,
+        @SerializedName("first_name")
+        val firstName: String? = null,
+        @SerializedName("last_name")
+        val lastName: String? = null,
+        @SerializedName("full_name")
+        val fullName: String? = null,
+        @SerializedName("gender")
+        val gender: Int? = null,
+        @SerializedName("phone")
+        val phone: String? = null
 )

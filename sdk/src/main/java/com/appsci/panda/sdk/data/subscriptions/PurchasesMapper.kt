@@ -32,7 +32,7 @@ class PurchasesMapperImpl : PurchasesMapper {
     ): List<PurchaseEntity> {
         return purchases.map {
             PurchaseEntity(
-                    productId = it.sku,
+                    productId = it.skus.first(),
                     orderId = it.orderId,
                     purchaseToken = it.purchaseToken,
                     purchaseType = type,

@@ -14,7 +14,7 @@ import com.appsci.panda.sdk.data.subscriptions.local.PurchaseEntity
             (DeviceEntity::class),
             (PurchaseEntity::class)
         ],
-        version = 3
+        version = 4
 )
 
 abstract class PandaDatabase : RoomDatabase() {

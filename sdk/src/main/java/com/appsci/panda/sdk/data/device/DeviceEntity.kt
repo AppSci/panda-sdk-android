@@ -40,7 +40,21 @@ data class DeviceEntity(
         @ColumnInfo(name = "fbc")
         val fbc: String?,
         @ColumnInfo(name = "fbp")
-        val fbp: String?
+        val fbp: String?,
+        @ColumnInfo(name = "email")
+        val email: String?,
+        @ColumnInfo(name = "facebook_login_id")
+        val facebookLoginId: String?,
+        @ColumnInfo(name = "first_name")
+        val firstName: String?,
+        @ColumnInfo(name = "last_name")
+        val lastName: String?,
+        @ColumnInfo(name = "full_name")
+        val fullName: String?,
+        @ColumnInfo(name = "gender")
+        val gender: Int?,
+        @ColumnInfo(name = "phone")
+        val phone: String?
 ) {
     companion object {
         const val TABLE_NAME = "Device"

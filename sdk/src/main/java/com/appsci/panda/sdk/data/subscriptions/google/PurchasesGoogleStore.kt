@@ -72,7 +72,7 @@ class PurchasesGoogleStoreImpl(
                                 .map { products ->
                                     subscriptions + products
                                 }
-                    }.map { it.filter { !it.isAcknowledged } }
+                    }.map { list -> list.filter { !it.isAcknowledged } }
                     .flatMapPublisher { Flowable.fromIterable(it) }
                     .flatMapCompletable {
                         rxBilling.acknowledge(AcknowledgePurchaseParams

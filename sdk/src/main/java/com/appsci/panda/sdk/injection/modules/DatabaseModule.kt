@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.room.Room
 import com.appsci.panda.sdk.data.db.PandaDatabase
 import com.appsci.panda.sdk.data.db.migrations.Migration1To2
+import com.appsci.panda.sdk.data.db.migrations.Migration2To3
+import com.appsci.panda.sdk.data.db.migrations.Migration3To4
 import com.appsci.panda.sdk.data.device.DeviceDao
 import dagger.Module
 import dagger.Provides
@@ -17,7 +19,9 @@ class DatabaseModule() {
     fun provideDataBase(context: Context): PandaDatabase {
         return Room.databaseBuilder(context, PandaDatabase::class.java, "panda-sdk.db")
                 .addMigrations(
-                        Migration1To2()
+                        Migration1To2(),
+                        Migration2To3(),
+                        Migration3To4()
                 )
                 .fallbackToDestructiveMigration()
                 .build()
