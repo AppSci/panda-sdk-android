@@ -4,7 +4,7 @@ apply plugin: 'kotlin-parcelize'
 apply plugin: 'kotlin-kapt'
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion 31
     buildToolsVersion "29.0.3"
 
     resourcePrefix 'panda_'
@@ -15,9 +15,9 @@ android {
 
     defaultConfig {
         minSdkVersion 21
-        targetSdkVersion 30
+        targetSdkVersion 31
         versionCode 1
-        versionName "1.2.0"
+        versionName "1.2.1"
 
         buildConfigField "String", "PANDA_ENDPOINT_PROD", "\"https://api.panda.boosters.company/\""
         buildConfigField "String", "PANDA_ENDPOINT_STAGE", "\"https://api.panda-stage.boosters.company/\""
