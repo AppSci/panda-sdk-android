@@ -22,11 +22,13 @@ import com.appsci.panda.sdk.ui.SubscriptionFragment
 import com.jakewharton.threetenabp.AndroidThreeTen
 import io.reactivex.Completable
 import io.reactivex.Single
-import timber.log.Timber
 import javax.inject.Inject
 import com.android.billingclient.api.Purchase as GooglePurchase
 
 object Panda {
+
+    @Volatile
+    private var initialized: Boolean = false
 
     private lateinit var panda: IPanda
     private lateinit var context: Application
@@ -44,60 +46,12 @@ object Panda {
      * Call this function on App start to configure Panda SDK
      */
     @kotlin.jvm.JvmStatic
-    fun configure(
+    fun initialize(
             context: Application,
             apiKey: String,
-            debug: Boolean = BuildConfig.DEBUG,
-            appsflyerId: String? = null,
-            onSuccess: ((String) -> Unit)? = null,
-            onError: ((Throwable) -> Unit)? = null
-    ) = configureRx(
-            context = context,
-            apiKey = apiKey,
-            debug = debug,
-            appsflyerId = appsflyerId
-    )
-            .doOnSuccess { onSuccess?.invoke(it) }
-            .doOnError { onError?.invoke(it) }
-            .subscribe(DefaultSingleObserver())
-
-    /**
-     * Call this function on App start to configure Panda SDK
-     */
-    @kotlin.jvm.JvmStatic
-    fun configureRx(
-            context: Application,
-            apiKey: String,
-            debug: Boolean = BuildConfig.DEBUG,
-            appsflyerId: String? = null,
-    ): Single<String> {
-        this.context = context
-        Schedulers.setInstance(DefaultSchedulerProvider())
-        AndroidThreeTen.init(context)
-        val wrapper = PandaDependencies()
-        pandaComponent = DaggerPandaComponent
-                .builder()
-                .appModule(AppModule(context.applicationContext))
-                .billingModule(BillingModule(context))
-                .networkModule(NetworkModule(
-                        debug = debug,
-                        apiKey = apiKey
-                ))
-                .build()
-        pandaComponent.inject(wrapper)
-        panda = wrapper.panda
-        panda.start()
-
-        appsflyerId?.let {
-            panda.saveAppsflyerId(appsflyerId)
-        }
-
-        return panda.authorize()
-                .subscribeOn(Schedulers.io())
-                .doOnSuccess {
-                    Timber.d("authorize success")
-                }
-                .observeOn(Schedulers.mainThread())
+            debug: Boolean = BuildConfig.DEBUG
+    ) {
+        initializeInternal(context, apiKey, debug)
     }
 
     /**
@@ -105,33 +59,6 @@ object Panda {
      */
     val pandaUserId: String?
         get() = panda.pandaUserId
-
-    /**
-     * Set custom user id to current user
-     * @param id - your custom userId,
-     */
-    @kotlin.jvm.JvmStatic
-    fun setCustomUserId(
-            id: String?,
-            onComplete: (() -> Unit)? = null,
-            onError: ((Throwable) -> Unit)? = null
-    ) = setCustomUserIdRx(id)
-            .doOnComplete { onComplete?.invoke() }
-            .doOnError { onError?.invoke(it) }
-            .subscribe(DefaultCompletableObserver())
-
-    /**
-     * Set appsflyer id to current user
-     * @param id - your appsflyer Id,
-     */
-    @kotlin.jvm.JvmStatic
-    fun setAppsflyerId(id: String,
-                       onComplete: (() -> Unit)? = null,
-                       onError: ((Throwable) -> Unit)? = null
-    ) = setCustomUserIdRx(id)
-            .doOnComplete { onComplete?.invoke() }
-            .doOnError { onError?.invoke(it) }
-            .subscribe(DefaultCompletableObserver())
 
     @kotlin.jvm.JvmStatic
     fun setFbIds(
@@ -144,19 +71,15 @@ object Panda {
             .doOnError { onError?.invoke(it) }
             .subscribe(DefaultCompletableObserver())
 
-    /**
-     * Set custom user id to current user
-     * @param id - your custom userId,
-     */
     @kotlin.jvm.JvmStatic
-    fun setCustomUserIdRx(id: String?): Completable =
-            panda.setCustomUserId(id)
+    fun clearAdvId(): Completable =
+            panda.clearAdvId()
                     .subscribeOn(Schedulers.io())
                     .observeOn(Schedulers.mainThread())
 
     @kotlin.jvm.JvmStatic
-    fun clearAdvId(): Completable =
-            panda.clearAdvId()
+    fun syncUser(): Single<String> =
+            panda.authorize()
                     .subscribeOn(Schedulers.io())
                     .observeOn(Schedulers.mainThread())
 
@@ -170,14 +93,29 @@ object Panda {
                     .observeOn(Schedulers.mainThread())
 
     /**
+     * Set custom user id to current user
+     * @param id - your custom userId,
+     */
+    @kotlin.jvm.JvmStatic
+    fun saveCustomUserId(id: String?) {
+        panda.saveCustomUserId(id)
+    }
+
+    @kotlin.jvm.JvmStatic
+    fun saveLoginData(
+            loginData: LoginData
+    ) = panda.saveLoginData(loginData)
+
+    /**
      * Set appsflyer id to current user
      * @param id - your appsflyer Id,
      */
     @kotlin.jvm.JvmStatic
-    fun setAppsflyerIdRx(id: String): Completable =
-            panda.setAppsflyerId(id)
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(Schedulers.mainThread())
+    fun saveAppsflyerId(id: String?) {
+        id?.let {
+            panda.saveAppsflyerId(id)
+        }
+    }
 
     /**
      * Gets subscriptions from google and sends to Panda server
@@ -398,9 +336,7 @@ object Panda {
     }
 
     internal fun restore(screenExtra: ScreenExtra): Single<List<String>> =
-            panda.restore()
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(Schedulers.mainThread())
+            restore()
                     .doOnSuccess { ids ->
                         notifyRestore(ids)
                         if (ids.isNotEmpty()) {
@@ -410,6 +346,11 @@ object Panda {
                     .doOnError { e ->
                         notifyError(e)
                     }
+
+    fun restore(): Single<List<String>> =
+            panda.restore()
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(Schedulers.mainThread())
 
     internal fun onPurchase(
             screenExtra: ScreenExtra,
@@ -422,7 +363,7 @@ object Panda {
         }
         return panda.validatePurchase(
                 Purchase(
-                        id = purchase.sku,
+                        id = purchase.skus.first(),
                         type = purchaseType,
                         orderId = purchase.orderId,
                         token = purchase.purchaseToken
@@ -432,7 +373,7 @@ object Panda {
                 .doOnError { t ->
                     notifyError(t)
                 }.doOnSuccess {
-                    notifyPurchase(screenExtra, purchase.sku)
+                    notifyPurchase(screenExtra, purchase.skus.first())
                 }
     }
 
@@ -482,6 +423,31 @@ object Panda {
     private fun notifyRestore(ids: List<String>) {
         restoreListeners.forEach { it(ids) }
         pandaListeners.forEach { it.onRestore(ids) }
+    }
+
+    private fun initializeInternal(
+            context: Application,
+            apiKey: String,
+            debug: Boolean = BuildConfig.DEBUG
+    ) {
+        if (initialized) return
+        this.context = context
+        Schedulers.setInstance(DefaultSchedulerProvider())
+        AndroidThreeTen.init(context)
+        val wrapper = PandaDependencies()
+        pandaComponent = DaggerPandaComponent
+                .builder()
+                .appModule(AppModule(context.applicationContext))
+                .billingModule(BillingModule(context))
+                .networkModule(NetworkModule(
+                        debug = debug,
+                        apiKey = apiKey
+                ))
+                .build()
+        pandaComponent.inject(wrapper)
+        panda = wrapper.panda
+        panda.onStart()
+        initialized = true
     }
 
 }

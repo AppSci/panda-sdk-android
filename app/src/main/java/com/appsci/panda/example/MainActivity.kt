@@ -27,7 +27,7 @@ class MainActivity : AppCompatActivity() {
             startActivity(GetScreenActivity.createIntent(this))
         }
 
-        Panda.setCustomUserId(id = "super-unique-custom-id")
+        Panda.saveCustomUserId(id = "super-unique-custom-id")
 
         Panda.getSubscriptionStateRx()
                 .doOnSuccess {

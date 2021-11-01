@@ -7,7 +7,7 @@ ext {
     testersMails = '.ci/internal/beta_distribution_emails.txt'
 
     // Kotlin
-    kotlinVer = '1.4.10'
+    kotlinVer = '1.5.21'
     coroutineVer = '1.2.2'
     androidKtxVer = '1.3.2'
     koinVer = '2.1.6'
@@ -43,7 +43,7 @@ ext {
     multiDexVer = '2.0.0'
 
     // Dagger
-    daggerVer = '2.29.1'
+    daggerVer = '2.34'
 
     // Reactive Extensions
     rxJava2Ver = '2.2.20'
@@ -82,8 +82,8 @@ ext {
     sleepTimePickerVer = "1.0.3"
 
     // Billing Client
-    billingClientVer = '2.2.1'
-    rxbillingVer = '2.2.0'
+    billingClientVer = '4.0.0'
+    rxbillingVer = '82f06b05c0'
 
     // Developer-related
     timberVer = '4.7.1'
@@ -187,7 +187,7 @@ ext {
             roomRxJava               : "androidx.room:room-rxjava2:$roomVer",
             roomCompiler             : "androidx.room:room-compiler:$roomVer",
             billingClient            : "com.android.billingclient:billing:$billingClientVer",
-            rxBilling                : "com.betterme:rxbilling:$rxbillingVer",
+            rxBilling                : "com.github.betterme-dev:rxbilling:$rxbillingVer",
             threeten                 : "com.jakewharton.threetenabp:threetenabp:$threetenVer"
     ]
 

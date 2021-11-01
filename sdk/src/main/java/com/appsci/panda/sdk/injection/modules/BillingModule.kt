@@ -19,17 +19,12 @@ import com.appsci.panda.sdk.domain.subscriptions.SubscriptionsRepository
 import com.gen.rxbilling.client.RxBilling
 import com.gen.rxbilling.client.RxBillingImpl
 import com.gen.rxbilling.connection.BillingClientFactory
-import com.gen.rxbilling.connection.BillingServiceFactory
-import com.gen.rxbilling.flow.RxBillingFlow
 import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton
 
 @Module
 class BillingModule(private val context: Context) {
-
-    @Provides
-    fun provideRxBillingFlow(): RxBillingFlow = RxBillingFlow(context, BillingServiceFactory(context))
 
     @Provides
     @Singleton
