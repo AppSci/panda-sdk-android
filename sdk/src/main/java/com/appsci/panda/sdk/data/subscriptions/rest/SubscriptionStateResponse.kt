@@ -26,5 +26,7 @@ data class SubscriptionResponse(
         @SerializedName("product_id")
         val productId: String,
         @SerializedName("state")
-        val state: String
+        val state: String,
+        @SerializedName("is_intro_offer")
+        val isIntroOffer: Boolean?,
 )
