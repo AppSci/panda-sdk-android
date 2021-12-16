@@ -1,5 +1,6 @@
 package com.appsci.panda.sdk
 
+import com.appsci.panda.sdk.data.StopNetwork
 import com.appsci.panda.sdk.domain.device.DeviceRepository
 import com.appsci.panda.sdk.domain.subscriptions.*
 import com.appsci.panda.sdk.domain.utils.DeviceManager
@@ -31,13 +32,16 @@ interface IPanda {
      * save appsflyer id in local storage, will be used in next update request
      */
     fun saveAppsflyerId(id: String)
+    fun stopNetwork(): Completable
+    fun clearLocalData(): Completable
 }
 
 class PandaImpl(
         private val preferences: Preferences,
         private val deviceManager: DeviceManager,
         private val deviceRepository: DeviceRepository,
-        private val subscriptionsRepository: SubscriptionsRepository
+        private val subscriptionsRepository: SubscriptionsRepository,
+        private val stopNetworkInternal: StopNetwork
 ) : IPanda {
 
     override val pandaUserId: String?
@@ -109,6 +113,10 @@ class PandaImpl(
     override fun saveAppsflyerId(id: String) {
         preferences.appsflyerId = id
     }
+
+    override fun stopNetwork(): Completable = stopNetworkInternal()
+
+    override fun clearLocalData() = deviceRepository.clearLocalData()
 
     override fun syncSubscriptions(): Completable {
         return deviceRepository.ensureAuthorized()

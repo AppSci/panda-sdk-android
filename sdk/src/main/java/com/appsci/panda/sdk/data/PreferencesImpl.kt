@@ -75,4 +75,8 @@ class PreferencesImpl(context: Context) : Preferences {
     override var phone: String?
         get() = sharedPreferences.getString(KEY_PHONE, null)
         set(value) = sharedPreferences.edit { putString(KEY_PHONE, value) }
+
+    override fun clear() {
+        sharedPreferences.edit { clear() }
+    }
 }
