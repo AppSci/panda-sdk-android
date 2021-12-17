@@ -110,6 +110,17 @@ class SubscriptionsRepositoryImpl(
 
     }
 
+    override fun getCachedScreen(type: ScreenType?, id: String?): SubscriptionScreen? {
+        val key = ScreenKey(id = id, type = type)
+        return loadedScreens[key]?.let {
+            SubscriptionScreen(
+                    id = it.id,
+                    name = it.name,
+                    screenHtml = it.screenHtml
+            )
+        }
+    }
+
     override fun getCachedOrDefaultScreen(id: String): Single<SubscriptionScreen> {
         val cachedScreen = loadedScreens.values.firstOrNull {
             it.id == id

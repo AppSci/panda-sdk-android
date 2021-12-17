@@ -30,6 +30,8 @@ interface SubscriptionsRepository {
 
     fun getSubscriptionScreen(type: ScreenType?, id: String?): Single<SubscriptionScreen>
 
+    fun getCachedScreen(type: ScreenType?, id: String?): SubscriptionScreen?
+
     fun getCachedOrDefaultScreen(id: String): Single<SubscriptionScreen>
 
     fun getFallbackScreen(): Single<SubscriptionScreen>
