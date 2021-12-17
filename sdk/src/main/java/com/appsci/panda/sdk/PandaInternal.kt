@@ -22,6 +22,7 @@ interface IPanda {
     fun getSubscriptionState(): Single<SubscriptionState>
     fun prefetchSubscriptionScreen(type: ScreenType? = null, id: String? = null): Single<SubscriptionScreen>
     fun getSubscriptionScreen(type: ScreenType? = null, id: String? = null, timeoutMs: Long = 5000L): Single<SubscriptionScreen>
+    fun getCachedSubscriptionScreen(type: ScreenType? = null, id: String? = null): SubscriptionScreen?
     fun consumeProducts(): Completable
     fun setAppsflyerId(id: String): Completable
     fun setFbIds(fbc: String?, fbp: String?): Completable
@@ -147,6 +148,9 @@ class PandaImpl(
                     .onErrorResumeNext {
                         subscriptionsRepository.getFallbackScreen()
                     }
+
+    override fun getCachedSubscriptionScreen(type: ScreenType?, id: String?): SubscriptionScreen? =
+            subscriptionsRepository.getCachedScreen(type = type, id = id)
 
     override fun consumeProducts(): Completable =
             deviceRepository.ensureAuthorized()
