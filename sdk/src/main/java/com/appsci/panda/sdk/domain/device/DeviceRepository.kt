@@ -15,6 +15,8 @@ interface DeviceRepository {
 
     fun getAuthState(): Single<AuthState>
 
-    fun clearData(): Completable
+    fun deleteDevice(): Completable
+
+    fun clearLocalData(): Completable
 }
 

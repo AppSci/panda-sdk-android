@@ -19,6 +19,8 @@ data class SubscriptionsResponse(
 )
 
 data class SubscriptionResponse(
+        @SerializedName("order_id")
+        val orderId: String,
         @SerializedName("subscription_id")
         val subscriptionId: String,
         @SerializedName("is_trial_period")
@@ -26,5 +28,7 @@ data class SubscriptionResponse(
         @SerializedName("product_id")
         val productId: String,
         @SerializedName("state")
-        val state: String
+        val state: String,
+        @SerializedName("is_intro_offer")
+        val isIntroOffer: Boolean?,
 )

@@ -27,4 +27,6 @@ interface Preferences {
     var gender: Int?
 
     var phone: String?
+
+    fun clear()
 }
