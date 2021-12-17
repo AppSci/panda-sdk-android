@@ -205,6 +205,12 @@ object Panda {
                     .observeOn(Schedulers.mainThread())
                     .ignoreElement()
 
+    @kotlin.jvm.JvmStatic
+    fun getCachedSubscriptionScreen(
+            type: ScreenType? = null,
+            id: String? = null,
+    ) = panda.getCachedSubscriptionScreen(type = type, id = id)
+
     /**
      * Get Fragment with subscription UI that handles billing flow
      */
