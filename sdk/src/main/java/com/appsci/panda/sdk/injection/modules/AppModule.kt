@@ -6,6 +6,7 @@ import com.appsci.panda.sdk.IPanda
 import com.appsci.panda.sdk.PandaImpl
 import com.appsci.panda.sdk.data.DeviceManagerImpl
 import com.appsci.panda.sdk.data.PreferencesImpl
+import com.appsci.panda.sdk.data.StopNetwork
 import com.appsci.panda.sdk.domain.device.DeviceRepository
 import com.appsci.panda.sdk.domain.subscriptions.SubscriptionsRepository
 import com.appsci.panda.sdk.domain.utils.DeviceManager
@@ -23,12 +24,14 @@ class AppModule(private val context: Context) {
             deviceRepository: DeviceRepository,
             subscriptionsRepository: SubscriptionsRepository,
             preferences: Preferences,
-            deviceManager: DeviceManager
+            deviceManager: DeviceManager,
+            stopNetwork: StopNetwork
     ): IPanda = PandaImpl(
             deviceRepository = deviceRepository,
             subscriptionsRepository = subscriptionsRepository,
             preferences = preferences,
-            deviceManager = deviceManager
+            deviceManager = deviceManager,
+            stopNetworkInternal = stopNetwork
     )
 
     @Provides

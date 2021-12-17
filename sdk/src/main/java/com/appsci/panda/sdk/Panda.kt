@@ -268,6 +268,10 @@ object Panda {
                     }
                     .ignoreElement()
 
+    @JvmStatic
+    fun dropData() = panda.stopNetwork()
+            .andThen(panda.clearLocalData())
+
     fun addDismissListener(onDismiss: () -> Unit) {
         dismissListeners.add(onDismiss)
     }

@@ -56,11 +56,14 @@ class DeviceRepositoryImpl @Inject constructor(
                 .onErrorReturnItem(AuthState.NotAuthorized)
     }
 
-    override fun clearData(): Completable {
+    override fun deleteDevice(): Completable {
         return restApi.deleteDevice()
-                .andThen(Completable.fromAction {
-                    database.clearAllTables()
-                })
+                .andThen(clearLocalData())
+    }
+
+    override fun clearLocalData(): Completable = Completable.fromAction {
+        database.clearAllTables()
+        preferences.clear()
     }
 
     private fun createAuthObservable(): Single<Device> {
