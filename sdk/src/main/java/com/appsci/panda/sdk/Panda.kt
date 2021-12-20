@@ -211,6 +211,13 @@ object Panda {
             id: String? = null,
     ) = panda.getCachedSubscriptionScreen(type = type, id = id)
 
+    @kotlin.jvm.JvmStatic
+    fun getCachedOrDefaultSubscriptionScreen(
+            type: ScreenType? = null,
+            id: String? = null,
+    ) = panda.getCachedOrDefaultSubscriptionScreen(type, id)
+            .map { SubscriptionFragment.create(ScreenExtra.create(it)) }
+
     /**
      * Get Fragment with subscription UI that handles billing flow
      */
