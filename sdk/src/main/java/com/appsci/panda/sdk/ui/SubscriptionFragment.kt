@@ -8,6 +8,7 @@ import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.JavascriptInterface
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -31,6 +32,7 @@ import com.gen.rxbilling.client.RxBilling
 import com.gen.rxbilling.lifecycle.BillingConnectionManager
 import io.reactivex.disposables.CompositeDisposable
 import kotlinx.parcelize.Parcelize
+import org.json.JSONObject
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -47,6 +49,8 @@ class SubscriptionFragment : Fragment() {
     private var _binding: PandaFragmentSubscriptionBinding? = null
     private val binding: PandaFragmentSubscriptionBinding
         get() = _binding!!
+
+    private var onSuccessfulPurchase: (() -> Unit)? = null
 
     private val screenExtra: ScreenExtra by lazy {
         requireArguments().getParcelable(EXTRA_SCREEN)!!
@@ -86,6 +90,32 @@ class SubscriptionFragment : Fragment() {
         binding.webView.settings.javaScriptEnabled = true
         binding.webView.isHorizontalScrollBarEnabled = false
         binding.webView.isVerticalScrollBarEnabled = false
+
+        val jsBridge = object : JavaScriptBridgeInterface {
+            override fun onPurchase(json: String) {
+                val obj = JSONObject(json)
+                val productId = obj.getString("productId")
+                val type = obj.getString("type")
+                if (type == "external") {
+                    val url = obj.getString("url")
+                    purchaseClick(productId)
+                    onSuccessfulPurchase = {
+                        openExternalUrl(url)
+                    }
+                }
+            }
+
+            override fun onRedirect(json: String) {
+                val url = JSONObject(json).getString("url")
+                openExternalUrl(url)
+            }
+
+        }
+        binding.webView.addJavascriptInterface(
+            JavaScriptInterface(jsBridge),
+            "AndroidFunction",
+        )
+
         binding.webView.webViewClient = object : WebViewClient() {
 
             override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest): Boolean {
@@ -103,6 +133,7 @@ class SubscriptionFragment : Fragment() {
                 billing.observeSuccess()
                         .observeOn(Schedulers.mainThread())
                         .flatMapSingle {
+                            it.purchases.firstOrNull()
                             Timber.d("observeSuccess $it")
                             binding.loading.root.visibility = View.VISIBLE
                             val purchase = it.purchases.first()
@@ -166,7 +197,10 @@ class SubscriptionFragment : Fragment() {
                 true
             }
             url.contains("/subscription?type=purchase") -> {
-                purchaseClick(url)
+                val id = url.toUri().getQueryParameter("product_id")
+                    ?: error("product_id should be provided")
+
+                purchaseClick(id)
                 true
             }
             url.contains("/dismiss?type=dismiss") -> {
@@ -203,9 +237,7 @@ class SubscriptionFragment : Fragment() {
         }
     }
 
-    private fun purchaseClick(url: String) {
-
-        val id = url.toUri().getQueryParameter("product_id")!!
+    private fun purchaseClick(id: String) {
         Panda.subscriptionSelect(screenExtra, id)
         Timber.d("purchase click $id")
         val type = getType(id)
