@@ -8,6 +8,7 @@ import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.JavascriptInterface
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -19,10 +20,12 @@ import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingFlowParams
 import com.android.billingclient.api.SkuDetailsParams
 import com.appsci.panda.sdk.Panda
+import com.appsci.panda.sdk.PandaListener
 import com.appsci.panda.sdk.R
 import com.appsci.panda.sdk.databinding.PandaFragmentSubscriptionBinding
 import com.appsci.panda.sdk.domain.subscriptions.SubscriptionScreen
 import com.appsci.panda.sdk.domain.subscriptions.SubscriptionsRepository
+import com.appsci.panda.sdk.domain.utils.getStringOrNull
 import com.appsci.panda.sdk.domain.utils.rx.DefaultCompletableObserver
 import com.appsci.panda.sdk.domain.utils.rx.DefaultSingleObserver
 import com.appsci.panda.sdk.domain.utils.rx.Schedulers
@@ -31,6 +34,7 @@ import com.gen.rxbilling.client.RxBilling
 import com.gen.rxbilling.lifecycle.BillingConnectionManager
 import io.reactivex.disposables.CompositeDisposable
 import kotlinx.parcelize.Parcelize
+import org.json.JSONObject
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -47,6 +51,11 @@ class SubscriptionFragment : Fragment() {
     private var _binding: PandaFragmentSubscriptionBinding? = null
     private val binding: PandaFragmentSubscriptionBinding
         get() = _binding!!
+
+    private var onSuccessfulPurchase: (() -> Unit)? = null
+    private val onPurchaseListener: (String) -> Unit = {
+        onSuccessfulPurchase?.invoke()
+    }
 
     private val screenExtra: ScreenExtra by lazy {
         requireArguments().getParcelable(EXTRA_SCREEN)!!
@@ -86,6 +95,37 @@ class SubscriptionFragment : Fragment() {
         binding.webView.settings.javaScriptEnabled = true
         binding.webView.isHorizontalScrollBarEnabled = false
         binding.webView.isVerticalScrollBarEnabled = false
+
+        // set on view created, remove on destroy view
+        Panda.addPurchaseListener(onPurchaseListener)
+
+        val jsBridge = object : JavaScriptBridgeInterface {
+            override fun onPurchase(json: String) {
+                onSuccessfulPurchase = null
+                val obj = JSONObject(json)
+                val productId = obj.getString("product_id")
+                val type = obj.getStringOrNull("type")
+                val url = obj.getStringOrNull("url")
+
+                if (type == "external" && url != null) {
+                    onSuccessfulPurchase = {
+                        openExternalUrl(url)
+                    }
+                }
+                purchaseClick(productId)
+            }
+
+            override fun onRedirect(json: String) {
+                val url = JSONObject(json).getString("url")
+                openExternalUrl(url)
+            }
+        }
+
+        binding.webView.addJavascriptInterface(
+            JavaScriptInterface(jsBridge),
+            "AndroidFunction",
+        )
+
         binding.webView.webViewClient = object : WebViewClient() {
 
             override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest): Boolean {
@@ -103,6 +143,7 @@ class SubscriptionFragment : Fragment() {
                 billing.observeSuccess()
                         .observeOn(Schedulers.mainThread())
                         .flatMapSingle {
+                            it.purchases.firstOrNull()
                             Timber.d("observeSuccess $it")
                             binding.loading.root.visibility = View.VISIBLE
                             val purchase = it.purchases.first()
@@ -142,6 +183,7 @@ class SubscriptionFragment : Fragment() {
 
     override fun onDestroyView() {
         _binding = null
+        Panda.removePurchaseListener(onPurchaseListener)
         disposeOnDestroyView.clear()
         super.onDestroyView()
     }
@@ -166,7 +208,10 @@ class SubscriptionFragment : Fragment() {
                 true
             }
             url.contains("/subscription?type=purchase") -> {
-                purchaseClick(url)
+                val id = url.toUri().getQueryParameter("product_id")
+                    ?: error("product_id should be provided")
+
+                purchaseClick(id)
                 true
             }
             url.contains("/dismiss?type=dismiss") -> {
@@ -203,9 +248,7 @@ class SubscriptionFragment : Fragment() {
         }
     }
 
-    private fun purchaseClick(url: String) {
-
-        val id = url.toUri().getQueryParameter("product_id")!!
+    private fun purchaseClick(id: String) {
         Panda.subscriptionSelect(screenExtra, id)
         Timber.d("purchase click $id")
         val type = getType(id)
