@@ -20,10 +20,12 @@ import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingFlowParams
 import com.android.billingclient.api.SkuDetailsParams
 import com.appsci.panda.sdk.Panda
+import com.appsci.panda.sdk.PandaListener
 import com.appsci.panda.sdk.R
 import com.appsci.panda.sdk.databinding.PandaFragmentSubscriptionBinding
 import com.appsci.panda.sdk.domain.subscriptions.SubscriptionScreen
 import com.appsci.panda.sdk.domain.subscriptions.SubscriptionsRepository
+import com.appsci.panda.sdk.domain.utils.getStringOrNull
 import com.appsci.panda.sdk.domain.utils.rx.DefaultCompletableObserver
 import com.appsci.panda.sdk.domain.utils.rx.DefaultSingleObserver
 import com.appsci.panda.sdk.domain.utils.rx.Schedulers
@@ -51,6 +53,9 @@ class SubscriptionFragment : Fragment() {
         get() = _binding!!
 
     private var onSuccessfulPurchase: (() -> Unit)? = null
+    private val onPurchaseListener: (String) -> Unit = {
+        onSuccessfulPurchase?.invoke()
+    }
 
     private val screenExtra: ScreenExtra by lazy {
         requireArguments().getParcelable(EXTRA_SCREEN)!!
@@ -91,26 +96,31 @@ class SubscriptionFragment : Fragment() {
         binding.webView.isHorizontalScrollBarEnabled = false
         binding.webView.isVerticalScrollBarEnabled = false
 
+        // set on view created, remove on destroy view
+        Panda.addPurchaseListener(onPurchaseListener)
+
         val jsBridge = object : JavaScriptBridgeInterface {
             override fun onPurchase(json: String) {
+                onSuccessfulPurchase = null
                 val obj = JSONObject(json)
-                val productId = obj.getString("productId")
-                val type = obj.getString("type")
-                if (type == "external") {
-                    val url = obj.getString("url")
-                    purchaseClick(productId)
+                val productId = obj.getString("product_id")
+                val type = obj.getStringOrNull("type")
+                val url = obj.getStringOrNull("url")
+
+                if (type == "external" && url != null) {
                     onSuccessfulPurchase = {
                         openExternalUrl(url)
                     }
                 }
+                purchaseClick(productId)
             }
 
             override fun onRedirect(json: String) {
                 val url = JSONObject(json).getString("url")
                 openExternalUrl(url)
             }
-
         }
+
         binding.webView.addJavascriptInterface(
             JavaScriptInterface(jsBridge),
             "AndroidFunction",
@@ -173,6 +183,7 @@ class SubscriptionFragment : Fragment() {
 
     override fun onDestroyView() {
         _binding = null
+        Panda.removePurchaseListener(onPurchaseListener)
         disposeOnDestroyView.clear()
         super.onDestroyView()
     }

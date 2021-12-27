@@ -12,6 +12,6 @@ class App : Application() {
             Timber.plant(Timber.DebugTree())
         }
         Stetho.initializeWithDefaults(this)
-        Panda.initialize(this, BuildConfig.PANDA_API_KEY, false)
+        Panda.initialize(this, BuildConfig.PANDA_API_KEY, true)
     }
 }
