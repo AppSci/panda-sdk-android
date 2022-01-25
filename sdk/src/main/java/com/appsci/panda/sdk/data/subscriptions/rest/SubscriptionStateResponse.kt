@@ -31,4 +31,6 @@ data class SubscriptionResponse(
         val state: String,
         @SerializedName("is_intro_offer")
         val isIntroOffer: Boolean?,
+        @SerializedName("payment_type")
+        val paymentType: String,
 )
