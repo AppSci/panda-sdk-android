@@ -43,7 +43,7 @@ ext {
     multiDexVer = '2.0.0'
 
     // Dagger
-    daggerVer = '2.34'
+    daggerVer = '2.40.5'
 
     // Reactive Extensions
     rxJava2Ver = '2.2.20'
