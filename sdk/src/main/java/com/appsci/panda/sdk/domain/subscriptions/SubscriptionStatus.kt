@@ -34,7 +34,7 @@ data class SubscriptionState(
                             PaymentType.Subscription.value -> PaymentType.Subscription
                             PaymentType.Lifetime.value -> PaymentType.Lifetime
                             PaymentType.OneTime.value -> PaymentType.OneTime
-                            else -> PaymentType.Unknown(it.paymentType.orEmpty())
+                            else -> PaymentType.Unknown(it.paymentType)
                         },
                 )
             }
