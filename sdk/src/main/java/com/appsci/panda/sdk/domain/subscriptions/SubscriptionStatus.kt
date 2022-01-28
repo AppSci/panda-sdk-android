@@ -92,7 +92,7 @@ data class Subscription(
 
 sealed class PaymentType {
 
-    abstract val value: String
+    abstract val value: String?
 
     object Lifetime : PaymentType() {
         override val value: String = "lifetime"
@@ -107,6 +107,6 @@ sealed class PaymentType {
     }
 
     data class Unknown(
-            override val value: String
+            override val value: String?,
     ) : PaymentType()
 }
