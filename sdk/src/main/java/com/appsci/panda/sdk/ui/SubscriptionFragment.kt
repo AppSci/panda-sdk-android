@@ -117,6 +117,8 @@ class SubscriptionFragment : Fragment() {
 
             override fun onRedirect(json: String) {
                 val url = JSONObject(json).getString("url")
+
+                Panda.onRedirect(screenExtra.id, url)
                 openExternalUrl(url)
             }
         }
