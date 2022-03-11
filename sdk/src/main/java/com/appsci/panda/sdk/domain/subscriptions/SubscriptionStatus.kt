@@ -31,8 +31,10 @@ data class SubscriptionState(
                         status = mapStatus(it.state),
                         isOffer = it.isIntroOffer ?: false,
                         paymentType = when (it.paymentType) {
+                            PaymentType.Subscription.value -> PaymentType.Subscription
                             PaymentType.Lifetime.value -> PaymentType.Lifetime
-                            else -> PaymentType.Subscription
+                            PaymentType.OneTime.value -> PaymentType.OneTime
+                            else -> PaymentType.Unknown(it.paymentType)
                         },
                 )
             }
@@ -41,7 +43,7 @@ data class SubscriptionState(
                     subscriptions = Subscriptions(
                             android = response.subscriptions.android.orEmpty().map(mapSubscription),
                             ios = response.subscriptions.ios.orEmpty().map(mapSubscription),
-                            web = response.subscriptions.web.orEmpty().map(mapSubscription)
+                            web = response.subscriptions.web.orEmpty().map(mapSubscription),
                     )
             )
         }
@@ -89,7 +91,8 @@ data class Subscription(
 )
 
 sealed class PaymentType {
-    abstract val value: String
+
+    abstract val value: String?
 
     object Lifetime : PaymentType() {
         override val value: String = "lifetime"
@@ -98,4 +101,12 @@ sealed class PaymentType {
     object Subscription : PaymentType() {
         override val value: String = "subscription"
     }
+
+    object OneTime : PaymentType() {
+        override val value: String = "onetime"
+    }
+
+    data class Unknown(
+            override val value: String?,
+    ) : PaymentType()
 }

@@ -32,5 +32,6 @@ data class SubscriptionResponse(
         @SerializedName("is_intro_offer")
         val isIntroOffer: Boolean?,
         @SerializedName("payment_type")
-        val paymentType: String,
+        //can it be null? I don't know
+        val paymentType: String?,
 )

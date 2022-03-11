@@ -19,4 +19,3 @@ interface DeviceRepository {
 
     fun clearLocalData(): Completable
 }
-
