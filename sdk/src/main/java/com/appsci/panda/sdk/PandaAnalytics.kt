@@ -26,6 +26,11 @@ sealed class PandaEvent {
 
     object TermsClick : PandaEvent()
     object PolicyClick : PandaEvent()
+
+    data class Redirect(
+        val screenId: String,
+        val url: String,
+    ) : PandaEvent()
 }
 
 typealias PandaAnalyticsListener = ((PandaEvent) -> Unit)

@@ -352,6 +352,10 @@ object Panda {
         analyticsListeners.forEach { it(PandaEvent.PolicyClick) }
     }
 
+    internal fun onRedirect(screenId: String, url: String) {
+        analyticsListeners.forEach { it(PandaEvent.Redirect(screenId, url)) }
+    }
+
     internal fun restore(screenExtra: ScreenExtra): Single<List<String>> =
             restore()
                     .doOnSuccess { ids ->
