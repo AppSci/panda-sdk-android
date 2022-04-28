@@ -8,7 +8,6 @@ import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.webkit.JavascriptInterface
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -20,7 +19,6 @@ import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingFlowParams
 import com.android.billingclient.api.SkuDetailsParams
 import com.appsci.panda.sdk.Panda
-import com.appsci.panda.sdk.PandaListener
 import com.appsci.panda.sdk.R
 import com.appsci.panda.sdk.databinding.PandaFragmentSubscriptionBinding
 import com.appsci.panda.sdk.domain.subscriptions.SubscriptionScreen
@@ -124,8 +122,8 @@ class SubscriptionFragment : Fragment() {
         }
 
         binding.webView.addJavascriptInterface(
-            JavaScriptInterface(jsBridge),
-            "AndroidFunction",
+                JavaScriptInterface(jsBridge),
+                "AndroidFunction",
         )
 
         binding.webView.webViewClient = object : WebViewClient() {
@@ -211,7 +209,7 @@ class SubscriptionFragment : Fragment() {
             }
             url.contains("/subscription?type=purchase") -> {
                 val id = url.toUri().getQueryParameter("product_id")
-                    ?: error("product_id should be provided")
+                        ?: error("product_id should be provided")
 
                 purchaseClick(id)
                 true
@@ -275,6 +273,7 @@ class SubscriptionFragment : Fragment() {
     }
 
     private fun openExternalUrl(url: String) {
+        Panda.onOpenExternal(screenExtra.id, url)
         try {
             startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
         } catch (e: ActivityNotFoundException) {

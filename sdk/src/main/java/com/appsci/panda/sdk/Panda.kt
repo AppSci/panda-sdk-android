@@ -352,6 +352,10 @@ object Panda {
         analyticsListeners.forEach { it(PandaEvent.PolicyClick) }
     }
 
+    internal fun onOpenExternal(screenId: String, url: String) {
+        analyticsListeners.forEach { it(PandaEvent.OpenExternal(screenId, url)) }
+    }
+
     internal fun onRedirect(screenId: String, url: String) {
         analyticsListeners.forEach { it(PandaEvent.Redirect(screenId, url)) }
     }
