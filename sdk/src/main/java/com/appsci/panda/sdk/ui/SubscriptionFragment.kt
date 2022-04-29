@@ -59,8 +59,16 @@ class SubscriptionFragment : Fragment() {
         requireArguments().getParcelable(EXTRA_SCREEN)!!
     }
 
+    private val screenPayload: JSONObject? by lazy {
+        requireArguments().getString(EXTRA_PAYLOAD)?.let {
+            JSONObject(it)
+        }
+    }
+
     companion object {
         const val EXTRA_SCREEN = "screenExtra"
+        const val EXTRA_PAYLOAD = "screenPayload"
+
         fun create(screenExtra: ScreenExtra) =
                 SubscriptionFragment().apply {
                     arguments = Bundle().apply {
@@ -80,7 +88,7 @@ class SubscriptionFragment : Fragment() {
         })
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         return PandaFragmentSubscriptionBinding.inflate(inflater).apply {
             _binding = this
         }.root
@@ -167,12 +175,7 @@ class SubscriptionFragment : Fragment() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
                 Timber.d("onPageFinished $url")
-                val payloadMap = mapOf(
-                        "target_language" to "en",
-                        "from_language" to "en",
-                )
-                val payload = JSONObject(payloadMap)
-                binding.webView.evaluateJavascript("setPayload($payload);") {
+                binding.webView.evaluateJavascript("setPayload($screenPayload);") {
                     Timber.d("setPayload result $it")
                 }
             }
@@ -344,6 +347,11 @@ data class ScreenExtra(
                         name = screen.name
                 )
     }
+}
+
+fun SubscriptionFragment.addPayload(json: JSONObject) {
+    val args = this.arguments ?: Bundle()
+    args.putString(SubscriptionFragment.EXTRA_PAYLOAD, json.toString())
 }
 
 fun RxBilling.observeSuccess() =

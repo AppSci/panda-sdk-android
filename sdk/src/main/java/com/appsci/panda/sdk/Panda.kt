@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Application
 import android.content.Intent
-import androidx.fragment.app.Fragment
 import com.android.billingclient.api.BillingClient
 import com.appsci.panda.sdk.domain.subscriptions.*
 import com.appsci.panda.sdk.domain.utils.rx.DefaultCompletableObserver
@@ -225,7 +224,7 @@ object Panda {
     fun getSubscriptionScreen(
             type: ScreenType? = null,
             id: String? = null,
-            onSuccess: ((Fragment) -> Unit)? = null,
+            onSuccess: ((SubscriptionFragment) -> Unit)? = null,
             onError: ((Throwable) -> Unit)? = null
     ) = getSubscriptionScreenRx(type, id)
             .doOnSuccess { onSuccess?.invoke(it) }
@@ -236,7 +235,7 @@ object Panda {
      * Get Fragment with subscription UI that handles billing flow
      */
     @kotlin.jvm.JvmStatic
-    fun getSubscriptionScreenRx(type: ScreenType? = null, id: String? = null): Single<Fragment> =
+    fun getSubscriptionScreenRx(type: ScreenType? = null, id: String? = null): Single<SubscriptionFragment> =
             panda.getSubscriptionScreen(type, id)
                     .subscribeOn(Schedulers.io())
                     .observeOn(Schedulers.mainThread())
