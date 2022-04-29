@@ -8,12 +8,13 @@ ext {
 
     // Kotlin
     kotlinVer = '1.5.21'
-    coroutineVer = '1.2.2'
+    coroutineVer = '1.6.0'
     androidKtxVer = '1.3.2'
     koinVer = '2.1.6'
 
     // AndroidX
     appCompatVer = '1.1.0'
+    fragmentVersion = '1.4.1'
     legacyVer = '1.0.0'
     materialVer = '1.2.1'
     cardViewVer = '1.0.0'
@@ -33,7 +34,7 @@ ext {
 
     // Architecture components
     roomVer = '2.2.5'
-    lifecycleVer = "2.2.0"
+    lifecycleVer = "2.4.1"
     coreRuntimeVer = "2.0.1"
 
     // Redux
@@ -87,7 +88,7 @@ ext {
 
     // Developer-related
     timberVer = '4.7.1'
-    leakCanaryVer = '2.5'
+    leakCanaryVer = '2.8.1'
     stethoVer = '1.5.1'
     chuckVer = '3.3.0'
     findBugsVer = '3.0.2'
@@ -139,7 +140,7 @@ ext {
             multiDex        : "androidx.multidex:multidex:$multiDexVer",
             lifecycleExt    : "androidx.lifecycle:lifecycle-extensions:$lifecycleVer",
             transition      : "androidx.transition:transition:$transitionVer",
-            coreRuntime     : "androidx.arch.core:core-runtime:$coreRuntimeVer"
+            coreRuntime     : "androidx.arch.core:core-runtime:$coreRuntimeVer",
     ]
 
     firebaseDependencies = [
@@ -165,8 +166,10 @@ ext {
 
 
     presentationDependencies = [
-            lifecycleExtensions: "androidx.lifecycle:lifecycle-extensions:$lifecycleVer",
-            lifecycleCompiler  : "androidx.lifecycle:lifecycle-compiler:$lifecycleVer"
+            lifecycleCompiler  : "androidx.lifecycle:lifecycle-compiler:$lifecycleVer",
+            lifecycleRuntime   : "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycleVer",
+            fragment        : "androidx.fragment:fragment:$fragmentVersion",
+            fragmentKtx     : "androidx.fragment:fragment-ktx:$fragmentVersion",
     ]
 
     dataDependencies = [
@@ -189,6 +192,13 @@ ext {
             billingClient            : "com.android.billingclient:billing:$billingClientVer",
             rxBilling                : "com.github.betterme-dev:rxbilling:$rxbillingVer",
             threeten                 : "com.jakewharton.threetenabp:threetenabp:$threetenVer"
+    ]
+
+    coroutineDependencies = [
+            "core"   : "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutineVer",
+            "rx2"    : "org.jetbrains.kotlinx:kotlinx-coroutines-rx2:$coroutineVer",
+            "android": "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutineVer",
+            "test"   : "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutineVer"
     ]
 
     testDependencies = [

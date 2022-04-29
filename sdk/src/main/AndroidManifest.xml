@@ -2,6 +2,8 @@
     package="com.appsci.panda.sdk">
 
     <application>
-        <activity android:name=".ui.SubscriptionActivity" />
+        <activity
+            android:name=".ui.SubscriptionActivity"
+            android:exported="true" />
     </application>
 </manifest>

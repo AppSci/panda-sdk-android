@@ -99,6 +99,7 @@ class SubscriptionFragment : Fragment() {
 
         val jsBridge = object : JavaScriptBridgeInterface {
             override fun onPurchase(json: String) {
+                Timber.d("onPurchase $json")
                 onSuccessfulPurchase = null
                 val obj = JSONObject(json)
                 val productId = obj.getString("product_id")
@@ -110,14 +111,49 @@ class SubscriptionFragment : Fragment() {
                         openExternalUrl(url)
                     }
                 }
+                if (type == "moveNext" && url != null) {
+                    onSuccessfulPurchase = {
+                        Timber.d("moveNext $url")
+                        binding.webView.evaluateJavascript("moveNext();") {
+                            Timber.d("moveNext result $it")
+                        }
+                    }
+                }
                 purchaseClick(productId)
             }
 
             override fun onRedirect(json: String) {
+                Timber.d("onRedirect $json")
                 val url = JSONObject(json).getString("url")
 
                 Panda.onRedirect(screenExtra.id, url)
                 openExternalUrl(url)
+            }
+
+            override fun onCustomEventSent(json: String) {
+                Timber.d("onCustomEventSent $json")
+            }
+
+            override fun onTerms() {
+                Timber.d("onTerms")
+                Panda.onTermsClick()
+                openExternalUrl(getString(R.string.panda_terms_url))
+            }
+
+            override fun onPolicy() {
+                Timber.d("onPolicy")
+                Panda.onPolicyClick()
+                openExternalUrl(getString(R.string.panda_policy_url))
+            }
+
+            override fun onDismiss() {
+                Timber.d("onDismiss")
+                Panda.onDismiss(screenExtra)
+            }
+
+            override fun onRestore() {
+                Timber.d("onRestore")
+                restore()
             }
         }
 
@@ -127,6 +163,19 @@ class SubscriptionFragment : Fragment() {
         )
 
         binding.webView.webViewClient = object : WebViewClient() {
+
+            override fun onPageFinished(view: WebView?, url: String?) {
+                super.onPageFinished(view, url)
+                Timber.d("onPageFinished $url")
+                val payloadMap = mapOf(
+                        "target_language" to "en",
+                        "from_language" to "en",
+                )
+                val payload = JSONObject(payloadMap)
+                binding.webView.evaluateJavascript("setPayload($payload);") {
+                    Timber.d("setPayload result $it")
+                }
+            }
 
             override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest): Boolean {
                 Timber.d("shouldOverrideUrlLoading1 ${request.url}")
@@ -174,8 +223,8 @@ class SubscriptionFragment : Fragment() {
                 subscriptionsRepository.getCachedOrDefaultScreen(screenExtra.id)
                         .subscribeOn(Schedulers.io())
                         .observeOn(Schedulers.mainThread())
-                        .doOnSuccess {
-                            binding.webView.loadDataWithBaseURL("file:///android_asset/", it.screenHtml, null, null, null)
+                        .doOnSuccess { screen ->
+                            binding.webView.loadDataWithBaseURL("file:///android_asset/", screen.screenHtml, null, null, null)
                         }
                         .subscribeWith(DefaultSingleObserver()))
         Panda.screenShowed(screenExtra)
