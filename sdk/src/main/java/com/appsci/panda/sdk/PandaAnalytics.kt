@@ -33,8 +33,14 @@ sealed class PandaEvent {
     ) : PandaEvent()
 
     data class Redirect(
-        val screenId: String,
-        val url: String,
+            val screenId: String,
+            val url: String,
+    ) : PandaEvent()
+
+    data class CustomEvent(
+            val name: String,
+            val screenId: String,
+            val params: Map<String, String>,
     ) : PandaEvent()
 }
 

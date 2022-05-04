@@ -359,6 +359,16 @@ object Panda {
         analyticsListeners.forEach { it(PandaEvent.Redirect(screenId, url)) }
     }
 
+    internal fun onCustomEvent(screenId: String, name: String, params: Map<String, String>) {
+        analyticsListeners.forEach {
+            it(PandaEvent.CustomEvent(
+                    name = screenId,
+                    screenId = name,
+                    params = params,
+            ))
+        }
+    }
+
     internal fun restore(screenExtra: ScreenExtra): Single<List<String>> =
             restore()
                     .doOnSuccess { ids ->

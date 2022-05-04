@@ -146,6 +146,21 @@ class SubscriptionFragment : Fragment() {
 
             override fun onCustomEventSent(json: String) {
                 Timber.d("onCustomEventSent $json")
+                val jsonObject = JSONObject(json)
+                val params = runCatching {
+                    jsonObject.getJSONObject("params")
+                }.getOrNull()
+                val paramsMap = mutableMapOf<String, String>()
+                params?.keys()?.forEach { key ->
+                    params.getStringOrNull(key)?.let { value ->
+                        paramsMap[key] = value
+                    }
+                }
+                Panda.onCustomEvent(
+                        screenId = screenExtra.id,
+                        name = jsonObject.getString("name"),
+                        params = paramsMap,
+                )
             }
 
             override fun onTerms() {
