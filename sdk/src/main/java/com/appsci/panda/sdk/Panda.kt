@@ -362,8 +362,8 @@ object Panda {
     internal fun onCustomEvent(screenId: String, name: String, params: Map<String, String>) {
         analyticsListeners.forEach {
             it(PandaEvent.CustomEvent(
-                    name = screenId,
-                    screenId = name,
+                    name = name,
+                    screenId = screenId,
                     params = params,
             ))
         }
