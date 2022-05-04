@@ -369,6 +369,15 @@ object Panda {
         }
     }
 
+    fun onAction(name: String, json: String) {
+        analyticsListeners.forEach {
+            it(PandaEvent.Action(
+                    name = name,
+                    json = json,
+            ))
+        }
+    }
+
     internal fun restore(screenExtra: ScreenExtra): Single<List<String>> =
             restore()
                     .doOnSuccess { ids ->

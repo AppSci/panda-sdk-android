@@ -13,6 +13,7 @@ interface JavaScriptBridgeInterface {
     fun onDismiss()
     fun onRestore()
     fun onCustomEventSent(json: String)
+    fun onAction(json: String)
 }
 
 class JavaScriptInterface(
@@ -66,6 +67,13 @@ class JavaScriptInterface(
     fun onCustomEventSent(json: String) {
         scope.launch(Dispatchers.Main) {
             jsBridge.onCustomEventSent(json)
+        }
+    }
+
+    @JavascriptInterface
+    fun onAction(json: String) {
+        scope.launch(Dispatchers.Main) {
+            jsBridge.onAction(json)
         }
     }
 

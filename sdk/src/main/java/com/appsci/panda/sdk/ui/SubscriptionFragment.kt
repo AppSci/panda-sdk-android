@@ -163,6 +163,15 @@ class SubscriptionFragment : Fragment() {
                 )
             }
 
+            override fun onAction(json: String) {
+                Timber.d("onAction $json")
+                val jsonObject = JSONObject(json)
+                Panda.onAction(
+                        name = jsonObject.getString("name"),
+                        json = json,
+                )
+            }
+
             override fun onTerms() {
                 Timber.d("onTerms")
                 Panda.onTermsClick()

@@ -42,6 +42,11 @@ sealed class PandaEvent {
             val screenId: String,
             val params: Map<String, String>,
     ) : PandaEvent()
+
+    data class Action(
+            val name: String,
+            val json: String,
+    ) : PandaEvent()
 }
 
 typealias PandaAnalyticsListener = ((PandaEvent) -> Unit)
