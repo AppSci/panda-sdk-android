@@ -8,6 +8,7 @@ import kotlinx.coroutines.launch
 interface JavaScriptBridgeInterface {
     fun onPurchase(json: String)
     fun onRedirect(json: String)
+    fun onScreenChanged(json: String)
     fun onTerms()
     fun onPolicy()
     fun onDismiss()
@@ -60,6 +61,13 @@ class JavaScriptInterface(
     fun onRestore() {
         scope.launch(Dispatchers.Main) {
             jsBridge.onRestore()
+        }
+    }
+
+    @JavascriptInterface
+    fun onScreenChanged(json: String) {
+        scope.launch(Dispatchers.Main) {
+            jsBridge.onScreenChanged(json)
         }
     }
 

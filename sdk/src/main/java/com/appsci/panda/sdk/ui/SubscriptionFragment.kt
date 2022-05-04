@@ -136,6 +136,15 @@ class SubscriptionFragment : Fragment() {
                 purchaseClick(productId)
             }
 
+            override fun onScreenChanged(json: String) {
+                Timber.d("onScreenChanged $json")
+                val name = JSONObject(json).getString("screen_name")
+                Panda.onScreenChanged(
+                        id = screenExtra.id,
+                        screenName = name,
+                )
+            }
+
             override fun onRedirect(json: String) {
                 Timber.d("onRedirect $json")
                 val url = JSONObject(json).getString("url")

@@ -378,6 +378,15 @@ object Panda {
         }
     }
 
+    fun onScreenChanged(id: String, screenName: String) {
+        analyticsListeners.forEach {
+            it(PandaEvent.ScreenChanged(
+                    screenId = id,
+                    screenName = screenName,
+            ))
+        }
+    }
+
     internal fun restore(screenExtra: ScreenExtra): Single<List<String>> =
             restore()
                     .doOnSuccess { ids ->
