@@ -23,7 +23,7 @@ import javax.inject.Singleton
 class NetworkModule(
         private val debug: Boolean,
         private val apiKey: String,
-        private val networkLogLevel: HttpLoggingInterceptor.Level = HttpLoggingInterceptor.Level.BASIC,
+        private val networkLogLevel: HttpLoggingInterceptor.Level,
 ) {
 
     companion object {

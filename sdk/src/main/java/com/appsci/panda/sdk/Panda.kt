@@ -49,9 +49,10 @@ object Panda {
     fun initialize(
             context: Application,
             apiKey: String,
-            debug: Boolean = BuildConfig.DEBUG
+            debug: Boolean = BuildConfig.DEBUG,
+            networkLogLevel: HttpLoggingInterceptor.Level = HttpLoggingInterceptor.Level.BASIC,
     ) {
-        initializeInternal(context, apiKey, debug)
+        initializeInternal(context, apiKey, debug, networkLogLevel)
     }
 
     /**
@@ -482,7 +483,7 @@ object Panda {
             context: Application,
             apiKey: String,
             debug: Boolean = BuildConfig.DEBUG,
-            networkLogLevel: HttpLoggingInterceptor.Level = HttpLoggingInterceptor.Level.BASIC,
+            networkLogLevel: HttpLoggingInterceptor.Level,
     ) {
         if (initialized) return
         this.context = context
