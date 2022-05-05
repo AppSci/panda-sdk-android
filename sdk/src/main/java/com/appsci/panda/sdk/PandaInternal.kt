@@ -8,6 +8,7 @@ import com.appsci.panda.sdk.domain.utils.Preferences
 import com.appsci.panda.sdk.domain.utils.rx.Schedulers
 import io.reactivex.Completable
 import io.reactivex.Single
+import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
 interface IPanda {
@@ -146,6 +147,9 @@ class PandaImpl(
             deviceRepository.ensureAuthorized()
                     .andThen(subscriptionsRepository.getSubscriptionScreen(type, id))
                     .timeout(timeoutMs, TimeUnit.MILLISECONDS, Schedulers.computation())
+                    .doOnError {
+                        Timber.e(it, "getSubscriptionScreen")
+                    }
                     .onErrorResumeNext {
                         subscriptionsRepository.getFallbackScreen()
                     }
