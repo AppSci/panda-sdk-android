@@ -185,7 +185,10 @@ class SubscriptionsRepositoryImpl(
                     restStore.getSubscriptionScreen(
                             userId = it,
                             type = type?.requestName,
-                            id = id)
+                            id = id,
+                    ).doOnSuccess {
+                        Timber.d("restStore.getSubscriptionScreen $id")
+                    }
                 }.doOnSuccess {
                     Timber.d("loadSubscriptionScreen finished $type\n$id")
                     loadedScreens[key] = it
