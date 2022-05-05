@@ -461,7 +461,6 @@ object Panda {
             screenExtra: ScreenExtra,
             skuId: String
     ) {
-        purchaseListeners.forEach { it(skuId) }
         pandaListeners.forEach { it.onPurchase(skuId) }
         analyticsListeners.forEach {
             it(PandaEvent.SuccessfulPurchase(
@@ -470,6 +469,7 @@ object Panda {
                     productId = skuId
             ))
         }
+        purchaseListeners.forEach { it(skuId) }
     }
 
     private fun notifyRestore(ids: List<String>) {
