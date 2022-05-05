@@ -22,7 +22,8 @@ import javax.inject.Singleton
 @Module
 class NetworkModule(
         private val debug: Boolean,
-        private val apiKey: String
+        private val apiKey: String,
+        private val networkLogLevel: HttpLoggingInterceptor.Level = HttpLoggingInterceptor.Level.BASIC,
 ) {
 
     companion object {
@@ -44,7 +45,7 @@ class NetworkModule(
     @Singleton
     fun provideOkHttpInterceptor(): HttpLoggingInterceptor {
         val interceptor = HttpLoggingInterceptor()
-        interceptor.level = HttpLoggingInterceptor.Level.BASIC
+        interceptor.level = networkLogLevel
         return interceptor
     }
 

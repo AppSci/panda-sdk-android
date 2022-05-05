@@ -21,6 +21,7 @@ import com.appsci.panda.sdk.ui.SubscriptionFragment
 import com.jakewharton.threetenabp.AndroidThreeTen
 import io.reactivex.Completable
 import io.reactivex.Single
+import okhttp3.logging.HttpLoggingInterceptor
 import javax.inject.Inject
 import com.android.billingclient.api.Purchase as GooglePurchase
 
@@ -480,7 +481,8 @@ object Panda {
     private fun initializeInternal(
             context: Application,
             apiKey: String,
-            debug: Boolean = BuildConfig.DEBUG
+            debug: Boolean = BuildConfig.DEBUG,
+            networkLogLevel: HttpLoggingInterceptor.Level = HttpLoggingInterceptor.Level.BASIC,
     ) {
         if (initialized) return
         this.context = context
@@ -491,10 +493,12 @@ object Panda {
                 .builder()
                 .appModule(AppModule(context.applicationContext))
                 .billingModule(BillingModule(context))
-                .networkModule(NetworkModule(
-                        debug = debug,
-                        apiKey = apiKey
-                ))
+                .networkModule(
+                        NetworkModule(
+                                debug = debug,
+                                apiKey = apiKey,
+                                networkLogLevel = networkLogLevel,
+                        ))
                 .build()
         pandaComponent.inject(wrapper)
         panda = wrapper.panda

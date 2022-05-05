@@ -96,7 +96,6 @@ class SubscriptionsRepositoryImpl(
     override fun getSubscriptionScreen(type: ScreenType?, id: String?): Single<SubscriptionScreen> {
         val key = ScreenKey(id = id, type = type)
         val cachedScreen = loadedScreens[key]
-        Timber.d("getSubscriptionScreen")
         return (if (cachedScreen != null) {
             Single.just(cachedScreen)
         } else {
@@ -107,8 +106,6 @@ class SubscriptionsRepositoryImpl(
                     name = it.name,
                     screenHtml = it.screenHtml
             )
-        }.doOnSuccess {
-            Timber.d("getSubscriptionScreen finished")
         }
 
     }
@@ -186,11 +183,8 @@ class SubscriptionsRepositoryImpl(
                             userId = it,
                             type = type?.requestName,
                             id = id,
-                    ).doOnSuccess {
-                        Timber.d("restStore.getSubscriptionScreen $id")
-                    }
+                    )
                 }.doOnSuccess {
-                    Timber.d("loadSubscriptionScreen finished $type\n$id")
                     loadedScreens[key] = it
                 }
     }
