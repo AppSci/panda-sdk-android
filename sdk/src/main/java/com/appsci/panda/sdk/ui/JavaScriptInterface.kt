@@ -24,63 +24,63 @@ class JavaScriptInterface(
 
     @JavascriptInterface
     fun onPurchase(json: String) {
-        scope.launch(Dispatchers.Main) {
+        scope.launch {
             jsBridge.onPurchase(json)
         }
     }
 
     @JavascriptInterface
     fun onRedirect(json: String) {
-        scope.launch(Dispatchers.Main) {
+        scope.launch {
             jsBridge.onRedirect(json)
         }
     }
 
     @JavascriptInterface
     fun onTerms() {
-        scope.launch(Dispatchers.Main) {
+        scope.launch {
             jsBridge.onTerms()
         }
     }
 
     @JavascriptInterface
     fun onPolicy() {
-        scope.launch(Dispatchers.Main) {
+        scope.launch {
             jsBridge.onPolicy()
         }
     }
 
     @JavascriptInterface
     fun onDismiss() {
-        scope.launch(Dispatchers.Main) {
+        scope.launch {
             jsBridge.onDismiss()
         }
     }
 
     @JavascriptInterface
     fun onRestore() {
-        scope.launch(Dispatchers.Main) {
+        scope.launch {
             jsBridge.onRestore()
         }
     }
 
     @JavascriptInterface
     fun onScreenChanged(json: String) {
-        scope.launch(Dispatchers.Main) {
+        scope.launch {
             jsBridge.onScreenChanged(json)
         }
     }
 
     @JavascriptInterface
     fun onCustomEventSent(json: String) {
-        scope.launch(Dispatchers.Main) {
+        scope.launch {
             jsBridge.onCustomEventSent(json)
         }
     }
 
     @JavascriptInterface
     fun onAction(json: String) {
-        scope.launch(Dispatchers.Main) {
+        scope.launch {
             jsBridge.onAction(json)
         }
     }
