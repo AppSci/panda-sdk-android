@@ -61,7 +61,7 @@ afterEvaluate {
                 from components.release
                 groupId = 'com.github.AppSci'
                 artifactId = 'panda-sdk-android'
-                version = '1.3.4'
+                version = '1.4.0'
             }
         }
     }
@@ -71,8 +71,10 @@ dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation 'androidx.appcompat:appcompat:1.2.0'
 
-    implementation presentationDependencies.lifecycleExtensions
+    implementation presentationDependencies.lifecycleRuntime
     kapt presentationDependencies.lifecycleCompiler
+    implementation presentationDependencies.fragment
+    implementation presentationDependencies.fragmentKtx
 
     // Dagger 2
     implementation dataDependencies.dagger
@@ -110,6 +112,9 @@ dependencies {
     implementation dataDependencies.rxBilling
 
     implementation developmentDependencies.timber
+
+    implementation coroutineDependencies.core
+    implementation coroutineDependencies.android
 
 
     testImplementation testDependencies.jupiterApi

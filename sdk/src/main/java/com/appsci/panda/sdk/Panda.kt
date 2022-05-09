@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Application
 import android.content.Intent
-import androidx.fragment.app.Fragment
 import com.android.billingclient.api.BillingClient
 import com.appsci.panda.sdk.domain.subscriptions.*
 import com.appsci.panda.sdk.domain.utils.rx.DefaultCompletableObserver
@@ -22,6 +21,7 @@ import com.appsci.panda.sdk.ui.SubscriptionFragment
 import com.jakewharton.threetenabp.AndroidThreeTen
 import io.reactivex.Completable
 import io.reactivex.Single
+import okhttp3.logging.HttpLoggingInterceptor
 import javax.inject.Inject
 import com.android.billingclient.api.Purchase as GooglePurchase
 
@@ -49,9 +49,10 @@ object Panda {
     fun initialize(
             context: Application,
             apiKey: String,
-            debug: Boolean = BuildConfig.DEBUG
+            debug: Boolean = BuildConfig.DEBUG,
+            networkLogLevel: HttpLoggingInterceptor.Level = HttpLoggingInterceptor.Level.BASIC,
     ) {
-        initializeInternal(context, apiKey, debug)
+        initializeInternal(context, apiKey, debug, networkLogLevel)
     }
 
     /**
@@ -225,7 +226,7 @@ object Panda {
     fun getSubscriptionScreen(
             type: ScreenType? = null,
             id: String? = null,
-            onSuccess: ((Fragment) -> Unit)? = null,
+            onSuccess: ((SubscriptionFragment) -> Unit)? = null,
             onError: ((Throwable) -> Unit)? = null
     ) = getSubscriptionScreenRx(type, id)
             .doOnSuccess { onSuccess?.invoke(it) }
@@ -236,7 +237,7 @@ object Panda {
      * Get Fragment with subscription UI that handles billing flow
      */
     @kotlin.jvm.JvmStatic
-    fun getSubscriptionScreenRx(type: ScreenType? = null, id: String? = null): Single<Fragment> =
+    fun getSubscriptionScreenRx(type: ScreenType? = null, id: String? = null): Single<SubscriptionFragment> =
             panda.getSubscriptionScreen(type, id)
                     .subscribeOn(Schedulers.io())
                     .observeOn(Schedulers.mainThread())
@@ -360,6 +361,34 @@ object Panda {
         analyticsListeners.forEach { it(PandaEvent.Redirect(screenId, url)) }
     }
 
+    internal fun onCustomEvent(screenId: String, name: String, params: Map<String, String>) {
+        analyticsListeners.forEach {
+            it(PandaEvent.CustomEvent(
+                    name = name,
+                    screenId = screenId,
+                    params = params,
+            ))
+        }
+    }
+
+    fun onAction(name: String, json: String) {
+        analyticsListeners.forEach {
+            it(PandaEvent.Action(
+                    name = name,
+                    json = json,
+            ))
+        }
+    }
+
+    fun onScreenChanged(id: String, screenName: String) {
+        analyticsListeners.forEach {
+            it(PandaEvent.ScreenChanged(
+                    screenId = id,
+                    screenName = screenName,
+            ))
+        }
+    }
+
     internal fun restore(screenExtra: ScreenExtra): Single<List<String>> =
             restore()
                     .doOnSuccess { ids ->
@@ -434,7 +463,6 @@ object Panda {
             screenExtra: ScreenExtra,
             skuId: String
     ) {
-        purchaseListeners.forEach { it(skuId) }
         pandaListeners.forEach { it.onPurchase(skuId) }
         analyticsListeners.forEach {
             it(PandaEvent.SuccessfulPurchase(
@@ -443,6 +471,7 @@ object Panda {
                     productId = skuId
             ))
         }
+        purchaseListeners.forEach { it(skuId) }
     }
 
     private fun notifyRestore(ids: List<String>) {
@@ -453,7 +482,8 @@ object Panda {
     private fun initializeInternal(
             context: Application,
             apiKey: String,
-            debug: Boolean = BuildConfig.DEBUG
+            debug: Boolean = BuildConfig.DEBUG,
+            networkLogLevel: HttpLoggingInterceptor.Level,
     ) {
         if (initialized) return
         this.context = context
@@ -464,10 +494,12 @@ object Panda {
                 .builder()
                 .appModule(AppModule(context.applicationContext))
                 .billingModule(BillingModule(context))
-                .networkModule(NetworkModule(
-                        debug = debug,
-                        apiKey = apiKey
-                ))
+                .networkModule(
+                        NetworkModule(
+                                debug = debug,
+                                apiKey = apiKey,
+                                networkLogLevel = networkLogLevel,
+                        ))
                 .build()
         pandaComponent.inject(wrapper)
         panda = wrapper.panda
