@@ -182,7 +182,8 @@ class SubscriptionsRepositoryImpl(
                     restStore.getSubscriptionScreen(
                             userId = it,
                             type = type?.requestName,
-                            id = id)
+                            id = id,
+                    )
                 }.doOnSuccess {
                     loadedScreens[key] = it
                 }

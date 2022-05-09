@@ -8,6 +8,7 @@ import com.appsci.panda.sdk.domain.utils.Preferences
 import com.appsci.panda.sdk.domain.utils.rx.Schedulers
 import io.reactivex.Completable
 import io.reactivex.Single
+import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
 interface IPanda {
@@ -23,6 +24,7 @@ interface IPanda {
     fun prefetchSubscriptionScreen(type: ScreenType? = null, id: String? = null): Single<SubscriptionScreen>
     fun getSubscriptionScreen(type: ScreenType? = null, id: String? = null, timeoutMs: Long = 5000L): Single<SubscriptionScreen>
     fun getCachedSubscriptionScreen(type: ScreenType? = null, id: String? = null): SubscriptionScreen?
+    fun getCachedOrDefaultSubscriptionScreen(type: ScreenType? = null, id: String? = null): Single<SubscriptionScreen>
     fun consumeProducts(): Completable
     fun setAppsflyerId(id: String): Completable
     fun setFbIds(fbc: String?, fbp: String?): Completable
@@ -145,12 +147,22 @@ class PandaImpl(
             deviceRepository.ensureAuthorized()
                     .andThen(subscriptionsRepository.getSubscriptionScreen(type, id))
                     .timeout(timeoutMs, TimeUnit.MILLISECONDS, Schedulers.computation())
+                    .doOnError {
+                        Timber.e(it, "getSubscriptionScreen")
+                    }
                     .onErrorResumeNext {
                         subscriptionsRepository.getFallbackScreen()
                     }
 
     override fun getCachedSubscriptionScreen(type: ScreenType?, id: String?): SubscriptionScreen? =
             subscriptionsRepository.getCachedScreen(type = type, id = id)
+
+    override fun getCachedOrDefaultSubscriptionScreen(
+            type: ScreenType?,
+            id: String?,
+    ): Single<SubscriptionScreen> = subscriptionsRepository.getCachedScreen(type, id)?.let {
+        Single.just(it)
+    } ?: subscriptionsRepository.getFallbackScreen()
 
     override fun consumeProducts(): Completable =
             deviceRepository.ensureAuthorized()

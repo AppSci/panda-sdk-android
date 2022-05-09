@@ -29,7 +29,13 @@ data class SubscriptionState(
                         productId = it.productId,
                         subscriptionId = it.subscriptionId,
                         status = mapStatus(it.state),
-                        isOffer = it.isIntroOffer ?: false
+                        isOffer = it.isIntroOffer ?: false,
+                        paymentType = when (it.paymentType) {
+                            PaymentType.Subscription.value -> PaymentType.Subscription
+                            PaymentType.Lifetime.value -> PaymentType.Lifetime
+                            PaymentType.OneTime.value -> PaymentType.OneTime
+                            else -> PaymentType.Unknown(it.paymentType)
+                        },
                 )
             }
             return SubscriptionState(
@@ -37,7 +43,7 @@ data class SubscriptionState(
                     subscriptions = Subscriptions(
                             android = response.subscriptions.android.orEmpty().map(mapSubscription),
                             ios = response.subscriptions.ios.orEmpty().map(mapSubscription),
-                            web = response.subscriptions.web.orEmpty().map(mapSubscription)
+                            web = response.subscriptions.web.orEmpty().map(mapSubscription),
                     )
             )
         }
@@ -80,5 +86,27 @@ data class Subscription(
         val isTrial: Boolean,
         val productId: String,
         val status: SubscriptionStatus,
-        val isOffer: Boolean
+        val isOffer: Boolean,
+        val paymentType: PaymentType,
 )
+
+sealed class PaymentType {
+
+    abstract val value: String?
+
+    object Lifetime : PaymentType() {
+        override val value: String = "lifetime"
+    }
+
+    object Subscription : PaymentType() {
+        override val value: String = "subscription"
+    }
+
+    object OneTime : PaymentType() {
+        override val value: String = "onetime"
+    }
+
+    data class Unknown(
+            override val value: String?,
+    ) : PaymentType()
+}

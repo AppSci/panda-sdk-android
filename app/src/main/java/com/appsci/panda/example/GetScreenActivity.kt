@@ -8,6 +8,8 @@ import com.appsci.panda.sdk.Panda
 import com.appsci.panda.sdk.PandaEvent
 import com.appsci.panda.sdk.SimplePandaListener
 import com.appsci.panda.sdk.domain.utils.rx.DefaultSingleObserver
+import com.appsci.panda.sdk.ui.addPayload
+import org.json.JSONObject
 import timber.log.Timber
 
 class GetScreenActivity : AppCompatActivity() {
@@ -31,6 +33,13 @@ class GetScreenActivity : AppCompatActivity() {
         setContentView(R.layout.activity_get_screen)
         Panda.getSubscriptionScreenRx()
                 .doOnSuccess {
+                    val payloadMap = mapOf(
+                            "target_language" to "ru",
+                            "from_language" to "en",
+                            "email" to "",
+                            "custom_id" to "custom_id",
+                    )
+                    it.addPayload(JSONObject(payloadMap))
                     supportFragmentManager.beginTransaction()
                             .replace(R.id.container, it)
                             .commitNow()

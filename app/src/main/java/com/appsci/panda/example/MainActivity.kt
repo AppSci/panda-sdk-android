@@ -22,7 +22,7 @@ class MainActivity : AppCompatActivity() {
             Panda.showSubscriptionScreenRx(activity = this, theme = R.style.PandaTheme)
                     .subscribe(DefaultCompletableObserver())
         }
-
+        Panda.syncUser().subscribe(DefaultSingleObserver())
         btnGetScreen.setOnClickListener {
             startActivity(GetScreenActivity.createIntent(this))
         }
