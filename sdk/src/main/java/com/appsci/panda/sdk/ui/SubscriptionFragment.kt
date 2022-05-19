@@ -214,8 +214,10 @@ class SubscriptionFragment : Fragment() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
                 Timber.d("onPageFinished $url")
-                binding.webView.evaluateJavascript("setPayload($screenPayload);") {
-                    Timber.d("setPayload result $it")
+                _binding?.webView?.let { webView ->
+                    webView.evaluateJavascript("setPayload($screenPayload);") {
+                        Timber.d("setPayload result $it")
+                    }
                 }
             }
 
