@@ -93,6 +93,12 @@ object Panda {
                     .subscribeOn(Schedulers.io())
                     .observeOn(Schedulers.mainThread())
 
+    @kotlin.jvm.JvmStatic
+    suspend fun setProperty(
+            key: String,
+            value: String,
+    ) = panda.setUserProperty(key = key, value = value)
+
     /**
      * Set custom user id to current user
      * @param id - your custom userId,

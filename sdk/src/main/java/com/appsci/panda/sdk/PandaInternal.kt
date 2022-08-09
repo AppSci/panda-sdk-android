@@ -9,7 +9,9 @@ import com.appsci.panda.sdk.domain.utils.PropertiesDataSource
 import com.appsci.panda.sdk.domain.utils.rx.Schedulers
 import io.reactivex.Completable
 import io.reactivex.Single
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.rx2.await
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
@@ -71,10 +73,12 @@ class PandaImpl(
 
     override suspend fun setUserProperty(key: String, value: String) {
         propertiesDataSource.putProperty(key, value)
-        deviceRepository.authorize()
-                .ignoreElement()
-                .onErrorComplete()
-                .await()
+        withContext(Dispatchers.IO){
+            deviceRepository.authorize()
+                    .ignoreElement()
+                    .onErrorComplete()
+                    .await()
+        }
     }
 
     override fun clearAdvId(): Completable {
