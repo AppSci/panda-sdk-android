@@ -6,11 +6,13 @@ import com.appsci.panda.sdk.IPanda
 import com.appsci.panda.sdk.PandaImpl
 import com.appsci.panda.sdk.data.DeviceManagerImpl
 import com.appsci.panda.sdk.data.PreferencesImpl
+import com.appsci.panda.sdk.data.PropertiesDataSourceImpl
 import com.appsci.panda.sdk.data.StopNetwork
 import com.appsci.panda.sdk.domain.device.DeviceRepository
 import com.appsci.panda.sdk.domain.subscriptions.SubscriptionsRepository
 import com.appsci.panda.sdk.domain.utils.DeviceManager
 import com.appsci.panda.sdk.domain.utils.Preferences
+import com.appsci.panda.sdk.domain.utils.PropertiesDataSource
 import dagger.Module
 import dagger.Provides
 import org.threeten.bp.Clock
@@ -25,13 +27,15 @@ class AppModule(private val context: Context) {
             subscriptionsRepository: SubscriptionsRepository,
             preferences: Preferences,
             deviceManager: DeviceManager,
-            stopNetwork: StopNetwork
+            stopNetwork: StopNetwork,
+            propertiesDataSource: PropertiesDataSource,
     ): IPanda = PandaImpl(
             deviceRepository = deviceRepository,
             subscriptionsRepository = subscriptionsRepository,
             preferences = preferences,
             deviceManager = deviceManager,
-            stopNetworkInternal = stopNetwork
+            stopNetworkInternal = stopNetwork,
+            propertiesDataSource = propertiesDataSource,
     )
 
     @Provides
@@ -43,7 +47,7 @@ class AppModule(private val context: Context) {
     @Provides
     fun provideDeviceManager(
             appContext: Context,
-            preferences: Preferences
+            preferences: Preferences,
     ): DeviceManager {
         return DeviceManagerImpl(appContext, preferences)
     }
@@ -52,6 +56,14 @@ class AppModule(private val context: Context) {
     @Singleton
     fun providePreferences(context: Context): Preferences {
         return PreferencesImpl(context)
+    }
+
+    @Provides
+    @Singleton
+    fun providePropertiesDataSource(context: Context): PropertiesDataSource {
+        return PropertiesDataSourceImpl(
+                context.getSharedPreferences("PropertiesPreferences", Context.MODE_PRIVATE)
+        )
     }
 
     @Provides

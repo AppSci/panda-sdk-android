@@ -85,6 +85,7 @@ class DeviceMapperImpl @Inject constructor() : DeviceMapper {
                 lastName = authData.lastName,
                 gender = authData.gender,
                 phone = authData.phone,
+                properties = authData.properties,
         )
     }
 }

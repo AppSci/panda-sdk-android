@@ -61,7 +61,7 @@ afterEvaluate {
                 from components.release
                 groupId = 'com.github.AppSci'
                 artifactId = 'panda-sdk-android'
-                version = '1.4.1'
+                version = '1.4.2'
             }
         }
     }
@@ -115,6 +115,7 @@ dependencies {
 
     implementation coroutineDependencies.core
     implementation coroutineDependencies.android
+    implementation coroutineDependencies.rx2
 
 
     testImplementation testDependencies.jupiterApi

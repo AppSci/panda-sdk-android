@@ -50,5 +50,7 @@ data class DeviceRequest(
         @SerializedName("gender")
         val gender: Int? = null,
         @SerializedName("phone")
-        val phone: String? = null
+        val phone: String? = null,
+        @SerializedName("properties")
+        val properties: Map<String, String>,
 )

@@ -5,9 +5,11 @@ import com.appsci.panda.sdk.domain.device.DeviceRepository
 import com.appsci.panda.sdk.domain.subscriptions.*
 import com.appsci.panda.sdk.domain.utils.DeviceManager
 import com.appsci.panda.sdk.domain.utils.Preferences
+import com.appsci.panda.sdk.domain.utils.PropertiesDataSource
 import com.appsci.panda.sdk.domain.utils.rx.Schedulers
 import io.reactivex.Completable
 import io.reactivex.Single
+import kotlinx.coroutines.rx2.await
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
@@ -30,6 +32,7 @@ interface IPanda {
     fun setFbIds(fbc: String?, fbp: String?): Completable
     fun saveLoginData(loginData: LoginData)
     fun saveCustomUserId(id: String?)
+    suspend fun setUserProperty(key: String, value: String)
 
     /**
      * save appsflyer id in local storage, will be used in next update request
@@ -44,7 +47,8 @@ class PandaImpl(
         private val deviceManager: DeviceManager,
         private val deviceRepository: DeviceRepository,
         private val subscriptionsRepository: SubscriptionsRepository,
-        private val stopNetworkInternal: StopNetwork
+        private val stopNetworkInternal: StopNetwork,
+        private val propertiesDataSource: PropertiesDataSource,
 ) : IPanda {
 
     override val pandaUserId: String?
@@ -63,6 +67,14 @@ class PandaImpl(
     override fun saveCustomUserId(id: String?) {
         if (preferences.customUserId == id) return
         preferences.customUserId = id
+    }
+
+    override suspend fun setUserProperty(key: String, value: String) {
+        propertiesDataSource.putProperty(key, value)
+        deviceRepository.authorize()
+                .ignoreElement()
+                .onErrorComplete()
+                .await()
     }
 
     override fun clearAdvId(): Completable {
@@ -177,5 +189,5 @@ data class LoginData(
         val lastName: String? = null,
         val fullName: String? = null,
         val gender: Int? = null,
-        val phone: String? = null
+        val phone: String? = null,
 )
