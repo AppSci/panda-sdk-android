@@ -99,6 +99,11 @@ object Panda {
             value: String,
     ) = panda.setUserProperty(key = key, value = value)
 
+    @kotlin.jvm.JvmStatic
+    suspend fun setProperties(
+            map: Map<String, String>
+    ) = panda.setUserProperties(map)
+
     /**
      * Set custom user id to current user
      * @param id - your custom userId,

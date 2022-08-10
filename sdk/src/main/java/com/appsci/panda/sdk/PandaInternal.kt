@@ -35,6 +35,7 @@ interface IPanda {
     fun saveLoginData(loginData: LoginData)
     fun saveCustomUserId(id: String?)
     suspend fun setUserProperty(key: String, value: String)
+    suspend fun setUserProperties(map: Map<String, String>)
 
     /**
      * save appsflyer id in local storage, will be used in next update request
@@ -73,6 +74,18 @@ class PandaImpl(
 
     override suspend fun setUserProperty(key: String, value: String) {
         propertiesDataSource.putProperty(key, value)
+        withContext(Dispatchers.IO){
+            deviceRepository.authorize()
+                    .ignoreElement()
+                    .onErrorComplete()
+                    .await()
+        }
+    }
+
+    override suspend fun setUserProperties(map: Map<String, String>) {
+        map.forEach { (key, value) ->
+            propertiesDataSource.putProperty(key, value)
+        }
         withContext(Dispatchers.IO){
             deviceRepository.authorize()
                     .ignoreElement()
