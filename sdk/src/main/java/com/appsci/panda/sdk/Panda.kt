@@ -87,7 +87,7 @@ object Panda {
     @kotlin.jvm.JvmStatic
     fun setFbIdsRx(
             fbc: String?,
-            fbp: String?
+            fbp: String?,
     ): Completable =
             panda.setFbIds(fbc = fbc, fbp = fbp)
                     .subscribeOn(Schedulers.io())

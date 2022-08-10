@@ -27,6 +27,14 @@ class Converters {
     }
 
     @TypeConverter
+    fun mapToString(map: Map<String, String>): String = gson.toJson(map)
+
+    @TypeConverter
+    fun stringToMap(string: String): Map<String, String> {
+        return gson.fromJson(string, object : TypeToken<Map<String, String>>() {}.type)
+    }
+
+    @TypeConverter
     fun longsListToString(listOfLongs: List<Long>): String = gson.toJson(listOfLongs)
 
     @TypeConverter
