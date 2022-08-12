@@ -1,6 +1,6 @@
 package com.appsci.panda.sdk.domain.utils
 
-interface PropertiesDataSource {
+interface LocalPropertiesDataSource {
 
     fun putProperty(key: String, value: String)
 

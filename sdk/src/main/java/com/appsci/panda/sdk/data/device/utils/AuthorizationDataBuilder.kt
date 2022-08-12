@@ -2,7 +2,7 @@ package com.appsci.panda.sdk.data.device.utils
 
 import com.appsci.panda.sdk.domain.utils.DeviceManager
 import com.appsci.panda.sdk.domain.utils.Preferences
-import com.appsci.panda.sdk.domain.utils.PropertiesDataSource
+import com.appsci.panda.sdk.domain.utils.LocalPropertiesDataSource
 import javax.inject.Inject
 
 interface AuthorizationDataBuilder {
@@ -12,7 +12,7 @@ interface AuthorizationDataBuilder {
 class AuthorizationDataBuilderImpl @Inject constructor(
         private val device: DeviceManager,
         private val preferences: Preferences,
-        private val propertiesDataSource: PropertiesDataSource,
+        private val propertiesDataSource: LocalPropertiesDataSource,
 ) : AuthorizationDataBuilder {
 
     override fun createAuthData(): AuthorizationData {

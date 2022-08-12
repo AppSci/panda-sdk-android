@@ -5,7 +5,7 @@ import com.appsci.panda.sdk.domain.device.DeviceRepository
 import com.appsci.panda.sdk.domain.subscriptions.*
 import com.appsci.panda.sdk.domain.utils.DeviceManager
 import com.appsci.panda.sdk.domain.utils.Preferences
-import com.appsci.panda.sdk.domain.utils.PropertiesDataSource
+import com.appsci.panda.sdk.domain.utils.LocalPropertiesDataSource
 import com.appsci.panda.sdk.domain.utils.rx.Schedulers
 import io.reactivex.Completable
 import io.reactivex.Single
@@ -51,7 +51,7 @@ class PandaImpl(
         private val deviceRepository: DeviceRepository,
         private val subscriptionsRepository: SubscriptionsRepository,
         private val stopNetworkInternal: StopNetwork,
-        private val propertiesDataSource: PropertiesDataSource,
+        private val propertiesDataSource: LocalPropertiesDataSource,
 ) : IPanda {
 
     override val pandaUserId: String?

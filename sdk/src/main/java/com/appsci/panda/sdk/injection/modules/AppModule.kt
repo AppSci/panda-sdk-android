@@ -6,13 +6,13 @@ import com.appsci.panda.sdk.IPanda
 import com.appsci.panda.sdk.PandaImpl
 import com.appsci.panda.sdk.data.DeviceManagerImpl
 import com.appsci.panda.sdk.data.PreferencesImpl
-import com.appsci.panda.sdk.data.PropertiesDataSourceImpl
+import com.appsci.panda.sdk.data.LocalPropertiesDataSourceImpl
 import com.appsci.panda.sdk.data.StopNetwork
 import com.appsci.panda.sdk.domain.device.DeviceRepository
 import com.appsci.panda.sdk.domain.subscriptions.SubscriptionsRepository
 import com.appsci.panda.sdk.domain.utils.DeviceManager
 import com.appsci.panda.sdk.domain.utils.Preferences
-import com.appsci.panda.sdk.domain.utils.PropertiesDataSource
+import com.appsci.panda.sdk.domain.utils.LocalPropertiesDataSource
 import dagger.Module
 import dagger.Provides
 import org.threeten.bp.Clock
@@ -28,14 +28,14 @@ class AppModule(private val context: Context) {
             preferences: Preferences,
             deviceManager: DeviceManager,
             stopNetwork: StopNetwork,
-            propertiesDataSource: PropertiesDataSource,
+            localPropertiesDataSource: LocalPropertiesDataSource,
     ): IPanda = PandaImpl(
             deviceRepository = deviceRepository,
             subscriptionsRepository = subscriptionsRepository,
             preferences = preferences,
             deviceManager = deviceManager,
             stopNetworkInternal = stopNetwork,
-            propertiesDataSource = propertiesDataSource,
+            propertiesDataSource = localPropertiesDataSource,
     )
 
     @Provides
@@ -60,8 +60,8 @@ class AppModule(private val context: Context) {
 
     @Provides
     @Singleton
-    fun providePropertiesDataSource(context: Context): PropertiesDataSource {
-        return PropertiesDataSourceImpl(
+    fun providePropertiesDataSource(context: Context): LocalPropertiesDataSource {
+        return LocalPropertiesDataSourceImpl(
                 context.getSharedPreferences("PropertiesPreferences", Context.MODE_PRIVATE)
         )
     }

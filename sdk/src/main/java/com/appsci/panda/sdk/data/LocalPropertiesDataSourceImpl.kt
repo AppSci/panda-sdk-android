@@ -2,11 +2,11 @@ package com.appsci.panda.sdk.data
 
 import android.content.SharedPreferences
 import androidx.core.content.edit
-import com.appsci.panda.sdk.domain.utils.PropertiesDataSource
+import com.appsci.panda.sdk.domain.utils.LocalPropertiesDataSource
 
-class PropertiesDataSourceImpl(
+class LocalPropertiesDataSourceImpl(
         private val preferences: SharedPreferences,
-) : PropertiesDataSource {
+) : LocalPropertiesDataSource {
 
     override fun putProperty(key: String, value: String) {
         preferences.edit { putString(key, value) }
