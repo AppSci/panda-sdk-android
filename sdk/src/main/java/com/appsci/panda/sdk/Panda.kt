@@ -87,11 +87,22 @@ object Panda {
     @kotlin.jvm.JvmStatic
     fun setFbIdsRx(
             fbc: String?,
-            fbp: String?
+            fbp: String?,
     ): Completable =
             panda.setFbIds(fbc = fbc, fbp = fbp)
                     .subscribeOn(Schedulers.io())
                     .observeOn(Schedulers.mainThread())
+
+    @kotlin.jvm.JvmStatic
+    suspend fun setProperty(
+            key: String,
+            value: String,
+    ) = panda.setUserProperty(key = key, value = value)
+
+    @kotlin.jvm.JvmStatic
+    suspend fun setProperties(
+            map: Map<String, String>
+    ) = panda.setUserProperties(map)
 
     /**
      * Set custom user id to current user

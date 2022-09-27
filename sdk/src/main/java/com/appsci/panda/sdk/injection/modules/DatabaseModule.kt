@@ -6,6 +6,7 @@ import com.appsci.panda.sdk.data.db.PandaDatabase
 import com.appsci.panda.sdk.data.db.migrations.Migration1To2
 import com.appsci.panda.sdk.data.db.migrations.Migration2To3
 import com.appsci.panda.sdk.data.db.migrations.Migration3To4
+import com.appsci.panda.sdk.data.db.migrations.Migration4to5
 import com.appsci.panda.sdk.data.device.DeviceDao
 import dagger.Module
 import dagger.Provides
@@ -21,7 +22,8 @@ class DatabaseModule() {
                 .addMigrations(
                         Migration1To2(),
                         Migration2To3(),
-                        Migration3To4()
+                        Migration3To4(),
+                        Migration4to5(),
                 )
                 .fallbackToDestructiveMigration()
                 .build()
