@@ -15,9 +15,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
-import com.android.billingclient.api.BillingClient
-import com.android.billingclient.api.BillingFlowParams
-import com.android.billingclient.api.SkuDetailsParams
+import com.android.billingclient.api.*
 import com.appsci.panda.sdk.Panda
 import com.appsci.panda.sdk.R
 import com.appsci.panda.sdk.databinding.PandaFragmentSubscriptionBinding
@@ -345,11 +343,38 @@ class SubscriptionFragment : Fragment() {
         Panda.subscriptionSelect(screenExtra, id)
         Timber.d("purchase click $id")
         val type = getType(id)
-        billing.getSkuDetails(SkuDetailsParams.newBuilder()
-                .setType(type)
-                .setSkusList(listOf(id))
-                .build())
-                .observeOn(Schedulers.mainThread())
+        val billingClient = BillingClient.newBuilder(requireContext())
+                .build()
+        billingClient
+                .startConnection(object : BillingClientStateListener {
+                    override fun onBillingServiceDisconnected() {
+
+                    }
+
+                    override fun onBillingSetupFinished(p0: BillingResult) {
+                        billingClient.queryProductDetailsAsync(QueryProductDetailsParams.newBuilder()
+                                .setProductList(listOf(
+                                        QueryProductDetailsParams.Product.newBuilder()
+                                                .setProductId("wb_monthly_9.99")
+                                                .setProductType(BillingClient.ProductType.SUBS)
+                                                .build(),
+                                        QueryProductDetailsParams.Product.newBuilder()
+                                                .setProductId("tenwords_lifetime_39.99")
+                                                .setProductType(BillingClient.ProductType.INAPP)
+                                                .build()
+                                ))
+                                .build()
+                        ) { _, p1 ->
+
+                        }
+                    }
+                })
+        billing.getSkuDetails(
+                SkuDetailsParams.newBuilder()
+                        .setType(type)
+                        .setSkusList(listOf(id))
+                        .build()
+        ).observeOn(Schedulers.mainThread())
                 .flatMapCompletable {
                     Timber.d("getSkuDetails ${it.first()}")
                     Timber.d("getSkuDetails json ${it.first().originalJson}")
