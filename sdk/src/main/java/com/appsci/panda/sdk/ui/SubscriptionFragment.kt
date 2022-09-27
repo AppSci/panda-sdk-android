@@ -339,14 +339,19 @@ class SubscriptionFragment : Fragment() {
         }
     }
 
+    val detailsCallback: (BillingResult, MutableList<ProductDetails>) -> Unit = { _, p1 ->
+        Timber.d("queryProductDetailsAsync $p1")
+    }
+
+    val billingClient = BillingClient.newBuilder(requireContext())
+            .enablePendingPurchases()
+            .setListener { billingResult, mutableList -> }
+            .build()
+
     private fun purchaseClick(id: String) {
         Panda.subscriptionSelect(screenExtra, id)
         Timber.d("purchase click $id")
         val type = getType(id)
-        val billingClient = BillingClient.newBuilder(requireContext())
-                .enablePendingPurchases()
-                .setListener { billingResult, mutableList -> }
-                .build()
         billingClient
                 .startConnection(object : BillingClientStateListener {
                     override fun onBillingServiceDisconnected() {
@@ -366,10 +371,8 @@ class SubscriptionFragment : Fragment() {
                                                         .setProductType(BillingClient.ProductType.INAPP)
                                                         .build()
                                         ))
-                                        .build()
-                        ) { _, p1 ->
-                            Timber.d("queryProductDetailsAsync $p1")
-                        }
+                                        .build(), detailsCallback
+                        )
                     }
                 })
         billing.getSkuDetails(
