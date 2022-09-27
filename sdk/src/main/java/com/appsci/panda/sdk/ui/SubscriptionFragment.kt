@@ -351,7 +351,8 @@ class SubscriptionFragment : Fragment() {
                 .build())
                 .observeOn(Schedulers.mainThread())
                 .flatMapCompletable {
-                    Timber.d("getSkuDetails $it")
+                    Timber.d("getSkuDetails ${it.first()}")
+                    Timber.d("getSkuDetails json ${it.first().originalJson}")
                     billing.launchFlow(
                             requireActivity(),
                             BillingFlowParams.newBuilder()
