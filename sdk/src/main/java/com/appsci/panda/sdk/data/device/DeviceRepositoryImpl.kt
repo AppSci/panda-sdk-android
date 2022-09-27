@@ -8,6 +8,7 @@ import com.appsci.panda.sdk.domain.device.AuthState
 import com.appsci.panda.sdk.domain.device.Device
 import com.appsci.panda.sdk.domain.device.DeviceRepository
 import com.appsci.panda.sdk.domain.utils.Preferences
+import com.appsci.panda.sdk.domain.utils.LocalPropertiesDataSource
 import com.appsci.panda.sdk.domain.utils.rx.shareSingle
 import io.reactivex.Completable
 import io.reactivex.Maybe
@@ -21,7 +22,8 @@ class DeviceRepositoryImpl @Inject constructor(
         private val authorizationDataBuilder: AuthorizationDataBuilder,
         private val authDataValidator: AuthDataValidator,
         private val deviceMapper: DeviceMapper,
-        private val preferences: Preferences
+        private val preferences: Preferences,
+        private val localPropertiesDataSource: LocalPropertiesDataSource,
 ) : DeviceRepository {
 
     private val deviceDao: DeviceDao = database.getDeviceDao()
@@ -64,6 +66,7 @@ class DeviceRepositoryImpl @Inject constructor(
     override fun clearLocalData(): Completable = Completable.fromAction {
         database.clearAllTables()
         preferences.clear()
+        localPropertiesDataSource.clear()
     }
 
     private fun createAuthObservable(): Single<Device> {

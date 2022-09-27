@@ -24,5 +24,6 @@ data class AuthorizationData(
         val lastName: String? = null,
         val fullName: String? = null,
         val gender: Int? = null,
-        val phone: String? = null
+        val phone: String? = null,
+        val properties: Map<String, String>,
 )

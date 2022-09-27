@@ -28,6 +28,7 @@ class AuthDataValidatorImpl @Inject constructor() : AuthDataValidator {
                 && device.lastName == authData.lastName
                 && device.gender == authData.gender
                 && device.phone == authData.phone
+                && device.properties.orEmpty() == authData.properties
     }
 
 }

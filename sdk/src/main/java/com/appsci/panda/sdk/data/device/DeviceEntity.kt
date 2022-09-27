@@ -54,7 +54,9 @@ data class DeviceEntity(
         @ColumnInfo(name = "gender")
         val gender: Int?,
         @ColumnInfo(name = "phone")
-        val phone: String?
+        val phone: String?,
+        @ColumnInfo(name = "properties")
+        val properties: Map<String, String>?,
 ) {
     companion object {
         const val TABLE_NAME = "Device"
