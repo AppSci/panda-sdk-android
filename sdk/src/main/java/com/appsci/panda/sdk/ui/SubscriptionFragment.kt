@@ -343,10 +343,12 @@ class SubscriptionFragment : Fragment() {
         Timber.d("queryProductDetailsAsync $p1")
     }
 
-    val billingClient = BillingClient.newBuilder(requireContext())
+    val billingClient : BillingClient by lazy {
+        BillingClient.newBuilder(requireContext())
             .enablePendingPurchases()
             .setListener { billingResult, mutableList -> }
             .build()
+    }
 
     private fun purchaseClick(id: String) {
         Panda.subscriptionSelect(screenExtra, id)
