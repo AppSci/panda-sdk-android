@@ -344,6 +344,7 @@ class SubscriptionFragment : Fragment() {
         Timber.d("purchase click $id")
         val type = getType(id)
         val billingClient = BillingClient.newBuilder(requireContext())
+                .setListener { billingResult, mutableList ->  }
                 .build()
         billingClient
                 .startConnection(object : BillingClientStateListener {
@@ -352,18 +353,19 @@ class SubscriptionFragment : Fragment() {
                     }
 
                     override fun onBillingSetupFinished(p0: BillingResult) {
-                        billingClient.queryProductDetailsAsync(QueryProductDetailsParams.newBuilder()
-                                .setProductList(listOf(
-                                        QueryProductDetailsParams.Product.newBuilder()
-                                                .setProductId("wb_monthly_9.99")
-                                                .setProductType(BillingClient.ProductType.SUBS)
-                                                .build(),
-                                        QueryProductDetailsParams.Product.newBuilder()
-                                                .setProductId("tenwords_lifetime_39.99")
-                                                .setProductType(BillingClient.ProductType.INAPP)
-                                                .build()
-                                ))
-                                .build()
+                        billingClient.queryProductDetailsAsync(
+                                QueryProductDetailsParams.newBuilder()
+                                        .setProductList(listOf(
+                                                QueryProductDetailsParams.Product.newBuilder()
+                                                        .setProductId("wb_monthly_9.99")
+                                                        .setProductType(BillingClient.ProductType.SUBS)
+                                                        .build(),
+                                                QueryProductDetailsParams.Product.newBuilder()
+                                                        .setProductId("tenwords_lifetime_39.99")
+                                                        .setProductType(BillingClient.ProductType.INAPP)
+                                                        .build()
+                                        ))
+                                        .build()
                         ) { _, p1 ->
 
                         }
