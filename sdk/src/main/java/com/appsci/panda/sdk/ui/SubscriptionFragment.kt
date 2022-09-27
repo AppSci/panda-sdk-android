@@ -351,6 +351,7 @@ class SubscriptionFragment : Fragment() {
                 .build())
                 .observeOn(Schedulers.mainThread())
                 .flatMapCompletable {
+                    Timber.d("getSkuDetails $it")
                     billing.launchFlow(
                             requireActivity(),
                             BillingFlowParams.newBuilder()
@@ -379,7 +380,7 @@ class SubscriptionFragment : Fragment() {
 @Parcelize
 data class ScreenExtra(
         val id: String,
-        val name: String
+        val name: String,
 ) : Parcelable {
     companion object {
         fun create(screen: SubscriptionScreen) =
