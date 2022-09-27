@@ -345,7 +345,7 @@ class SubscriptionFragment : Fragment() {
         val type = getType(id)
         val billingClient = BillingClient.newBuilder(requireContext())
                 .enablePendingPurchases()
-                .setListener { billingResult, mutableList ->  }
+                .setListener { billingResult, mutableList -> }
                 .build()
         billingClient
                 .startConnection(object : BillingClientStateListener {
@@ -368,7 +368,7 @@ class SubscriptionFragment : Fragment() {
                                         ))
                                         .build()
                         ) { _, p1 ->
-
+                            Timber.d("queryProductDetailsAsync $p1")
                         }
                     }
                 })
