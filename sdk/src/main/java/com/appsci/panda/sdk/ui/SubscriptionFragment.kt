@@ -344,6 +344,7 @@ class SubscriptionFragment : Fragment() {
         Timber.d("purchase click $id")
         val type = getType(id)
         val billingClient = BillingClient.newBuilder(requireContext())
+                .enablePendingPurchases()
                 .setListener { billingResult, mutableList ->  }
                 .build()
         billingClient
