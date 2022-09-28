@@ -96,17 +96,6 @@ class SubscriptionFragment : Fragment() {
     @SuppressLint("SetJavaScriptEnabled")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        this@SubscriptionFragment.loadPricing("" +
-                "[\n" +
-                "\t{\n" +
-                "\t\t\"id\": \"wb_yearly59.99_trial\",\n" +
-                "\t\t\"type\":\"subs\"\n" +
-                "\t},\n" +
-                "\t{\n" +
-                "\t\t\"id\": \"tenwords_lifetime_39.99\",\n" +
-                "\t\t\"type\":\"inapp\"\n" +
-                "\t}\n" +
-                "]")
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 binding.webView.evaluateJavascript("onBackPressed();") {
