@@ -324,10 +324,13 @@ class SubscriptionFragment : Fragment() {
                 }
                 .toList()
                 .map { it.flatten() }
+                .map {
+                    gson.toJson(it.toModels())
+                }
+                .observeOn(Schedulers.mainThread())
                 .subscribe({
-                    val responseString = gson.toJson(it)
-                    Timber.d("getProductDetails $responseString")
-                    binding.webView.evaluateJavascript("pricingLoaded($responseString);") {
+                    Timber.d("getProductDetails $it")
+                    binding.webView.evaluateJavascript("pricingLoaded($it);") {
 
                     }
                 }, {
