@@ -84,7 +84,7 @@ ext {
 
     // Billing Client
     billingClientVer = '5.0.0'
-    rxbillingVer = '82f06b05c0'
+    rxbillingVer = '4aea881859'
 
     // Developer-related
     timberVer = '4.7.1'
