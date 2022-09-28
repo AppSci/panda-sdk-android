@@ -15,7 +15,10 @@ import androidx.activity.OnBackPressedCallback
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
-import com.android.billingclient.api.*
+import com.android.billingclient.api.BillingClient
+import com.android.billingclient.api.BillingFlowParams
+import com.android.billingclient.api.QueryProductDetailsParams
+import com.android.billingclient.api.SkuDetailsParams
 import com.appsci.panda.sdk.Panda
 import com.appsci.panda.sdk.R
 import com.appsci.panda.sdk.databinding.PandaFragmentSubscriptionBinding
@@ -28,6 +31,9 @@ import com.appsci.panda.sdk.domain.utils.rx.Schedulers
 import com.gen.rxbilling.client.PurchasesUpdate
 import com.gen.rxbilling.client.RxBilling
 import com.gen.rxbilling.lifecycle.BillingConnectionManager
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import io.reactivex.Flowable
 import io.reactivex.disposables.CompositeDisposable
 import kotlinx.parcelize.Parcelize
 import org.json.JSONObject
@@ -90,6 +96,17 @@ class SubscriptionFragment : Fragment() {
     @SuppressLint("SetJavaScriptEnabled")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        this@SubscriptionFragment.loadPricing("" +
+                "[\n" +
+                "\t{\n" +
+                "\t\t\"id\": \"wb_yearly59.99_trial\",\n" +
+                "\t\t\"type\":\"subs\"\n" +
+                "\t},\n" +
+                "\t{\n" +
+                "\t\t\"id\": \"tenwords_lifetime_39.99\",\n" +
+                "\t\t\"type\":\"inapp\"\n" +
+                "\t}\n" +
+                "]")
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 binding.webView.evaluateJavascript("onBackPressed();") {
@@ -170,6 +187,10 @@ class SubscriptionFragment : Fragment() {
                 )
             }
 
+            override fun loadPricing(request: String) {
+                this@SubscriptionFragment.loadPricing(request)
+            }
+
             override fun onAction(json: String) {
                 Timber.d("onAction $json")
                 val jsonObject = JSONObject(json)
@@ -238,7 +259,7 @@ class SubscriptionFragment : Fragment() {
                             Timber.d("observeSuccess $it")
                             binding.loading.root.visibility = View.VISIBLE
                             val purchase = it.purchases.first()
-                            val sku = purchase.skus.first()
+                            val sku = purchase.products.first()
                             Panda.onPurchase(screenExtra, purchase, getType(sku))
                                     .doAfterTerminate {
                                         binding.loading.root.visibility = View.GONE
@@ -277,6 +298,41 @@ class SubscriptionFragment : Fragment() {
         Panda.removePurchaseListener(onPurchaseListener)
         disposeOnDestroyView.clear()
         super.onDestroyView()
+    }
+
+    private fun loadPricing(requestString: String) {
+        val gson = Gson()
+        val requests: List<ProductPricingRequest> = gson.fromJson(
+                requestString,
+                object : TypeToken<List<ProductPricingRequest>>() {}.type,
+        )
+        val params: List<QueryProductDetailsParams> = requests.groupBy { it.type }
+                .map { group ->
+                    QueryProductDetailsParams.newBuilder()
+                            .setProductList(
+                                    group.value.map {
+                                        QueryProductDetailsParams.Product.newBuilder()
+                                                .setProductId(it.id)
+                                                .setProductType(group.key)
+                                                .build()
+                                    }
+                            ).build()
+                }
+        Flowable.fromIterable(params)
+                .flatMapSingle {
+                    billing.getProductDetails(it)
+                }
+                .toList()
+                .map { it.flatten() }
+                .subscribe({
+                    val responseString = gson.toJson(it)
+                    Timber.d("getProductDetails $responseString")
+                    binding.webView.evaluateJavascript("pricingLoaded($responseString);") {
+
+                    }
+                }, {
+                    Timber.e(it)
+                })
     }
 
     private fun handleRedirect(url: String): Boolean {
@@ -333,50 +389,16 @@ class SubscriptionFragment : Fragment() {
         val products = resources.getStringArray(R.array.panda_products)
         return when {
             products.contains(id) -> {
-                BillingClient.SkuType.INAPP
+                BillingClient.ProductType.INAPP
             }
-            else -> BillingClient.SkuType.SUBS
+            else -> BillingClient.ProductType.SUBS
         }
-    }
-
-    val detailsCallback: (BillingResult, MutableList<ProductDetails>) -> Unit = { _, p1 ->
-        Timber.d("queryProductDetailsAsync $p1")
-    }
-
-    val billingClient : BillingClient by lazy {
-        BillingClient.newBuilder(requireContext())
-            .enablePendingPurchases()
-            .setListener { billingResult, mutableList -> }
-            .build()
     }
 
     private fun purchaseClick(id: String) {
         Panda.subscriptionSelect(screenExtra, id)
         Timber.d("purchase click $id")
         val type = getType(id)
-        billingClient
-                .startConnection(object : BillingClientStateListener {
-                    override fun onBillingServiceDisconnected() {
-
-                    }
-
-                    override fun onBillingSetupFinished(p0: BillingResult) {
-                        billingClient.queryProductDetailsAsync(
-                                QueryProductDetailsParams.newBuilder()
-                                        .setProductList(listOf(
-                                                QueryProductDetailsParams.Product.newBuilder()
-                                                        .setProductId("wb_monthly_9.99")
-                                                        .setProductType(BillingClient.ProductType.SUBS)
-                                                        .build(),
-                                                QueryProductDetailsParams.Product.newBuilder()
-                                                        .setProductId("tenwords_lifetime_39.99")
-                                                        .setProductType(BillingClient.ProductType.INAPP)
-                                                        .build()
-                                        ))
-                                        .build(), detailsCallback
-                        )
-                    }
-                })
         billing.getSkuDetails(
                 SkuDetailsParams.newBuilder()
                         .setType(type)
@@ -384,8 +406,6 @@ class SubscriptionFragment : Fragment() {
                         .build()
         ).observeOn(Schedulers.mainThread())
                 .flatMapCompletable {
-                    Timber.d("getSkuDetails ${it.first()}")
-                    Timber.d("getSkuDetails json ${it.first().originalJson}")
                     billing.launchFlow(
                             requireActivity(),
                             BillingFlowParams.newBuilder()

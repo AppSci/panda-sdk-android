@@ -15,6 +15,7 @@ interface JavaScriptBridgeInterface {
     fun onRestore()
     fun onCustomEventSent(json: String)
     fun onAction(json: String)
+    fun loadPricing(request: String)
 }
 
 class JavaScriptInterface(
