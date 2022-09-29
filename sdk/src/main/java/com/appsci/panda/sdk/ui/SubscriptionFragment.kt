@@ -17,6 +17,7 @@ import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingFlowParams
+import com.android.billingclient.api.QueryProductDetailsParams
 import com.android.billingclient.api.SkuDetailsParams
 import com.appsci.panda.sdk.Panda
 import com.appsci.panda.sdk.R
@@ -30,6 +31,9 @@ import com.appsci.panda.sdk.domain.utils.rx.Schedulers
 import com.gen.rxbilling.client.PurchasesUpdate
 import com.gen.rxbilling.client.RxBilling
 import com.gen.rxbilling.lifecycle.BillingConnectionManager
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import io.reactivex.Flowable
 import io.reactivex.disposables.CompositeDisposable
 import kotlinx.parcelize.Parcelize
 import org.json.JSONObject
@@ -172,6 +176,10 @@ class SubscriptionFragment : Fragment() {
                 )
             }
 
+            override fun loadPricing(request: String) {
+                this@SubscriptionFragment.loadPricing(request)
+            }
+
             override fun onAction(json: String) {
                 Timber.d("onAction $json")
                 val jsonObject = JSONObject(json)
@@ -240,7 +248,7 @@ class SubscriptionFragment : Fragment() {
                             Timber.d("observeSuccess $it")
                             binding.loading.root.visibility = View.VISIBLE
                             val purchase = it.purchases.first()
-                            val sku = purchase.skus.first()
+                            val sku = purchase.products.first()
                             Panda.onPurchase(screenExtra, purchase, getType(sku))
                                     .doAfterTerminate {
                                         binding.loading.root.visibility = View.GONE
@@ -279,6 +287,44 @@ class SubscriptionFragment : Fragment() {
         Panda.removePurchaseListener(onPurchaseListener)
         disposeOnDestroyView.clear()
         super.onDestroyView()
+    }
+
+    private fun loadPricing(requestString: String) {
+        val gson = Gson()
+        val requests: List<ProductPricingRequest> = gson.fromJson(
+                requestString,
+                object : TypeToken<List<ProductPricingRequest>>() {}.type,
+        )
+        val params: List<QueryProductDetailsParams> = requests.groupBy { it.type }
+                .map { group ->
+                    QueryProductDetailsParams.newBuilder()
+                            .setProductList(
+                                    group.value.map {
+                                        QueryProductDetailsParams.Product.newBuilder()
+                                                .setProductId(it.id)
+                                                .setProductType(group.key)
+                                                .build()
+                                    }
+                            ).build()
+                }
+        Flowable.fromIterable(params)
+                .flatMapSingle {
+                    billing.getProductDetails(it)
+                }
+                .toList()
+                .map { it.flatten() }
+                .map {
+                    gson.toJson(it.toModels())
+                }
+                .observeOn(Schedulers.mainThread())
+                .subscribe({
+                    Timber.d("getProductDetails $it")
+                    binding.webView.evaluateJavascript("pricingLoaded($it);") {
+
+                    }
+                }, {
+                    Timber.e(it)
+                })
     }
 
     private fun handleRedirect(url: String): Boolean {
@@ -335,9 +381,9 @@ class SubscriptionFragment : Fragment() {
         val products = resources.getStringArray(R.array.panda_products)
         return when {
             products.contains(id) -> {
-                BillingClient.SkuType.INAPP
+                BillingClient.ProductType.INAPP
             }
-            else -> BillingClient.SkuType.SUBS
+            else -> BillingClient.ProductType.SUBS
         }
     }
 
@@ -345,11 +391,12 @@ class SubscriptionFragment : Fragment() {
         Panda.subscriptionSelect(screenExtra, id)
         Timber.d("purchase click $id")
         val type = getType(id)
-        billing.getSkuDetails(SkuDetailsParams.newBuilder()
-                .setType(type)
-                .setSkusList(listOf(id))
-                .build())
-                .observeOn(Schedulers.mainThread())
+        billing.getSkuDetails(
+                SkuDetailsParams.newBuilder()
+                        .setType(type)
+                        .setSkusList(listOf(id))
+                        .build()
+        ).observeOn(Schedulers.mainThread())
                 .flatMapCompletable {
                     billing.launchFlow(
                             requireActivity(),
@@ -379,7 +426,7 @@ class SubscriptionFragment : Fragment() {
 @Parcelize
 data class ScreenExtra(
         val id: String,
-        val name: String
+        val name: String,
 ) : Parcelable {
     companion object {
         fun create(screen: SubscriptionScreen) =
