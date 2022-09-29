@@ -89,7 +89,7 @@ class JavaScriptInterface(
     @JavascriptInterface
     fun loadPricing(request: String) {
         scope.launch {
-            jsBridge.onAction(request)
+            jsBridge.loadPricing(request)
         }
     }
 
