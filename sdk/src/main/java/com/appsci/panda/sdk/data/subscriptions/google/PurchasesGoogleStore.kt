@@ -1,8 +1,6 @@
 package com.appsci.panda.sdk.data.subscriptions.google
 
-import com.android.billingclient.api.AcknowledgePurchaseParams
-import com.android.billingclient.api.BillingClient
-import com.android.billingclient.api.ConsumeParams
+import com.android.billingclient.api.*
 import com.appsci.panda.sdk.data.subscriptions.PurchasesMapper
 import com.appsci.panda.sdk.data.subscriptions.local.PurchaseEntity
 import com.appsci.panda.sdk.data.subscriptions.local.TYPE_PRODUCT
@@ -12,6 +10,8 @@ import com.gen.rxbilling.client.RxBilling
 import io.reactivex.Completable
 import io.reactivex.Flowable
 import io.reactivex.Single
+import kotlinx.coroutines.*
+import kotlinx.coroutines.rx2.await
 import timber.log.Timber
 
 interface PurchasesGoogleStore {
@@ -24,11 +24,13 @@ interface PurchasesGoogleStore {
 
     fun acknowledge(): Completable
 
+    suspend fun getProductsDetails(requests: Map<String, List<String>>): List<ProductDetails>
+
 }
 
 class PurchasesGoogleStoreImpl(
         private val rxBilling: RxBilling,
-        private val mapper: PurchasesMapper
+        private val mapper: PurchasesMapper,
 ) : PurchasesGoogleStore {
 
     override fun getPurchases(): Single<List<PurchaseEntity>> {
@@ -81,5 +83,30 @@ class PurchasesGoogleStoreImpl(
                                 .build())
                     }
                     .observeOn(Schedulers.io())
+
+    override suspend fun getProductsDetails(requests: Map<String, List<String>>): List<ProductDetails> =
+        withContext(Dispatchers.IO) {
+            val scope = CoroutineScope(SupervisorJob())
+            val params: List<QueryProductDetailsParams> = requests
+                    .map { group ->
+                        val type = group.key
+                        val ids = group.value
+                        QueryProductDetailsParams.newBuilder()
+                                .setProductList(
+                                        ids.map {
+                                            QueryProductDetailsParams.Product.newBuilder()
+                                                    .setProductId(it)
+                                                    .setProductType(type)
+                                                    .build()
+                                        }
+                                ).build()
+                    }
+
+            return@withContext params.map {
+                scope.async {
+                    rxBilling.getProductDetails(it).await()
+                }
+            }.awaitAll().flatten()
+        }
 
 }

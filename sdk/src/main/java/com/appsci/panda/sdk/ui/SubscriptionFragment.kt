@@ -15,9 +15,9 @@ import androidx.activity.OnBackPressedCallback
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingFlowParams
-import com.android.billingclient.api.QueryProductDetailsParams
 import com.android.billingclient.api.SkuDetailsParams
 import com.appsci.panda.sdk.Panda
 import com.appsci.panda.sdk.R
@@ -33,8 +33,8 @@ import com.gen.rxbilling.client.RxBilling
 import com.gen.rxbilling.lifecycle.BillingConnectionManager
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import io.reactivex.Flowable
 import io.reactivex.disposables.CompositeDisposable
+import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
 import org.json.JSONObject
 import timber.log.Timber
@@ -291,40 +291,29 @@ class SubscriptionFragment : Fragment() {
 
     private fun loadPricing(requestString: String) {
         val gson = Gson()
-        val requests: List<ProductPricingRequest> = gson.fromJson(
+        val requests: Map<String, List<String>> = gson.fromJson<List<ProductPricingRequest>>(
                 requestString,
                 object : TypeToken<List<ProductPricingRequest>>() {}.type,
-        )
-        val params: List<QueryProductDetailsParams> = requests.groupBy { it.type }
-                .map { group ->
-                    QueryProductDetailsParams.newBuilder()
-                            .setProductList(
-                                    group.value.map {
-                                        QueryProductDetailsParams.Product.newBuilder()
-                                                .setProductId(it.id)
-                                                .setProductType(group.key)
-                                                .build()
-                                    }
-                            ).build()
-                }
-        Flowable.fromIterable(params)
-                .flatMapSingle {
-                    billing.getProductDetails(it)
-                }
-                .toList()
-                .map { it.flatten() }
-                .map {
-                    gson.toJson(it.toModels())
-                }
-                .observeOn(Schedulers.mainThread())
-                .subscribe({
-                    Timber.d("getProductDetails $it")
-                    binding.webView.evaluateJavascript("pricingLoaded($it);") {
+        ).groupBy { it.type }
+                .map { entry ->
+                    entry.key to entry.value.map { it.id }
+                }.toMap()
+
+        lifecycleScope.launch {
+            runCatching {
+                Panda.getProductsDetails(requests)
+            }.onSuccess {
+                val productsDetails = Panda.getProductsDetails(requests)
+                val json = gson.toJson(productsDetails.toModels())
+                viewLifecycleOwner.lifecycleScope.launchWhenCreated {
+                    binding.webView.evaluateJavascript("pricingLoaded($json);") {
 
                     }
-                }, {
-                    Timber.e(it)
-                })
+                }
+            }.onFailure {
+                Timber.e(it)
+            }
+        }
     }
 
     private fun handleRedirect(url: String): Boolean {

@@ -1,5 +1,6 @@
 package com.appsci.panda.sdk.domain.subscriptions
 
+import com.android.billingclient.api.ProductDetails
 import io.reactivex.Completable
 import io.reactivex.Single
 
@@ -35,4 +36,6 @@ interface SubscriptionsRepository {
     fun getCachedOrDefaultScreen(id: String): Single<SubscriptionScreen>
 
     fun getFallbackScreen(): Single<SubscriptionScreen>
+
+    suspend fun getProductsDetails(requests: Map<String, List<String>>): List<ProductDetails>
 }

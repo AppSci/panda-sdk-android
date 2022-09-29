@@ -1,5 +1,6 @@
 package com.appsci.panda.sdk
 
+import com.android.billingclient.api.ProductDetails
 import com.appsci.panda.sdk.data.StopNetwork
 import com.appsci.panda.sdk.domain.device.DeviceRepository
 import com.appsci.panda.sdk.domain.subscriptions.*
@@ -36,6 +37,7 @@ interface IPanda {
     fun saveCustomUserId(id: String?)
     suspend fun setUserProperty(key: String, value: String)
     suspend fun setUserProperties(map: Map<String, String>)
+    suspend fun getProductsDetails(requests: Map<String, List<String>>) : List<ProductDetails>
 
     /**
      * save appsflyer id in local storage, will be used in next update request
@@ -93,6 +95,10 @@ class PandaImpl(
                     .await()
         }
     }
+
+    override suspend fun getProductsDetails(requests: Map<String, List<String>>) : List<ProductDetails> =
+            subscriptionsRepository.getProductsDetails(requests)
+
 
     override fun clearAdvId(): Completable {
         return Completable.defer {

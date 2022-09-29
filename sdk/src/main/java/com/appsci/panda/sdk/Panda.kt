@@ -5,6 +5,7 @@ import android.app.Activity
 import android.app.Application
 import android.content.Intent
 import com.android.billingclient.api.BillingClient
+import com.android.billingclient.api.ProductDetails
 import com.appsci.panda.sdk.domain.subscriptions.*
 import com.appsci.panda.sdk.domain.utils.rx.DefaultCompletableObserver
 import com.appsci.panda.sdk.domain.utils.rx.DefaultSchedulerProvider
@@ -21,6 +22,8 @@ import com.appsci.panda.sdk.ui.SubscriptionFragment
 import com.jakewharton.threetenabp.AndroidThreeTen
 import io.reactivex.Completable
 import io.reactivex.Single
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import okhttp3.logging.HttpLoggingInterceptor
 import javax.inject.Inject
 import com.android.billingclient.api.Purchase as GooglePurchase
@@ -66,7 +69,7 @@ object Panda {
             fbc: String?,
             fbp: String?,
             onComplete: (() -> Unit)? = null,
-            onError: ((Throwable) -> Unit)? = null
+            onError: ((Throwable) -> Unit)? = null,
     ) = setFbIdsRx(fbc = fbc, fbp = fbp)
             .doOnComplete { onComplete?.invoke() }
             .doOnError { onError?.invoke(it) }
@@ -101,7 +104,7 @@ object Panda {
 
     @kotlin.jvm.JvmStatic
     suspend fun setProperties(
-            map: Map<String, String>
+            map: Map<String, String>,
     ) = panda.setUserProperties(map)
 
     /**
@@ -115,7 +118,7 @@ object Panda {
 
     @kotlin.jvm.JvmStatic
     fun saveLoginData(
-            loginData: LoginData
+            loginData: LoginData,
     ) = panda.saveLoginData(loginData)
 
     /**
@@ -135,7 +138,7 @@ object Panda {
     @kotlin.jvm.JvmStatic
     fun syncSubscriptions(
             onComplete: (() -> Unit)? = null,
-            onError: ((Throwable) -> Unit)? = null
+            onError: ((Throwable) -> Unit)? = null,
     ) = syncSubscriptionsRx()
             .doOnComplete { onComplete?.invoke() }
             .doOnError { onError?.invoke(it) }
@@ -156,7 +159,7 @@ object Panda {
     @kotlin.jvm.JvmStatic
     fun getSubscriptionState(
             onSuccess: ((SubscriptionState) -> Unit)? = null,
-            onError: ((Throwable) -> Unit)? = null
+            onError: ((Throwable) -> Unit)? = null,
     ): Unit = getSubscriptionStateRx()
             .doOnSuccess { onSuccess?.invoke(it) }
             .doOnError { onError?.invoke(it) }
@@ -186,7 +189,7 @@ object Panda {
     @kotlin.jvm.JvmStatic
     fun consumeProducts(
             onComplete: (() -> Unit)? = null,
-            onError: ((Throwable) -> Unit)? = null
+            onError: ((Throwable) -> Unit)? = null,
     ) = panda.consumeProducts()
             .doOnComplete(onComplete)
             .doOnError(onError)
@@ -200,7 +203,7 @@ object Panda {
             type: ScreenType = ScreenType.Sales,
             id: String? = null,
             onComplete: (() -> Unit)? = null,
-            onError: ((Throwable) -> Unit)? = null
+            onError: ((Throwable) -> Unit)? = null,
     ) = prefetchSubscriptionScreenRx(type, id)
             .doOnComplete { onComplete?.invoke() }
             .doOnError { onError?.invoke(it) }
@@ -238,7 +241,7 @@ object Panda {
             type: ScreenType? = null,
             id: String? = null,
             onSuccess: ((SubscriptionFragment) -> Unit)? = null,
-            onError: ((Throwable) -> Unit)? = null
+            onError: ((Throwable) -> Unit)? = null,
     ) = getSubscriptionScreenRx(type, id)
             .doOnSuccess { onSuccess?.invoke(it) }
             .doOnError { onError?.invoke(it) }
@@ -264,7 +267,7 @@ object Panda {
             activity: Activity? = null,
             theme: Int? = null,
             onComplete: (() -> Unit)? = null,
-            onError: ((Throwable) -> Unit)? = null
+            onError: ((Throwable) -> Unit)? = null,
     ) = showSubscriptionScreenRx(type, id, activity, theme)
             .doOnComplete { onComplete?.invoke() }
             .doOnError { onError?.invoke(it) }
@@ -292,6 +295,12 @@ object Panda {
                         launchContext.startActivity(intent)
                     }
                     .ignoreElement()
+
+    @JvmStatic
+    suspend fun getProductsDetails(requests: Map<String, List<String>>): List<ProductDetails> =
+            withContext(Dispatchers.IO) {
+                panda.getProductsDetails(requests)
+            }
 
     @JvmStatic
     fun dropData() = panda.stopNetwork()
@@ -420,7 +429,7 @@ object Panda {
     internal fun onPurchase(
             screenExtra: ScreenExtra,
             purchase: GooglePurchase,
-            @BillingClient.SkuType type: String
+            @BillingClient.SkuType type: String,
     ): Single<Boolean> {
         val purchaseType = when (type) {
             BillingClient.SkuType.SUBS -> SkuType.SUBSCRIPTION
@@ -472,7 +481,7 @@ object Panda {
 
     private fun notifyPurchase(
             screenExtra: ScreenExtra,
-            skuId: String
+            skuId: String,
     ) {
         pandaListeners.forEach { it.onPurchase(skuId) }
         analyticsListeners.forEach {
