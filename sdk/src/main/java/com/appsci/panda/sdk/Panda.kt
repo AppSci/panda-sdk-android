@@ -22,6 +22,8 @@ import com.appsci.panda.sdk.ui.SubscriptionFragment
 import com.jakewharton.threetenabp.AndroidThreeTen
 import io.reactivex.Completable
 import io.reactivex.Single
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import okhttp3.logging.HttpLoggingInterceptor
 import javax.inject.Inject
 import com.android.billingclient.api.Purchase as GooglePurchase
@@ -296,7 +298,9 @@ object Panda {
 
     @JvmStatic
     suspend fun getProductsDetails(requests: Map<String, List<String>>): List<ProductDetails> =
-            panda.getProductsDetails(requests)
+            withContext(Dispatchers.IO) {
+                panda.getProductsDetails(requests)
+            }
 
     @JvmStatic
     fun dropData() = panda.stopNetwork()
