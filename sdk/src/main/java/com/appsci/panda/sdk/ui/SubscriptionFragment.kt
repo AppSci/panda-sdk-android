@@ -300,12 +300,18 @@ class SubscriptionFragment : Fragment() {
                 }.toMap()
 
         lifecycleScope.launch {
-            val productsDetails = Panda.getProductsDetails(requests)
-            val json = gson.toJson(productsDetails.toModels())
-            viewLifecycleOwner.lifecycleScope.launchWhenCreated {
-                binding.webView.evaluateJavascript("pricingLoaded($json);") {
+            runCatching {
+                Panda.getProductsDetails(requests)
+            }.onSuccess {
+                val productsDetails = Panda.getProductsDetails(requests)
+                val json = gson.toJson(productsDetails.toModels())
+                viewLifecycleOwner.lifecycleScope.launchWhenCreated {
+                    binding.webView.evaluateJavascript("pricingLoaded($json);") {
 
+                    }
                 }
+            }.onFailure {
+                Timber.e(it)
             }
         }
     }

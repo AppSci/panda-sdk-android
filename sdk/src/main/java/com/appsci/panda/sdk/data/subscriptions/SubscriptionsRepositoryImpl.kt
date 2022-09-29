@@ -148,30 +148,31 @@ class SubscriptionsRepositoryImpl(
     override fun getFallbackScreen(): Single<SubscriptionScreen> =
             fileStore.getSubscriptionScreen()
 
-    override suspend fun getProductsDetails(requests: Map<String, List<String>>): List<ProductDetails> {
-        val scope = CoroutineScope(SupervisorJob())
+    override suspend fun getProductsDetails(requests: Map<String, List<String>>): List<ProductDetails> =
+            withContext(Dispatchers.IO) {
+                val scope = CoroutineScope(SupervisorJob())
 
-        val params: List<QueryProductDetailsParams> = requests
-                .map { group ->
-                    val type = group.key
-                    val ids = group.value
-                    QueryProductDetailsParams.newBuilder()
-                            .setProductList(
-                                    ids.map {
-                                        QueryProductDetailsParams.Product.newBuilder()
-                                                .setProductId(it)
-                                                .setProductType(type)
-                                                .build()
-                                    }
-                            ).build()
-                }
+                val params: List<QueryProductDetailsParams> = requests
+                        .map { group ->
+                            val type = group.key
+                            val ids = group.value
+                            QueryProductDetailsParams.newBuilder()
+                                    .setProductList(
+                                            ids.map {
+                                                QueryProductDetailsParams.Product.newBuilder()
+                                                        .setProductId(it)
+                                                        .setProductType(type)
+                                                        .build()
+                                            }
+                                    ).build()
+                        }
 
-        return params.map {
-            scope.async {
-                billing.getProductDetails(it).await()
+                return@withContext params.map {
+                    scope.async {
+                        billing.getProductDetails(it).await()
+                    }
+                }.awaitAll().flatten()
             }
-        }.awaitAll().flatten()
-    }
 
     override fun getSubscriptionState(): Single<SubscriptionState> =
             deviceDao.requireUserId()
