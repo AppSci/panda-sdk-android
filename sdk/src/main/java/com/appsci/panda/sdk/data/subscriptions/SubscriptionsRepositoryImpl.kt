@@ -1,5 +1,7 @@
 package com.appsci.panda.sdk.data.subscriptions
 
+import com.android.billingclient.api.ProductDetails
+import com.android.billingclient.api.QueryProductDetailsParams
 import com.appsci.panda.sdk.data.device.DeviceDao
 import com.appsci.panda.sdk.data.subscriptions.google.BillingValidator
 import com.appsci.panda.sdk.data.subscriptions.google.PurchasesGoogleStore
@@ -9,10 +11,13 @@ import com.appsci.panda.sdk.data.subscriptions.rest.PurchasesRestStore
 import com.appsci.panda.sdk.data.subscriptions.rest.ScreenResponse
 import com.appsci.panda.sdk.domain.subscriptions.*
 import com.appsci.panda.sdk.domain.utils.rx.DefaultCompletableObserver
+import com.gen.rxbilling.client.RxBilling
 import io.reactivex.Completable
 import io.reactivex.Flowable
 import io.reactivex.Maybe
 import io.reactivex.Single
+import kotlinx.coroutines.*
+import kotlinx.coroutines.rx2.await
 import timber.log.Timber
 
 class SubscriptionsRepositoryImpl(
@@ -22,7 +27,8 @@ class SubscriptionsRepositoryImpl(
         private val mapper: PurchasesMapper,
         private val intentValidator: BillingValidator,
         private val deviceDao: DeviceDao,
-        private val fileStore: FileStore
+        private val fileStore: FileStore,
+        private val billing: RxBilling,
 ) : SubscriptionsRepository {
 
     private val loadedScreens = mutableMapOf<ScreenKey, ScreenResponse>()
@@ -142,6 +148,31 @@ class SubscriptionsRepositoryImpl(
     override fun getFallbackScreen(): Single<SubscriptionScreen> =
             fileStore.getSubscriptionScreen()
 
+    override suspend fun getProductsDetails(requests: Map<String, List<String>>): List<ProductDetails> {
+        val scope = CoroutineScope(SupervisorJob())
+
+        val params: List<QueryProductDetailsParams> = requests
+                .map { group ->
+                    val type = group.key
+                    val ids = group.value
+                    QueryProductDetailsParams.newBuilder()
+                            .setProductList(
+                                    ids.map {
+                                        QueryProductDetailsParams.Product.newBuilder()
+                                                .setProductId(it)
+                                                .setProductType(type)
+                                                .build()
+                                    }
+                            ).build()
+                }
+
+        return params.map {
+            scope.async {
+                billing.getProductDetails(it).await()
+            }
+        }.awaitAll().flatten()
+    }
+
     override fun getSubscriptionState(): Single<SubscriptionState> =
             deviceDao.requireUserId()
                     .flatMap { restStore.getSubscriptionState(it) }
@@ -197,5 +228,5 @@ val ScreenType.requestName: String
 
 data class ScreenKey(
         val id: String?,
-        val type: ScreenType?
+        val type: ScreenType?,
 )
