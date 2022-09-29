@@ -38,7 +38,6 @@ class BillingModule(private val context: Context) {
             restStore: PurchasesRestStore,
             mapper: PurchasesMapper,
             deviceDao: DeviceDao,
-            rxBilling: RxBilling,
     ): SubscriptionsRepository {
         return SubscriptionsRepositoryImpl(
                 localStore,
@@ -48,7 +47,6 @@ class BillingModule(private val context: Context) {
                 BillingValidatorImpl(),
                 deviceDao,
                 FileStoreImpl(context),
-                rxBilling,
         )
     }
 
