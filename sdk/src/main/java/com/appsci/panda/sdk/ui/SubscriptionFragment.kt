@@ -304,7 +304,7 @@ class SubscriptionFragment : Fragment() {
                 Panda.getProductsDetails(requests)
             }.onSuccess {
                 val json = gson.toJson(it.toModels())
-                viewLifecycleOwner.lifecycleScope.launchWhenCreated {
+                lifecycleScope.launchWhenStarted {
                     binding.webView.evaluateJavascript("pricingLoaded($json);") {
 
                     }
