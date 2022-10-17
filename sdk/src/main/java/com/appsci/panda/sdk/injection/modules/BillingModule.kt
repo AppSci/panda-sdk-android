@@ -37,7 +37,7 @@ class BillingModule(private val context: Context) {
             googleStore: PurchasesGoogleStore,
             restStore: PurchasesRestStore,
             mapper: PurchasesMapper,
-            deviceDao: DeviceDao
+            deviceDao: DeviceDao,
     ): SubscriptionsRepository {
         return SubscriptionsRepositoryImpl(
                 localStore,
@@ -46,7 +46,7 @@ class BillingModule(private val context: Context) {
                 mapper,
                 BillingValidatorImpl(),
                 deviceDao,
-                FileStoreImpl(context)
+                FileStoreImpl(context),
         )
     }
 
@@ -66,7 +66,7 @@ class BillingModule(private val context: Context) {
     @Singleton
     fun providePurchasesGoogleStore(
             rxBilling: RxBilling,
-            mapper: PurchasesMapper
+            mapper: PurchasesMapper,
     ): PurchasesGoogleStore {
         return PurchasesGoogleStoreImpl(rxBilling, mapper)
     }

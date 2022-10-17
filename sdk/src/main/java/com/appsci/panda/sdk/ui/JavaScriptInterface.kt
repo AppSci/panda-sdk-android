@@ -15,6 +15,7 @@ interface JavaScriptBridgeInterface {
     fun onRestore()
     fun onCustomEventSent(json: String)
     fun onAction(json: String)
+    fun loadPricing(request: String)
 }
 
 class JavaScriptInterface(
@@ -82,6 +83,13 @@ class JavaScriptInterface(
     fun onAction(json: String) {
         scope.launch {
             jsBridge.onAction(json)
+        }
+    }
+
+    @JavascriptInterface
+    fun loadPricing(request: String) {
+        scope.launch {
+            jsBridge.loadPricing(request)
         }
     }
 

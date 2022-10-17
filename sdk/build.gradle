@@ -5,7 +5,7 @@ apply plugin: 'kotlin-kapt'
 apply plugin: 'maven-publish'
 
 android {
-    compileSdkVersion 31
+    compileSdkVersion 32
     buildToolsVersion "29.0.3"
 
     resourcePrefix 'panda_'
@@ -16,7 +16,7 @@ android {
 
     defaultConfig {
         minSdkVersion 21
-        targetSdkVersion 31
+        targetSdkVersion 32
 
         buildConfigField "String", "PANDA_ENDPOINT_PROD", "\"https://api.panda.boosters.company/\""
         buildConfigField "String", "PANDA_ENDPOINT_STAGE", "\"https://api.panda-stage.boosters.company/\""
@@ -61,7 +61,7 @@ afterEvaluate {
                 from components.release
                 groupId = 'com.github.AppSci'
                 artifactId = 'panda-sdk-android'
-                version = '1.4.2'
+                version = '1.4.4'
             }
         }
     }
