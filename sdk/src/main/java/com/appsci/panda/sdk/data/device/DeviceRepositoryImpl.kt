@@ -7,8 +7,8 @@ import com.appsci.panda.sdk.data.network.RestApi
 import com.appsci.panda.sdk.domain.device.AuthState
 import com.appsci.panda.sdk.domain.device.Device
 import com.appsci.panda.sdk.domain.device.DeviceRepository
-import com.appsci.panda.sdk.domain.utils.Preferences
 import com.appsci.panda.sdk.domain.utils.LocalPropertiesDataSource
+import com.appsci.panda.sdk.domain.utils.Preferences
 import com.appsci.panda.sdk.domain.utils.rx.shareSingle
 import io.reactivex.Completable
 import io.reactivex.Maybe
@@ -17,13 +17,13 @@ import timber.log.Timber
 import javax.inject.Inject
 
 class DeviceRepositoryImpl @Inject constructor(
-        private val database: PandaDatabase,
-        private val restApi: RestApi,
-        private val authorizationDataBuilder: AuthorizationDataBuilder,
-        private val authDataValidator: AuthDataValidator,
-        private val deviceMapper: DeviceMapper,
-        private val preferences: Preferences,
-        private val localPropertiesDataSource: LocalPropertiesDataSource,
+    private val database: PandaDatabase,
+    private val restApi: RestApi,
+    private val authorizationDataBuilder: AuthorizationDataBuilder,
+    private val authDataValidator: AuthDataValidator,
+    private val deviceMapper: DeviceMapper,
+    private val preferences: Preferences,
+    private val localPropertiesDataSource: LocalPropertiesDataSource,
 ) : DeviceRepository {
 
     private val deviceDao: DeviceDao = database.getDeviceDao()
@@ -50,17 +50,17 @@ class DeviceRepositoryImpl @Inject constructor(
      *  perform device authorization or returns existing device from local storage
      */
     override fun ensureAuthorized(): Completable =
-            ensureAuthorizedSingle.ignoreElement()
+        ensureAuthorizedSingle.ignoreElement()
 
     override fun getAuthState(): Single<AuthState> {
         return deviceDao.selectDevice().toSingle()
-                .map<AuthState> { AuthState.Authorized(deviceMapper.mapToDomain(it)) }
-                .onErrorReturnItem(AuthState.NotAuthorized)
+            .map<AuthState> { AuthState.Authorized(deviceMapper.mapToDomain(it)) }
+            .onErrorReturnItem(AuthState.NotAuthorized)
     }
 
     override fun deleteDevice(): Completable {
         return restApi.deleteDevice()
-                .andThen(clearLocalData())
+            .andThen(clearLocalData())
     }
 
     override fun clearLocalData(): Completable = Completable.fromAction {
@@ -72,23 +72,23 @@ class DeviceRepositoryImpl @Inject constructor(
     private fun createAuthObservable(): Single<Device> {
         return Single.defer {
             deviceDao.selectDevice()
-                    .flatMapSingleElement { updateDevice(it) }
-                    .switchIfEmpty(
-                        registerDevice()
-                            .flatMap {
-                                //update right after register, if need
-                                deviceDao.selectDevice().toSingle()
-                                    .flatMap { updateDevice(it) }
-                            }
-                    )
+                .flatMapSingleElement { updateDevice(it) }
+                .switchIfEmpty(
+                    registerDevice()
+                        .flatMap {
+                            //update right after register, if need
+                            deviceDao.selectDevice().toSingle()
+                                .flatMap { updateDevice(it) }
+                        }
+                )
         }
     }
 
     private fun createEnsureAuthObservable(): Single<Device> {
         return Single.defer {
             deviceDao.selectDevice()
-                    .map { deviceMapper.mapToDomain(it) }
-                    .switchIfEmpty(authSharedSingle)
+                .map { deviceMapper.mapToDomain(it) }
+                .switchIfEmpty(authSharedSingle)
         }
     }
 
@@ -96,14 +96,15 @@ class DeviceRepositoryImpl @Inject constructor(
         return Single.defer {
             val authData = authorizationDataBuilder.createAuthData()
             Timber.d("registerDevice $authData")
-            return@defer restApi.registerDevice(deviceMapper.mapRegisterRequest(authData))
-                    .map { deviceMapper.mapToLocal(it, authData) }
-                    .doOnSuccess {
-                        preferences.pandaUserId = it.id
-                        deviceDao.putDevice(it)
-                    }
-                    .doOnError { Timber.e(it) }
-                    .map { deviceMapper.mapToDomain(it) }
+            val registerRequest = deviceMapper.mapRegisterRequest(authData)
+            return@defer restApi.registerDevice(registerRequest)
+                .map { deviceMapper.mapToLocal(it, registerRequest) }
+                .doOnSuccess {
+                    preferences.pandaUserId = it.id
+                    deviceDao.putDevice(it)
+                }
+                .doOnError { Timber.e(it) }
+                .map { deviceMapper.mapToDomain(it) }
         }
     }
 
@@ -115,13 +116,14 @@ class DeviceRepositoryImpl @Inject constructor(
                 Timber.d("updateDevice skipped")
                 return@defer Single.just(deviceMapper.mapToDomain(deviceEntity))
             } else {
-                return@defer restApi.updateDevice(deviceMapper.mapUpdateRequest(authData), deviceEntity.id)
-                        .map { deviceMapper.mapToLocal(it, authData) }
-                        .doOnSuccess {
-                            preferences.pandaUserId = it.id
-                            deviceDao.putDevice(it)
-                        }
-                        .map { deviceMapper.mapToDomain(it) }
+                val updateRequest = deviceMapper.mapUpdateRequest(authData)
+                return@defer restApi.updateDevice(updateRequest, deviceEntity.id)
+                    .map { deviceMapper.mapToLocal(it, updateRequest) }
+                    .doOnSuccess {
+                        preferences.pandaUserId = it.id
+                        deviceDao.putDevice(it)
+                    }
+                    .map { deviceMapper.mapToDomain(it) }
             }
         }.onErrorReturn { deviceMapper.mapToDomain(deviceEntity) }
     }
@@ -129,15 +131,16 @@ class DeviceRepositoryImpl @Inject constructor(
     override fun clearAdvId(): Completable {
         return Maybe.defer {
             deviceDao.selectDevice()
-                    .flatMapSingleElement { deviceEntity ->
-                        val authData = authorizationDataBuilder.createAuthData()
-                                .copy(idfa = "")
-                        return@flatMapSingleElement restApi.updateDevice(deviceMapper.mapUpdateRequest(authData), deviceEntity.id)
-                                .map { deviceMapper.mapToLocal(it, authData) }
-                                .doOnSuccess {
-                                    deviceDao.putDevice(it)
-                                }
-                    }
+                .flatMapSingleElement { deviceEntity ->
+                    val authData = authorizationDataBuilder.createAuthData()
+                        .copy(idfa = "")
+                    val updateRequest = deviceMapper.mapUpdateRequest(authData)
+                    return@flatMapSingleElement restApi.updateDevice(updateRequest, deviceEntity.id)
+                        .map { deviceMapper.mapToLocal(it, updateRequest) }
+                        .doOnSuccess {
+                            deviceDao.putDevice(it)
+                        }
+                }
         }.ignoreElement()
     }
 }
