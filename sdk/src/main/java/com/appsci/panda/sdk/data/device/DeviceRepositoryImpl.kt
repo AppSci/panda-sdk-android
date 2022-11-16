@@ -73,7 +73,14 @@ class DeviceRepositoryImpl @Inject constructor(
         return Single.defer {
             deviceDao.selectDevice()
                     .flatMapSingleElement { updateDevice(it) }
-                    .switchIfEmpty(registerDevice())
+                    .switchIfEmpty(
+                        registerDevice()
+                            .flatMap {
+                                //update right after register, if need
+                                deviceDao.selectDevice().toSingle()
+                                    .flatMap { updateDevice(it) }
+                            }
+                    )
         }
     }
 
@@ -89,7 +96,7 @@ class DeviceRepositoryImpl @Inject constructor(
         return Single.defer {
             val authData = authorizationDataBuilder.createAuthData()
             Timber.d("registerDevice $authData")
-            return@defer restApi.registerDevice(deviceMapper.mapToRequest(authData))
+            return@defer restApi.registerDevice(deviceMapper.mapRegisterRequest(authData))
                     .map { deviceMapper.mapToLocal(it, authData) }
                     .doOnSuccess {
                         preferences.pandaUserId = it.id
@@ -108,7 +115,7 @@ class DeviceRepositoryImpl @Inject constructor(
                 Timber.d("updateDevice skipped")
                 return@defer Single.just(deviceMapper.mapToDomain(deviceEntity))
             } else {
-                return@defer restApi.updateDevice(deviceMapper.mapToRequest(authData), deviceEntity.id)
+                return@defer restApi.updateDevice(deviceMapper.mapUpdateRequest(authData), deviceEntity.id)
                         .map { deviceMapper.mapToLocal(it, authData) }
                         .doOnSuccess {
                             preferences.pandaUserId = it.id
@@ -125,7 +132,7 @@ class DeviceRepositoryImpl @Inject constructor(
                     .flatMapSingleElement { deviceEntity ->
                         val authData = authorizationDataBuilder.createAuthData()
                                 .copy(idfa = "")
-                        return@flatMapSingleElement restApi.updateDevice(deviceMapper.mapToRequest(authData), deviceEntity.id)
+                        return@flatMapSingleElement restApi.updateDevice(deviceMapper.mapUpdateRequest(authData), deviceEntity.id)
                                 .map { deviceMapper.mapToLocal(it, authData) }
                                 .doOnSuccess {
                                     deviceDao.putDevice(it)
