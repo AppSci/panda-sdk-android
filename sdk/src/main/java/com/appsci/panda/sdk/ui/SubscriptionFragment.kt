@@ -91,7 +91,7 @@ class SubscriptionFragment : Fragment() {
         super.onCreate(savedInstanceState)
         Panda.pandaComponent.inject(this)
         lifecycle.addObserver(BillingConnectionManager(billing))
-        billing.getPurchaseHistory(BillingClient.SkuType.SUBS)
+        billing.getPurchaseHistory(BillingClient.ProductType.SUBS)
             .subscribeOn(Schedulers.io())
             .subscribe(
                 {
