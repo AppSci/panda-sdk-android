@@ -34,7 +34,12 @@ import com.gen.rxbilling.lifecycle.BillingConnectionManager
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import io.reactivex.disposables.CompositeDisposable
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.rx2.await
 import kotlinx.parcelize.Parcelize
 import org.json.JSONObject
 import timber.log.Timber
@@ -69,25 +74,41 @@ class SubscriptionFragment : Fragment() {
         }
     }
 
+    private var showTrial = CompletableDeferred<Boolean>()
+
     companion object {
         const val EXTRA_SCREEN = "screenExtra"
         const val EXTRA_PAYLOAD = "screenPayload"
 
-        fun create(screenExtra: ScreenExtra) =
-                SubscriptionFragment().apply {
-                    arguments = Bundle().apply {
-                        putParcelable(EXTRA_SCREEN, screenExtra)
-                    }
-                }
+        fun create(screenExtra: ScreenExtra) = SubscriptionFragment().apply {
+            arguments = Bundle().apply {
+                putParcelable(EXTRA_SCREEN, screenExtra)
+            }
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Panda.pandaComponent.inject(this)
         lifecycle.addObserver(BillingConnectionManager(billing))
+        billing.getPurchaseHistory(BillingClient.SkuType.SUBS)
+            .subscribeOn(Schedulers.io())
+            .subscribe(
+                {
+                    showTrial.complete(it.isEmpty())
+                },
+                {
+                    Timber.d("cannot load subscriptions' purchase history")
+                }
+            ).apply(disposeOnDestroyView::add)
+
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         return PandaFragmentSubscriptionBinding.inflate(inflater).apply {
             _binding = this
         }.root
@@ -96,18 +117,28 @@ class SubscriptionFragment : Fragment() {
     @SuppressLint("SetJavaScriptEnabled")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                binding.webView.evaluateJavascript("onBackPressed();") {
-                    val handled = it.toBoolean()
-                    Timber.d("onBackPressed result $it")
-                    if (!handled) {
-                        Panda.onDismiss(screenExtra)
+
+        requireActivity().onBackPressedDispatcher.addCallback(
+            viewLifecycleOwner,
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    binding.webView.evaluateJavascript("onBackPressed();") {
+                        val handled = it.toBoolean()
+                        Timber.d("onBackPressed result $it")
+                        if (!handled) {
+                            Panda.onDismiss(screenExtra)
+                        }
                     }
                 }
-            }
-        })
-        binding.webView.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.panda_screen_bg))
+            })
+
+
+        binding.webView.setBackgroundColor(
+            ContextCompat.getColor(
+                requireContext(),
+                R.color.panda_screen_bg
+            )
+        )
         binding.webView.settings.javaScriptEnabled = true
         binding.webView.isHorizontalScrollBarEnabled = false
         binding.webView.isVerticalScrollBarEnabled = false
@@ -144,8 +175,8 @@ class SubscriptionFragment : Fragment() {
                 Timber.d("onScreenChanged $json")
                 val name = JSONObject(json).getString("screen_name")
                 Panda.onScreenChanged(
-                        id = screenExtra.id,
-                        screenName = name,
+                    id = screenExtra.id,
+                    screenName = name,
                 )
             }
 
@@ -170,9 +201,9 @@ class SubscriptionFragment : Fragment() {
                     }
                 }
                 Panda.onCustomEvent(
-                        screenId = screenExtra.id,
-                        name = jsonObject.getString("name"),
-                        params = paramsMap,
+                    screenId = screenExtra.id,
+                    name = jsonObject.getString("name"),
+                    params = paramsMap,
                 )
             }
 
@@ -184,8 +215,8 @@ class SubscriptionFragment : Fragment() {
                 Timber.d("onAction $json")
                 val jsonObject = JSONObject(json)
                 Panda.onAction(
-                        name = jsonObject.getString("name"),
-                        json = json,
+                    name = jsonObject.getString("name"),
+                    json = json,
                 )
             }
 
@@ -213,8 +244,8 @@ class SubscriptionFragment : Fragment() {
         }
 
         binding.webView.addJavascriptInterface(
-                JavaScriptInterface(jsBridge),
-                "AndroidFunction",
+            JavaScriptInterface(jsBridge),
+            "AndroidFunction",
         )
 
         binding.webView.webViewClient = object : WebViewClient() {
@@ -226,10 +257,20 @@ class SubscriptionFragment : Fragment() {
                     webView.evaluateJavascript("setPayload($screenPayload);") {
                         Timber.d("setPayload result $it")
                     }
+                    lifecycleScope.launch {
+                        if (!showTrial.await()) {
+                            webView.evaluateJavascript("removeTrialUi();") {
+                                Timber.d("removeTrialUi result $it")
+                            }
+                        }
+                    }
                 }
             }
 
-            override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest): Boolean {
+            override fun shouldOverrideUrlLoading(
+                view: WebView?,
+                request: WebResourceRequest
+            ): Boolean {
                 Timber.d("shouldOverrideUrlLoading1 ${request.url}")
                 return handleRedirect(request.url.toString())
             }
@@ -241,45 +282,55 @@ class SubscriptionFragment : Fragment() {
 
         }
         disposeOnDestroyView.addAll(
-                billing.observeSuccess()
-                        .observeOn(Schedulers.mainThread())
-                        .flatMapSingle {
-                            it.purchases.firstOrNull()
-                            Timber.d("observeSuccess $it")
-                            binding.loading.root.visibility = View.VISIBLE
-                            val purchase = it.purchases.first()
-                            val sku = purchase.products.first()
-                            Panda.onPurchase(screenExtra, purchase, getType(sku))
-                                    .doAfterTerminate {
-                                        binding.loading.root.visibility = View.GONE
-                                    }
-                        }.subscribe({
-                            Timber.d("onPurchase success=$it")
-                        }, {
-                            Panda.onError(it)
-                            Timber.e(it)
-                        }),
-                billing.observeErrors()
-                        .subscribe({
-                            if (it is PurchasesUpdate.Failed) {
-                                val throwable = RuntimeException("Billing update error: $it")
-                                Timber.e(throwable)
-                                Panda.onError(throwable)
-                            }
-                        }, {
-                            Timber.e(it)
-                            Panda.onError(it)
-                        })
+            billing.observeSuccess()
+                .observeOn(Schedulers.mainThread())
+                .flatMapSingle {
+                    it.purchases.firstOrNull()
+                    Timber.d("observeSuccess $it")
+                    binding.loading.root.visibility = View.VISIBLE
+                    val purchase = it.purchases.first()
+                    val sku = purchase.products.first()
+                    Panda.onPurchase(screenExtra, purchase, getType(sku))
+                        .doAfterTerminate {
+                            binding.loading.root.visibility = View.GONE
+                        }
+                }.subscribe({
+                    Timber.d("onPurchase success=$it")
+                }, {
+                    Panda.onError(it)
+                    Timber.e(it)
+                }),
+            billing.observeErrors()
+                .subscribe({
+                    if (it is PurchasesUpdate.Failed) {
+                        val throwable = RuntimeException("Billing update error: $it")
+                        Timber.e(throwable)
+                        Panda.onError(throwable)
+                    }
+                }, {
+                    Timber.e(it)
+                    Panda.onError(it)
+                })
         )
         disposeOnDestroyView.add(
-                subscriptionsRepository.getCachedOrDefaultScreen(screenExtra.id)
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(Schedulers.mainThread())
-                        .doOnSuccess { screen ->
-                            binding.webView.loadDataWithBaseURL("file:///android_asset/", screen.screenHtml, null, null, null)
-                        }
-                        .subscribeWith(DefaultSingleObserver()))
+            subscriptionsRepository.getCachedOrDefaultScreen(screenExtra.id)
+                .subscribeOn(Schedulers.io())
+                .observeOn(Schedulers.mainThread())
+                .doOnSuccess { screen ->
+                    binding.webView.loadDataWithBaseURL(
+                        "file:///android_asset/",
+                        screen.screenHtml,
+                        null,
+                        null,
+                        null
+                    )
+                }
+                .subscribeWith(DefaultSingleObserver()))
         Panda.screenShowed(screenExtra)
+
+        lifecycleScope.launchWhenStarted {
+            showTrial.await()
+        }
     }
 
     override fun onDestroyView() {
@@ -292,12 +343,12 @@ class SubscriptionFragment : Fragment() {
     private fun loadPricing(requestString: String) {
         val gson = Gson()
         val requests: Map<String, List<String>> = gson.fromJson<List<ProductPricingRequest>>(
-                requestString,
-                object : TypeToken<List<ProductPricingRequest>>() {}.type,
+            requestString,
+            object : TypeToken<List<ProductPricingRequest>>() {}.type,
         ).groupBy { it.type }
-                .map { entry ->
-                    entry.key to entry.value.map { it.id }
-                }.toMap()
+            .map { entry ->
+                entry.key to entry.value.map { it.id }
+            }.toMap()
 
         lifecycleScope.launch {
             runCatching {
@@ -336,7 +387,7 @@ class SubscriptionFragment : Fragment() {
             }
             url.contains("/subscription?type=purchase") -> {
                 val id = url.toUri().getQueryParameter("product_id")
-                        ?: error("product_id should be provided")
+                    ?: error("product_id should be provided")
 
                 purchaseClick(id)
                 true
@@ -353,14 +404,14 @@ class SubscriptionFragment : Fragment() {
     private fun restore() {
         binding.loading.root.visibility = View.VISIBLE
         disposeOnDestroyView.add(
-                Panda.restore(screenExtra)
-                        .doOnSuccess {
-                            Timber.d("restore $it")
-                        }
-                        .doAfterTerminate {
-                            binding.loading.root.visibility = View.GONE
-                        }
-                        .subscribeWith(DefaultSingleObserver())
+            Panda.restore(screenExtra)
+                .doOnSuccess {
+                    Timber.d("restore $it")
+                }
+                .doAfterTerminate {
+                    binding.loading.root.visibility = View.GONE
+                }
+                .subscribeWith(DefaultSingleObserver())
         )
     }
 
@@ -380,24 +431,24 @@ class SubscriptionFragment : Fragment() {
         Timber.d("purchase click $id")
         val type = getType(id)
         billing.getSkuDetails(
-                SkuDetailsParams.newBuilder()
-                        .setType(type)
-                        .setSkusList(listOf(id))
-                        .build()
+            SkuDetailsParams.newBuilder()
+                .setType(type)
+                .setSkusList(listOf(id))
+                .build()
         ).observeOn(Schedulers.mainThread())
-                .flatMapCompletable {
-                    billing.launchFlow(
-                            requireActivity(),
-                            BillingFlowParams.newBuilder()
-                                    .setSkuDetails(it.first())
-                                    .build()
-                    )
-                }
-                .doOnError {
-                    Panda.onError(it)
-                    Timber.e(it)
-                }
-                .subscribe(DefaultCompletableObserver())
+            .flatMapCompletable {
+                billing.launchFlow(
+                    requireActivity(),
+                    BillingFlowParams.newBuilder()
+                        .setSkuDetails(it.first())
+                        .build()
+                )
+            }
+            .doOnError {
+                Panda.onError(it)
+                Timber.e(it)
+            }
+            .subscribe(DefaultCompletableObserver())
     }
 
     private fun openExternalUrl(url: String) {
@@ -413,15 +464,15 @@ class SubscriptionFragment : Fragment() {
 
 @Parcelize
 data class ScreenExtra(
-        val id: String,
-        val name: String,
+    val id: String,
+    val name: String,
 ) : Parcelable {
     companion object {
         fun create(screen: SubscriptionScreen) =
-                ScreenExtra(
-                        id = screen.id,
-                        name = screen.name
-                )
+            ScreenExtra(
+                id = screen.id,
+                name = screen.name
+            )
     }
 }
 
@@ -431,10 +482,10 @@ fun SubscriptionFragment.addPayload(json: JSONObject) {
 }
 
 fun RxBilling.observeSuccess() =
-        this.observeUpdates()
-                .filter { it is PurchasesUpdate.Success }
-                .map { it as PurchasesUpdate.Success }
+    this.observeUpdates()
+        .filter { it is PurchasesUpdate.Success }
+        .map { it as PurchasesUpdate.Success }
 
 fun RxBilling.observeErrors() =
-        this.observeUpdates()
-                .filter { it !is PurchasesUpdate.Success }
+    this.observeUpdates()
+        .filter { it !is PurchasesUpdate.Success }
