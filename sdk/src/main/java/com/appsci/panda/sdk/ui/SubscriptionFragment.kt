@@ -98,6 +98,7 @@ class SubscriptionFragment : Fragment() {
                     showTrial.complete(it.isEmpty())
                 },
                 {
+                    showTrial.complete(false)
                     Timber.d("cannot load subscriptions' purchase history")
                 }
             ).apply(disposeOnDestroyView::add)
