@@ -258,11 +258,11 @@ class SubscriptionFragment : Fragment() {
                     webView.evaluateJavascript("setPayload($screenPayload);") {
                         Timber.d("setPayload result $it")
                     }
-                    lifecycleScope.launch {
-                        if (!showTrial.await()) {
-                            webView.evaluateJavascript("removeTrialUi();") {
-                                Timber.d("removeTrialUi result $it")
-                            }
+                }
+                lifecycleScope.launchWhenStarted {
+                    if (!showTrial.await()) {
+                        _binding?.webView?.evaluateJavascript("removeTrialUi();") {
+                            Timber.d("removeTrialUi result $it")
                         }
                     }
                 }
@@ -328,10 +328,6 @@ class SubscriptionFragment : Fragment() {
                 }
                 .subscribeWith(DefaultSingleObserver()))
         Panda.screenShowed(screenExtra)
-
-        lifecycleScope.launchWhenStarted {
-            showTrial.await()
-        }
     }
 
     override fun onDestroyView() {
