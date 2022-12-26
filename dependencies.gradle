@@ -108,8 +108,8 @@ ext {
     fireBaseAdsVer = '18.1.0'
 
     //Dates lib
-    threetenVer = '1.2.4'
-    threetenJavaVer = '1.4.0'
+    threetenVer = '1.4.4'
+    threetenJavaVer = '1.6.0'
 
     // Unit-tests
     jUnitVer = '4.13.2'
