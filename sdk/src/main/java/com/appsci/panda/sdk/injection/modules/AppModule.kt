@@ -9,6 +9,7 @@ import com.appsci.panda.sdk.data.PreferencesImpl
 import com.appsci.panda.sdk.data.LocalPropertiesDataSourceImpl
 import com.appsci.panda.sdk.data.StopNetwork
 import com.appsci.panda.sdk.domain.device.DeviceRepository
+import com.appsci.panda.sdk.domain.feedback.FeedbackRepository
 import com.appsci.panda.sdk.domain.subscriptions.SubscriptionsRepository
 import com.appsci.panda.sdk.domain.utils.DeviceManager
 import com.appsci.panda.sdk.domain.utils.Preferences
@@ -29,6 +30,7 @@ class AppModule(private val context: Context) {
             deviceManager: DeviceManager,
             stopNetwork: StopNetwork,
             localPropertiesDataSource: LocalPropertiesDataSource,
+            feedbackRepository: FeedbackRepository,
     ): IPanda = PandaImpl(
             deviceRepository = deviceRepository,
             subscriptionsRepository = subscriptionsRepository,
@@ -36,6 +38,7 @@ class AppModule(private val context: Context) {
             deviceManager = deviceManager,
             stopNetworkInternal = stopNetwork,
             propertiesDataSource = localPropertiesDataSource,
+            feedbackRepository = feedbackRepository,
     )
 
     @Provides
