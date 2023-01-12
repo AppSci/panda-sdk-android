@@ -121,9 +121,7 @@ class PandaImpl(
 
     override suspend fun sendFeedback(screenId: String, answer: String) {
         deviceRepository.ensureAuthorized().await()
-        pandaUserId?.let {
-            feedbackRepository.sendFeedback(screenId = screenId, answer = answer)
-        }
+        feedbackRepository.sendFeedback(screenId = screenId, answer = answer)
     }
 
     override fun clearAdvId(): Completable {

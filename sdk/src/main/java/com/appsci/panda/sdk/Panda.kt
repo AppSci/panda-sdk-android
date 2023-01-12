@@ -111,7 +111,9 @@ object Panda {
     suspend fun sendFeedback(
         screenId: String,
         answer: String,
-    ) = panda.sendFeedback(screenId = screenId, answer = answer)
+    ) = withContext(Dispatchers.IO) {
+        panda.sendFeedback(screenId = screenId, answer = answer)
+    }
 
     /**
      * Set custom user id to current user
