@@ -1,7 +1,7 @@
 ext {
-    compileSdkVer = 29
+    compileSdkVer = 33
     minSdkVer = 23
-    targetSdkVer = 29
+    targetSdkVer = 33
 
     versionName = '1.2.0'
     testersMails = '.ci/internal/beta_distribution_emails.txt'
@@ -83,8 +83,8 @@ ext {
     sleepTimePickerVer = "1.0.3"
 
     // Billing Client
-    billingClientVer = '6.0.1'
-    rxbillingVer = '57f23d851a'
+    billingClientVer = '5.0.0'
+    rxbillingVer = '4aea881859'
 
     // Developer-related
     timberVer = '4.7.1'
