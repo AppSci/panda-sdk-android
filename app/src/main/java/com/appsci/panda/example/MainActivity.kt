@@ -1,11 +1,12 @@
 package com.appsci.panda.example
 
 import android.os.Bundle
+import android.view.LayoutInflater
 import androidx.appcompat.app.AppCompatActivity
+import com.appsci.panda.example.databinding.ActivityMainBinding
 import com.appsci.panda.sdk.Panda
 import com.appsci.panda.sdk.domain.utils.rx.DefaultCompletableObserver
 import com.appsci.panda.sdk.domain.utils.rx.DefaultSingleObserver
-import kotlinx.android.synthetic.main.activity_main.*
 import timber.log.Timber
 
 class MainActivity : AppCompatActivity() {
@@ -17,13 +18,14 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        btnShowScreen.setOnClickListener {
+        val binding = ActivityMainBinding.inflate(LayoutInflater.from(this))
+        setContentView(binding.root)
+        binding.btnShowScreen.setOnClickListener {
             Panda.showSubscriptionScreenRx(activity = this, theme = R.style.PandaTheme)
                     .subscribe(DefaultCompletableObserver())
         }
         Panda.syncUser().subscribe(DefaultSingleObserver())
-        btnGetScreen.setOnClickListener {
+        binding.btnGetScreen.setOnClickListener {
             startActivity(GetScreenActivity.createIntent(this))
         }
 

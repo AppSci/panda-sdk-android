@@ -6,7 +6,6 @@ apply plugin: 'maven-publish'
 
 android {
     compileSdkVersion 32
-    buildToolsVersion "29.0.3"
 
     resourcePrefix 'panda_'
 

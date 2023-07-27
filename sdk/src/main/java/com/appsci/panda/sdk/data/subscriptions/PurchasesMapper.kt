@@ -33,7 +33,8 @@ class PurchasesMapperImpl : PurchasesMapper {
         return purchases.map {
             PurchaseEntity(
                     productId = it.skus.first(),
-                    orderId = it.orderId,
+                //todo
+                    orderId = it.orderId!!,
                     purchaseToken = it.purchaseToken,
                     purchaseType = type,
                     synced = false
