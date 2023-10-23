@@ -90,7 +90,6 @@ class SubscriptionFragment : Fragment() {
         lifecycle.addObserver(BillingConnectionManager(billing))
         billing.getPurchaseHistory(BillingClient.ProductType.SUBS)
             .subscribeOn(Schedulers.io())
-            // discuss: whether we need timeout here
             .timeout(5, TimeUnit.SECONDS)
             .subscribe(
                 {
