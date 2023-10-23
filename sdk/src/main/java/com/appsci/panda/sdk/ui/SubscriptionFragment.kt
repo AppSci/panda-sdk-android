@@ -35,14 +35,11 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import io.reactivex.disposables.CompositeDisposable
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.rx2.await
 import kotlinx.parcelize.Parcelize
 import org.json.JSONObject
 import timber.log.Timber
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class SubscriptionFragment : Fragment() {
@@ -74,7 +71,7 @@ class SubscriptionFragment : Fragment() {
         }
     }
 
-    private var showTrial = CompletableDeferred<Boolean>()
+    private var showTrialCompletable = CompletableDeferred<Boolean>()
 
     companion object {
         const val EXTRA_SCREEN = "screenExtra"
@@ -93,13 +90,14 @@ class SubscriptionFragment : Fragment() {
         lifecycle.addObserver(BillingConnectionManager(billing))
         billing.getPurchaseHistory(BillingClient.ProductType.SUBS)
             .subscribeOn(Schedulers.io())
+            .timeout(5, TimeUnit.SECONDS)
             .subscribe(
                 {
-                    showTrial.complete(it.isEmpty())
+                    showTrialCompletable.complete(it.isEmpty())
                 },
                 {
-                    showTrial.complete(false)
-                    Timber.d("cannot load subscriptions' purchase history")
+                    showTrialCompletable.complete(false)
+                    Timber.d("cannot load subscriptions' purchase history in time")
                 }
             ).apply(disposeOnDestroyView::add)
 
@@ -259,11 +257,22 @@ class SubscriptionFragment : Fragment() {
                         Timber.d("setPayload result $it")
                     }
                 }
+                /**
+                 * @Deprecated
+                 * used for backward compatibility
+                 */
                 lifecycleScope.launchWhenStarted {
-                    if (!showTrial.await()) {
+                    if (!showTrialCompletable.await()) {
                         _binding?.webView?.evaluateJavascript("removeTrialUi();") {
                             Timber.d("removeTrialUi result $it")
                         }
+                    }
+                }
+
+                lifecycleScope.launchWhenStarted {
+                    val showTrial = showTrialCompletable.await()
+                    _binding?.webView?.evaluateJavascript("showTrial($showTrial);") {
+                        Timber.d("showTrial result $it")
                     }
                 }
             }
