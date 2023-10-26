@@ -106,7 +106,7 @@ class SubscriptionFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         return PandaFragmentSubscriptionBinding.inflate(inflater).apply {
             _binding = this
@@ -125,11 +125,12 @@ class SubscriptionFragment : Fragment() {
                         val handled = it.toBoolean()
                         Timber.d("onBackPressed result $it")
                         if (!handled) {
-                            Panda.onDismiss(screenExtra)
+                            Panda.onBackClick(screenExtra)
                         }
                     }
                 }
-            })
+            },
+        )
 
 
         binding.webView.setBackgroundColor(
@@ -279,7 +280,7 @@ class SubscriptionFragment : Fragment() {
 
             override fun shouldOverrideUrlLoading(
                 view: WebView?,
-                request: WebResourceRequest
+                request: WebResourceRequest,
             ): Boolean {
                 Timber.d("shouldOverrideUrlLoading1 ${request.url}")
                 return handleRedirect(request.url.toString())
@@ -379,18 +380,21 @@ class SubscriptionFragment : Fragment() {
                 restore()
                 true
             }
+
             url.contains("/subscription?type=terms") -> {
                 Timber.d("terms click")
                 Panda.onTermsClick()
                 openExternalUrl(getString(R.string.panda_terms_url))
                 true
             }
+
             url.contains("/subscription?type=policy") -> {
                 Timber.d("policy click")
                 Panda.onPolicyClick()
                 openExternalUrl(getString(R.string.panda_policy_url))
                 true
             }
+
             url.contains("/subscription?type=purchase") -> {
                 val id = url.toUri().getQueryParameter("product_id")
                     ?: error("product_id should be provided")
@@ -398,11 +402,13 @@ class SubscriptionFragment : Fragment() {
                 purchaseClick(id)
                 true
             }
+
             url.contains("/dismiss?type=dismiss") -> {
                 Timber.d("dismiss click")
                 Panda.onDismiss(screenExtra)
                 true
             }
+
             else -> false
         }
     }
@@ -428,6 +434,7 @@ class SubscriptionFragment : Fragment() {
             products.contains(id) -> {
                 BillingClient.ProductType.INAPP
             }
+
             else -> BillingClient.ProductType.SUBS
         }
     }
