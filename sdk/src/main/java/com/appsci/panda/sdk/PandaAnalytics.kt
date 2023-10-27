@@ -24,6 +24,11 @@ sealed class PandaEvent {
             val screenName: String,
     ) : PandaEvent()
 
+    data class BackClick(
+        val screenId: String,
+        val screenName: String,
+    ) : PandaEvent()
+
     object TermsClick : PandaEvent()
     object PolicyClick : PandaEvent()
 
