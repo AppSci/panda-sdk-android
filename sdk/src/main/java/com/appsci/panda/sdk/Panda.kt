@@ -377,6 +377,16 @@ object Panda {
         }
     }
 
+    internal fun onBackClick(screen: ScreenExtra) {
+        pandaListeners.forEach { it.onBackClick() }
+        analyticsListeners.forEach {
+            it(PandaEvent.BackClick(
+                screenId = screen.id,
+                screenName = screen.name
+            ))
+        }
+    }
+
     internal fun onTermsClick() {
         analyticsListeners.forEach { it(PandaEvent.TermsClick) }
     }
