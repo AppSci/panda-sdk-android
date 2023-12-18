@@ -58,9 +58,9 @@ sealed class PandaEvent {
         val screenName: String,
     ) : PandaEvent()
 
-    class ShowCloseConfirmation(
-        screenId: String,
-        screenName: String,
+    data class ShowCloseConfirmation(
+        val screenId: String,
+        val screenName: String,
     ) : PandaEvent()
 }
 
