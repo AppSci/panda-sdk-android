@@ -61,7 +61,7 @@ afterEvaluate {
                 from components.release
                 groupId = 'com.github.AppSci'
                 artifactId = 'panda-sdk-android'
-                version = '1.4.11'
+                version = '1.4.12'
             }
         }
     }
@@ -130,5 +130,4 @@ dependencies {
     androidTestImplementation androidTestDependencies.testRoom, {
         exclude group: 'com.android.support'
     }
-
 }
