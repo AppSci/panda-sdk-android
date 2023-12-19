@@ -237,6 +237,11 @@ class SubscriptionFragment : Fragment() {
                 Panda.onDismiss(screenExtra)
             }
 
+            override fun onShowCloseConfirmation() {
+                Timber.d("onShowCloseConfirmation")
+                Panda.onShowCloseConfirmation(screenExtra)
+            }
+
             override fun onRestore() {
                 Timber.d("onRestore")
                 restore()
