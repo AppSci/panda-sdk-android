@@ -5,8 +5,7 @@ apply plugin: 'kotlin-kapt'
 apply plugin: 'maven-publish'
 
 android {
-    compileSdkVersion 32
-    buildToolsVersion "29.0.3"
+    compileSdk 34
 
     resourcePrefix 'panda_'
 
@@ -15,8 +14,8 @@ android {
     }
 
     defaultConfig {
-        minSdkVersion 21
-        targetSdkVersion 32
+        minSdk 21
+        targetSdk 34
 
         buildConfigField "String", "PANDA_ENDPOINT_PROD", "\"https://api.panda.boosters.company/\""
         buildConfigField "String", "PANDA_ENDPOINT_STAGE", "\"https://api.panda-stage.boosters.company/\""
@@ -42,15 +41,16 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8.toString()
+        jvmTarget = JavaVersion.VERSION_17.toString()
     }
     buildFeatures {
         viewBinding true
     }
+    namespace 'com.appsci.panda.sdk'
 }
 
 afterEvaluate {
@@ -61,7 +61,7 @@ afterEvaluate {
                 from components.release
                 groupId = 'com.github.AppSci'
                 artifactId = 'panda-sdk-android'
-                version = '1.4.11'
+                version = '1.5.0'
             }
         }
     }
@@ -69,12 +69,13 @@ afterEvaluate {
 
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
-    implementation 'androidx.appcompat:appcompat:1.2.0'
 
     implementation presentationDependencies.lifecycleRuntime
     kapt presentationDependencies.lifecycleCompiler
     implementation presentationDependencies.fragment
     implementation presentationDependencies.fragmentKtx
+
+    implementation supportDependencies.appCompat
 
     // Dagger 2
     implementation dataDependencies.dagger
@@ -103,7 +104,7 @@ dependencies {
     implementation dataDependencies.retrofitGsonConverter
     implementation dataDependencies.retrofitRxJavaAdapter
 
-    implementation platform('com.google.firebase:firebase-bom:25.12.0')
+    implementation platform('com.google.firebase:firebase-bom:32.7.0')
     implementation 'com.google.firebase:firebase-messaging-ktx'
     implementation 'com.google.firebase:firebase-analytics-ktx'
 
