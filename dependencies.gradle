@@ -81,7 +81,7 @@ ext {
     sleepTimePickerVer = "1.0.3"
 
     // Billing Client
-    billingClientVer = '6.1.0'
+    billingClientVer = '5.0.0'
     rxbillingVer = '4aea881859'
 
     // Developer-related
