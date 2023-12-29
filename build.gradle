@@ -2,7 +2,6 @@
 
 apply from: 'dependencies.gradle'
 apply plugin: 'com.github.ben-manes.versions'
-defaultTasks 'dependencyUpdates'
 
 buildscript {
     ext.kotlin_version = "1.9.22"
@@ -33,22 +32,4 @@ allprojects {
 
 tasks.register('clean', Delete) {
     delete rootProject.buildDir
-}
-
-def isNonStable = { String version ->
-    def stableKeyword = ['RELEASE', 'FINAL', 'GA'].any { it -> version.toUpperCase().contains(it) }
-    def regex = /^[0-9,.v-]+(-r)?$/
-    return !stableKeyword && !(version ==~ regex)
-}
-
-tasks.named("dependencyUpdates").configure {
-    checkForGradleUpdate = true
-
-    rejectVersionIf {
-        isNonStable(candidate.version)
-    }
-
-    rejectVersionIf {
-        isNonStable(candidate.version) && !isNonStable(currentVersion)
-    }
 }

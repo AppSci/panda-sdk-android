@@ -15,10 +15,10 @@ ext {
     // AndroidX
     appCompatVer = '1.6.0'
     fragmentVersion = '1.6.2'
-    materialVer = '1.2.1'
+    materialVer = '1.9.0'
     cardViewVer = '1.0.0'
     mediaVer = '1.0.1'
-    transitionVer = '1.3.1'
+    transitionVer = '1.4.1'
     constraintLayout = '2.1.4'
     viewModelVer = '2.0.0'
     liveDataVer = '2.0.0'
@@ -45,7 +45,7 @@ ext {
     daggerVer = '2.50'
 
     // Reactive Extensions
-    rxJava2Ver = '2.2.1'
+    rxJava2Ver = '2.2.21'
     rxAndroid2Ver = '2.1.1'
     rxBinding2Ver = '2.2.0'
     rxKotlinVer = '2.4.0'
@@ -81,7 +81,7 @@ ext {
     sleepTimePickerVer = "1.0.3"
 
     // Billing Client
-    billingClientVer = '5.0.0'
+    billingClientVer = '6.1.0'
     rxbillingVer = '4aea881859'
 
     // Developer-related
