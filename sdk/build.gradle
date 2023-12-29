@@ -132,5 +132,4 @@ dependencies {
     androidTestImplementation androidTestDependencies.testRoom, {
         exclude group: 'com.android.support'
     }
-
 }
