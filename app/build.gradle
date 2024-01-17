@@ -1,19 +1,18 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-parcelize'
 apply plugin: 'kotlin-kapt'
 
 android {
-    compileSdkVersion 31
-    buildToolsVersion "29.0.3"
+    compileSdk 34
 
     def localProperties = new Properties()
     localProperties.load(new FileInputStream(rootProject.file("local.properties")))
 
     defaultConfig {
         applicationId "com.appsci.panda.example"
-        minSdkVersion 21
-        targetSdkVersion 31
+        minSdk 21
+        targetSdk 34
         versionCode 1
         versionName "1.0.1"
 
@@ -31,13 +30,18 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_17.toString()
     }
 
     buildFeatures {
         viewBinding true
+        buildConfig true
     }
+    namespace 'com.appsci.panda.example'
 }
 
 dependencies {
@@ -47,7 +51,6 @@ dependencies {
 
     // Dagger 2
     implementation dataDependencies.dagger
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     kapt dataDependencies.daggerCompiler
 
     // Kotlin dependencies
@@ -64,9 +67,10 @@ dependencies {
     implementation dataDependencies.roomRxJava
     kapt dataDependencies.roomCompiler
 
-    implementation supportDependencies.support
+    implementation supportDependencies.appCompat
     implementation supportDependencies.transition
     implementation supportDependencies.design
+    implementation supportDependencies.constraintLayout
 
     implementation dataDependencies.threeten
     implementation dataDependencies.gson
@@ -83,7 +87,6 @@ dependencies {
     debugImplementation developmentDependencies.chuck
     releaseImplementation developmentDependencies.chuckNoOp
 
-    implementation 'androidx.appcompat:appcompat:1.3.1'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
 

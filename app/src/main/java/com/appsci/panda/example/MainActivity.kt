@@ -1,14 +1,19 @@
 package com.appsci.panda.example
 
 import android.os.Bundle
+import android.view.LayoutInflater
 import androidx.appcompat.app.AppCompatActivity
+import com.appsci.panda.example.databinding.ActivityMainBinding
 import com.appsci.panda.sdk.Panda
 import com.appsci.panda.sdk.domain.utils.rx.DefaultCompletableObserver
 import com.appsci.panda.sdk.domain.utils.rx.DefaultSingleObserver
-import kotlinx.android.synthetic.main.activity_main.*
 import timber.log.Timber
 
 class MainActivity : AppCompatActivity() {
+
+    private var _binding: ActivityMainBinding? = null
+    private val binding: ActivityMainBinding
+        get() = _binding!!
 
     private val onError: (e: Throwable) -> Unit = {
         val msg = "panda error ${it.message}"
@@ -17,15 +22,19 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        _binding = ActivityMainBinding.inflate(LayoutInflater.from(this))
         setContentView(R.layout.activity_main)
-        btnShowScreen.setOnClickListener {
-            Panda.showSubscriptionScreenRx(activity = this, theme = R.style.PandaTheme)
-                    .subscribe(DefaultCompletableObserver())
+
+        with(binding) {
+            btnShowScreen.setOnClickListener {
+                Panda.showSubscriptionScreenRx(activity = this@MainActivity, theme = R.style.PandaTheme)
+                        .subscribe(DefaultCompletableObserver())
+            }
+            btnGetScreen.setOnClickListener {
+                startActivity(GetScreenActivity.createIntent(this@MainActivity))
+            }
         }
         Panda.syncUser().subscribe(DefaultSingleObserver())
-        btnGetScreen.setOnClickListener {
-            startActivity(GetScreenActivity.createIntent(this))
-        }
 
         Panda.saveCustomUserId(id = "super-unique-custom-id")
 
