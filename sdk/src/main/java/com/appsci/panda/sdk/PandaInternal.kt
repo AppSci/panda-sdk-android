@@ -2,6 +2,9 @@ package com.appsci.panda.sdk
 
 import com.android.billingclient.api.ProductDetails
 import com.appsci.panda.sdk.data.StopNetwork
+import com.appsci.panda.sdk.data.network.GooglePayResponse
+import com.appsci.panda.sdk.data.network.GooglePaymentRequest
+import com.appsci.panda.sdk.data.network.RestApi
 import com.appsci.panda.sdk.domain.device.DeviceRepository
 import com.appsci.panda.sdk.domain.feedback.FeedbackRepository
 import com.appsci.panda.sdk.domain.subscriptions.*
@@ -19,6 +22,19 @@ import java.util.concurrent.TimeUnit
 
 interface IPanda {
     val pandaUserId: String?
+
+    suspend fun requestGooglePayment(
+        name: String,
+        purchaseUrl: String,
+        productId: String,
+        signature: String,
+        protocolVersion: String,
+        signedMessage: String,
+        userId: String,
+        sandbox: Boolean,
+        wallet: String,
+        orderDescription: String,
+    ): GooglePayResponse
 
     fun onStart()
     fun authorize(): Single<String>
@@ -74,10 +90,42 @@ class PandaImpl(
     private val stopNetworkInternal: StopNetwork,
     private val propertiesDataSource: LocalPropertiesDataSource,
     private val feedbackRepository: FeedbackRepository,
+    private val api: RestApi,
 ) : IPanda {
 
     override val pandaUserId: String?
         get() = deviceRepository.pandaUserId
+
+    /*
+    * test
+     */
+    override suspend fun requestGooglePayment(
+        name: String,
+        purchaseUrl: String,
+        productId: String,
+        signature: String,
+        protocolVersion: String,
+        signedMessage: String,
+        userId: String,
+        sandbox: Boolean,
+        wallet: String,
+        orderDescription: String,
+    ): GooglePayResponse {
+        return api.sendGooglePayment(
+            request = GooglePaymentRequest(
+                name = name,
+                purchaseUrl = purchaseUrl,
+                productId = productId,
+                signature = signature,
+                protocolVersion = protocolVersion,
+                signedMessage = signedMessage,
+                userId = userId,
+                sandbox = sandbox,
+                wallet = wallet,
+                orderDescription = orderDescription,
+            )
+        )
+    }
 
     override fun onStart() {
         if (preferences.startVersion.isNullOrEmpty()) {

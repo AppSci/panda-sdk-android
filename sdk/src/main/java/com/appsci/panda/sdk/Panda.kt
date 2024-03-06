@@ -6,6 +6,7 @@ import android.app.Application
 import android.content.Intent
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.ProductDetails
+import com.appsci.panda.sdk.data.network.GooglePayResponse
 import com.appsci.panda.sdk.domain.subscriptions.*
 import com.appsci.panda.sdk.domain.utils.rx.DefaultCompletableObserver
 import com.appsci.panda.sdk.domain.utils.rx.DefaultSchedulerProvider
@@ -44,6 +45,36 @@ object Panda {
 
     private val pandaListeners: MutableList<PandaListener> = mutableListOf()
     private val analyticsListeners: MutableList<PandaAnalyticsListener> = mutableListOf()
+
+
+    /**
+     * test
+     */
+    suspend fun requestGooglePayment(
+        name: String = "",
+        purchaseUrl: String = "",
+        productId: String = "",
+        signature: String = "",
+        protocolVersion: String = "",
+        signedMessage: String = "",
+        userId: String = "",
+        sandbox: Boolean = false,
+        wallet: String = "",
+        orderDescription: String = "",
+    ): GooglePayResponse {
+        return panda.requestGooglePayment(
+            name = name,
+            purchaseUrl = purchaseUrl,
+            productId = productId,
+            signature = signature,
+            protocolVersion = protocolVersion,
+            signedMessage = signedMessage,
+            userId = userId,
+            sandbox = sandbox,
+            wallet = wallet,
+            orderDescription = orderDescription
+        )
+    }
 
     /**
      * Call this function on App start to configure Panda SDK
