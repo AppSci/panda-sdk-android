@@ -401,10 +401,36 @@ object Panda {
         dismissListeners.forEach { it() }
         pandaListeners.forEach { it.onDismissClick() }
         analyticsListeners.forEach {
-            it(PandaEvent.DismissClick(
-                screenId = screen.id,
-                screenName = screen.name
-            ))
+            it(
+                PandaEvent.DismissClick(
+                    screenId = screen.id,
+                    screenName = screen.name,
+                )
+            )
+        }
+    }
+
+    internal fun onShowCloseConfirmation(screenExtra: ScreenExtra) {
+        pandaListeners.forEach { it.onShowCloseConfirmation() }
+        analyticsListeners.forEach {
+            it(
+                PandaEvent.ShowCloseConfirmation(
+                    screenId = screenExtra.id,
+                    screenName = screenExtra.name,
+                )
+            )
+        }
+    }
+
+    internal fun onBackClick(screen: ScreenExtra) {
+        pandaListeners.forEach { it.onBackClick() }
+        analyticsListeners.forEach {
+            it(
+                PandaEvent.BackClick(
+                    screenId = screen.id,
+                    screenName = screen.name,
+                )
+            )
         }
     }
 
@@ -426,29 +452,35 @@ object Panda {
 
     internal fun onCustomEvent(screenId: String, name: String, params: Map<String, String>) {
         analyticsListeners.forEach {
-            it(PandaEvent.CustomEvent(
-                name = name,
-                screenId = screenId,
-                params = params,
-            ))
+            it(
+                PandaEvent.CustomEvent(
+                    name = name,
+                    screenId = screenId,
+                    params = params,
+                )
+            )
         }
     }
 
     fun onAction(name: String, json: String) {
         analyticsListeners.forEach {
-            it(PandaEvent.Action(
-                name = name,
-                json = json,
-            ))
+            it(
+                PandaEvent.Action(
+                    name = name,
+                    json = json,
+                )
+            )
         }
     }
 
     fun onScreenChanged(id: String, screenName: String) {
         analyticsListeners.forEach {
-            it(PandaEvent.ScreenChanged(
-                screenId = id,
-                screenName = screenName,
-            ))
+            it(
+                PandaEvent.ScreenChanged(
+                    screenId = id,
+                    screenName = screenName,
+                )
+            )
         }
     }
 
@@ -484,7 +516,8 @@ object Panda {
                 type = purchaseType,
                 orderId = purchase.orderId,
                 token = purchase.purchaseToken
-            ))
+            )
+        )
             .subscribeOn(Schedulers.io())
             .observeOn(Schedulers.mainThread())
             .doOnError { t ->
@@ -500,20 +533,24 @@ object Panda {
 
     internal fun screenShowed(screenExtra: ScreenExtra) {
         analyticsListeners.forEach {
-            it(PandaEvent.ScreenShowed(
-                screenId = screenExtra.id,
-                screenName = screenExtra.name
-            ))
+            it(
+                PandaEvent.ScreenShowed(
+                    screenId = screenExtra.id,
+                    screenName = screenExtra.name,
+                )
+            )
         }
     }
 
     internal fun subscriptionSelect(screenExtra: ScreenExtra, id: String) {
         analyticsListeners.forEach {
-            it(PandaEvent.SubscriptionSelect(
-                productId = id,
-                screenId = screenExtra.id,
-                screenName = screenExtra.name
-            ))
+            it(
+                PandaEvent.SubscriptionSelect(
+                    productId = id,
+                    screenId = screenExtra.id,
+                    screenName = screenExtra.name,
+                )
+            )
         }
     }
 
@@ -528,11 +565,13 @@ object Panda {
     ) {
         pandaListeners.forEach { it.onPurchase(skuId) }
         analyticsListeners.forEach {
-            it(PandaEvent.SuccessfulPurchase(
-                screenId = screenExtra.id,
-                screenName = screenExtra.name,
-                productId = skuId
-            ))
+            it(
+                PandaEvent.SuccessfulPurchase(
+                    screenId = screenExtra.id,
+                    screenName = screenExtra.name,
+                    productId = skuId,
+                )
+            )
         }
         purchaseListeners.forEach { it(skuId) }
     }
@@ -562,7 +601,8 @@ object Panda {
                     debug = debug,
                     apiKey = apiKey,
                     networkLogLevel = networkLogLevel,
-                ))
+                )
+            )
             .build()
         pandaComponent.inject(wrapper)
         panda = wrapper.panda
