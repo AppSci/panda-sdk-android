@@ -51,6 +51,7 @@ object Panda {
      * test
      */
     suspend fun requestGooglePayment(
+        appId: String = "",
         name: String = "",
         purchaseUrl: String = "",
         productId: String = "",
@@ -63,6 +64,7 @@ object Panda {
         orderDescription: String = "",
     ): GooglePayResponse {
         return panda.requestGooglePayment(
+            appId = appId,
             name = name,
             purchaseUrl = purchaseUrl,
             productId = productId,

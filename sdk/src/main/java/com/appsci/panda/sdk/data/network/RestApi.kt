@@ -75,6 +75,8 @@ interface RestApi {
  * }
  */
 data class GooglePaymentRequest(
+    @SerializedName("app_id")
+    val appId: String,
     @SerializedName("name")
     val name: String,
     @SerializedName("purchase_url")

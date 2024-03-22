@@ -24,6 +24,7 @@ interface IPanda {
     val pandaUserId: String?
 
     suspend fun requestGooglePayment(
+        appId: String,
         name: String,
         purchaseUrl: String,
         productId: String,
@@ -100,6 +101,7 @@ class PandaImpl(
     * test
      */
     override suspend fun requestGooglePayment(
+        appId: String,
         name: String,
         purchaseUrl: String,
         productId: String,
@@ -113,6 +115,7 @@ class PandaImpl(
     ): GooglePayResponse {
         return api.sendGooglePayment(
             request = GooglePaymentRequest(
+                appId = appId,
                 name = name,
                 purchaseUrl = purchaseUrl,
                 productId = productId,
