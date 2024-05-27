@@ -3,10 +3,10 @@ package com.appsci.panda.example
 import android.os.Bundle
 import android.view.LayoutInflater
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.appsci.panda.example.databinding.ActivityMainBinding
 import com.appsci.panda.sdk.Panda
-import com.appsci.panda.sdk.domain.utils.rx.DefaultCompletableObserver
-import com.appsci.panda.sdk.domain.utils.rx.DefaultSingleObserver
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
 class MainActivity : AppCompatActivity() {
@@ -26,28 +26,18 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         with(binding) {
-            btnShowScreen.setOnClickListener {
-                Panda.showSubscriptionScreenRx(activity = this@MainActivity, theme = R.style.PandaTheme)
-                        .subscribe(DefaultCompletableObserver())
-            }
             btnGetScreen.setOnClickListener {
                 startActivity(GetScreenActivity.createIntent(this@MainActivity))
             }
         }
-        Panda.syncUser().subscribe(DefaultSingleObserver())
-
-        Panda.saveCustomUserId(id = "super-unique-custom-id")
-
-        Panda.getSubscriptionStateRx()
-                .doOnSuccess {
-                    Timber.d("getSubscriptionState $it")
-                }
-                .doOnError { Timber.e(it) }
-                .subscribe(DefaultSingleObserver())
-        Panda.prefetchSubscriptionScreenRx()
-                .subscribe(DefaultCompletableObserver())
-
-        Panda.addErrorListener(onError)
+        lifecycleScope.launch {
+            Panda.syncUser()
+            Panda.saveCustomUserId(id = "super-unique-custom-id")
+            val subscriptionState = Panda.getSubscriptionState()
+            Timber.d("getSubscriptionState $subscriptionState")
+            Panda.prefetchSubscriptionScreen()
+            Panda.addErrorListener(onError)
+        }
     }
 
     override fun onDestroy() {

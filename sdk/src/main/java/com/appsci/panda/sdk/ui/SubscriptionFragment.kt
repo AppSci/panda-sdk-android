@@ -420,16 +420,13 @@ class SubscriptionFragment : Fragment() {
 
     private fun restore() {
         binding.loading.root.visibility = View.VISIBLE
-        disposeOnDestroyView.add(
-            Panda.restore(screenExtra)
-                .doOnSuccess {
-                    Timber.d("restore $it")
-                }
-                .doAfterTerminate {
-                    binding.loading.root.visibility = View.GONE
-                }
-                .subscribeWith(DefaultSingleObserver())
-        )
+        lifecycleScope.launch {
+            runCatching {
+                val list = Panda.restore(screenExtra)
+                Timber.d("restore $list")
+            }
+            binding.loading.root.visibility = View.GONE
+        }
     }
 
     private fun getType(id: String): String {
