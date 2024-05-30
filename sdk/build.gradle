@@ -55,7 +55,10 @@ android {
 }
 
 def localProperties = new Properties()
-localProperties.load(new FileInputStream(rootProject.file("local.properties")))
+def localPropsFile = rootProject.file("local.properties")
+if (localPropsFile.exists()) {
+    localProperties.load(new FileInputStream(localPropsFile))
+}
 
 afterEvaluate {
     publishing {
@@ -73,8 +76,10 @@ afterEvaluate {
                 name = "GitHubPackages"
                 url = uri("https://maven.pkg.github.com/AppSci/panda-sdk-android")
                 credentials {
-                    setUsername(localProperties['github.actor'])
-                    setPassword(localProperties['github.token'])
+                    def username = localProperties['github.actor']?: System.getenv("GPR_USER")
+                    def password = localProperties['github.token']?: System.getenv("GPR_API_KEY")
+                    setUsername(username)
+                    setPassword(password)
                 }
             }
         }
