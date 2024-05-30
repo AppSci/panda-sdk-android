@@ -5,6 +5,7 @@ on:
     branches:
       - develop
       - master
+      - 'feature/*'
 
 env:
   EC2_GENERATE_CONTENT_ID: ${{ secrets.EC2_GENERATE_CONTENT_ID }}
