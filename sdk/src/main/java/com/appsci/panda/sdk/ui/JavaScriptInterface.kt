@@ -12,6 +12,7 @@ interface JavaScriptBridgeInterface {
     fun onTerms()
     fun onPolicy()
     fun onDismiss()
+    fun onShowCloseConfirmation()
     fun onRestore()
     fun onCustomEventSent(json: String)
     fun onAction(json: String)
@@ -19,7 +20,7 @@ interface JavaScriptBridgeInterface {
 }
 
 class JavaScriptInterface(
-        private val jsBridge: JavaScriptBridgeInterface,
+    private val jsBridge: JavaScriptBridgeInterface,
 ) {
     private val scope = CoroutineScope(Dispatchers.Main)
 
@@ -55,6 +56,13 @@ class JavaScriptInterface(
     fun onDismiss() {
         scope.launch {
             jsBridge.onDismiss()
+        }
+    }
+
+    @JavascriptInterface
+    fun onShowCloseConfirmation() {
+        scope.launch {
+            jsBridge.onShowCloseConfirmation()
         }
     }
 

@@ -1,15 +1,11 @@
 package com.appsci.panda.sdk
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.app.Application
-import android.content.Intent
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.ProductDetails
 import com.appsci.panda.sdk.domain.subscriptions.*
-import com.appsci.panda.sdk.domain.utils.rx.DefaultCompletableObserver
 import com.appsci.panda.sdk.domain.utils.rx.DefaultSchedulerProvider
-import com.appsci.panda.sdk.domain.utils.rx.DefaultSingleObserver
 import com.appsci.panda.sdk.domain.utils.rx.Schedulers
 import com.appsci.panda.sdk.injection.components.DaggerPandaComponent
 import com.appsci.panda.sdk.injection.components.PandaComponent
@@ -17,12 +13,10 @@ import com.appsci.panda.sdk.injection.modules.AppModule
 import com.appsci.panda.sdk.injection.modules.BillingModule
 import com.appsci.panda.sdk.injection.modules.NetworkModule
 import com.appsci.panda.sdk.ui.ScreenExtra
-import com.appsci.panda.sdk.ui.SubscriptionActivity
-import com.appsci.panda.sdk.ui.SubscriptionFragment
 import com.jakewharton.threetenabp.AndroidThreeTen
-import io.reactivex.Completable
 import io.reactivex.Single
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.rx2.await
 import kotlinx.coroutines.withContext
 import okhttp3.logging.HttpLoggingInterceptor
 import javax.inject.Inject
@@ -48,7 +42,7 @@ object Panda {
     /**
      * Call this function on App start to configure Panda SDK
      */
-    @kotlin.jvm.JvmStatic
+    @JvmStatic
     fun initialize(
         context: Application,
         apiKey: String,
@@ -64,50 +58,38 @@ object Panda {
     val pandaUserId: String?
         get() = panda.pandaUserId
 
-    @kotlin.jvm.JvmStatic
-    fun setFbIds(
-        fbc: String?,
-        fbp: String?,
-        onComplete: (() -> Unit)? = null,
-        onError: ((Throwable) -> Unit)? = null,
-    ) = setFbIdsRx(fbc = fbc, fbp = fbp)
-        .doOnComplete { onComplete?.invoke() }
-        .doOnError { onError?.invoke(it) }
-        .subscribe(DefaultCompletableObserver())
-
-    @kotlin.jvm.JvmStatic
-    fun clearAdvId(): Completable =
+    @JvmStatic
+    suspend fun clearAdvId() =
         panda.clearAdvId()
             .subscribeOn(Schedulers.io())
-            .observeOn(Schedulers.mainThread())
+            .await()
 
-    @kotlin.jvm.JvmStatic
-    fun syncUser(): Single<String> =
+    @JvmStatic
+    suspend fun syncUser(): String =
         panda.authorize()
             .subscribeOn(Schedulers.io())
-            .observeOn(Schedulers.mainThread())
+            .await()
 
-    @kotlin.jvm.JvmStatic
-    fun setFbIdsRx(
+    @JvmStatic
+    suspend fun setFbIds(
         fbc: String?,
         fbp: String?,
-    ): Completable =
-        panda.setFbIds(fbc = fbc, fbp = fbp)
-            .subscribeOn(Schedulers.io())
-            .observeOn(Schedulers.mainThread())
+    ) = panda.setFbIds(fbc = fbc, fbp = fbp)
+        .subscribeOn(Schedulers.io())
+        .await()
 
-    @kotlin.jvm.JvmStatic
+    @JvmStatic
     suspend fun setProperty(
         key: String,
         value: String,
     ) = panda.setUserProperty(key = key, value = value)
 
-    @kotlin.jvm.JvmStatic
+    @JvmStatic
     suspend fun setProperties(
         map: Map<String, String>,
     ) = panda.setUserProperties(map)
 
-    @kotlin.jvm.JvmStatic
+    @JvmStatic
     suspend fun sendFeedback(
         screenId: String,
         answer: String,
@@ -119,12 +101,12 @@ object Panda {
      * Set custom user id to current user
      * @param id - your custom userId,
      */
-    @kotlin.jvm.JvmStatic
+    @JvmStatic
     fun saveCustomUserId(id: String?) {
         panda.saveCustomUserId(id)
     }
 
-    @kotlin.jvm.JvmStatic
+    @JvmStatic
     fun saveLoginData(
         loginData: LoginData,
     ) = panda.saveLoginData(loginData)
@@ -133,7 +115,7 @@ object Panda {
      * Set appsflyer id to current user
      * @param id - your appsflyer Id,
      */
-    @kotlin.jvm.JvmStatic
+    @JvmStatic
     fun saveAppsflyerId(id: String?) {
         id?.let {
             panda.saveAppsflyerId(id)
@@ -143,170 +125,62 @@ object Panda {
     /**
      * Gets subscriptions from google and sends to Panda server
      */
-    @kotlin.jvm.JvmStatic
-    fun syncSubscriptions(
-        onComplete: (() -> Unit)? = null,
-        onError: ((Throwable) -> Unit)? = null,
-    ) = syncSubscriptionsRx()
-        .doOnComplete { onComplete?.invoke() }
-        .doOnError { onError?.invoke(it) }
-        .subscribe(DefaultCompletableObserver())
-
-    /**
-     * Gets subscriptions from google and sends to Panda server
-     */
-    @kotlin.jvm.JvmStatic
-    fun syncSubscriptionsRx(): Completable =
+    @JvmStatic
+    suspend fun syncSubscriptions() =
         panda.syncSubscriptions()
             .subscribeOn(Schedulers.io())
-            .observeOn(Schedulers.mainThread())
+            .await()
 
     /**
      * Get user's subscription state from Panda server
      */
-    @kotlin.jvm.JvmStatic
-    fun getSubscriptionState(
-        onSuccess: ((SubscriptionState) -> Unit)? = null,
-        onError: ((Throwable) -> Unit)? = null,
-    ): Unit = getSubscriptionStateRx()
-        .doOnSuccess { onSuccess?.invoke(it) }
-        .doOnError { onError?.invoke(it) }
-        .subscribe(DefaultSingleObserver())
-
-    /**
-     * Get user's subscription state from Panda server
-     */
-    @kotlin.jvm.JvmStatic
-    fun getSubscriptionStateRx(): Single<SubscriptionState> =
+    @JvmStatic
+    suspend fun getSubscriptionState(): SubscriptionState =
         panda.getSubscriptionState()
             .subscribeOn(Schedulers.io())
-            .observeOn(Schedulers.mainThread())
+            .await()
 
     /**
      * Consume all products owned by user
      */
-    @kotlin.jvm.JvmStatic
-    fun consumeProductsRx(): Completable =
+    @JvmStatic
+    suspend fun consumeProducts() =
         panda.consumeProducts()
             .subscribeOn(Schedulers.io())
-            .observeOn(Schedulers.mainThread())
-
-    /**
-     * Consume all products owned by user
-     */
-    @kotlin.jvm.JvmStatic
-    fun consumeProducts(
-        onComplete: (() -> Unit)? = null,
-        onError: ((Throwable) -> Unit)? = null,
-    ) = panda.consumeProducts()
-        .doOnComplete(onComplete)
-        .doOnError(onError)
-        .subscribe(DefaultCompletableObserver())
-
-    /**
-     * Get subscription screen and save it to memory cache
-     */
-    @kotlin.jvm.JvmStatic
-    fun prefetchSubscriptionScreen(
-        type: ScreenType = ScreenType.Sales,
-        id: String? = null,
-        onComplete: (() -> Unit)? = null,
-        onError: ((Throwable) -> Unit)? = null,
-    ) = prefetchSubscriptionScreenRx(type, id)
-        .doOnComplete { onComplete?.invoke() }
-        .doOnError { onError?.invoke(it) }
-        .subscribe(DefaultCompletableObserver())
+            .await()
 
     /**
      * Get subscription screen and save it to memory cache
      */
     @SuppressLint("SetJavaScriptEnabled")
-    @kotlin.jvm.JvmStatic
-    fun prefetchSubscriptionScreenRx(type: ScreenType? = null, id: String? = null): Completable =
+    @JvmStatic
+    suspend fun prefetchSubscriptionScreen(type: ScreenType? = null, id: String? = null) =
         panda.prefetchSubscriptionScreen(type, id)
             .subscribeOn(Schedulers.io())
-            .observeOn(Schedulers.mainThread())
             .ignoreElement()
+            .await()
 
-    @kotlin.jvm.JvmStatic
+    @JvmStatic
     fun getCachedSubscriptionScreen(
         type: ScreenType? = null,
         id: String? = null,
     ) = panda.getCachedSubscriptionScreen(type = type, id = id)
 
-    @kotlin.jvm.JvmStatic
-    fun getCachedOrDefaultSubscriptionScreen(
+    @JvmStatic
+    suspend fun getSubscriptionScreen(
         type: ScreenType? = null,
         id: String? = null,
-    ) = panda.getCachedOrDefaultSubscriptionScreen(type, id)
-        .map { SubscriptionFragment.create(ScreenExtra.create(it)) }
-
-    /**
-     * Get Fragment with subscription UI that handles billing flow
-     */
-    @kotlin.jvm.JvmStatic
-    fun getSubscriptionScreen(
-        type: ScreenType? = null,
-        id: String? = null,
-        onSuccess: ((SubscriptionFragment) -> Unit)? = null,
-        onError: ((Throwable) -> Unit)? = null,
-    ) = getSubscriptionScreenRx(type, id)
-        .doOnSuccess { onSuccess?.invoke(it) }
-        .doOnError { onError?.invoke(it) }
-        .subscribe(DefaultSingleObserver())
-
-    /**
-     * Get Fragment with subscription UI that handles billing flow
-     */
-    @kotlin.jvm.JvmStatic
-    fun getSubscriptionScreenRx(
-        type: ScreenType? = null,
-        id: String? = null,
-    ): Single<SubscriptionFragment> =
+    ): SubscriptionScreen =
         panda.getSubscriptionScreen(type, id)
             .subscribeOn(Schedulers.io())
-            .observeOn(Schedulers.mainThread())
-            .map { SubscriptionFragment.create(ScreenExtra.create(it)) }
+            .await()
 
-    /**
-     * Show Activity with subscription screen
-     */
-    @kotlin.jvm.JvmStatic
-    fun showSubscriptionScreen(
+    @JvmStatic
+    suspend fun getCachedOrDefaultSubscriptionScreen(
         type: ScreenType? = null,
         id: String? = null,
-        activity: Activity? = null,
-        theme: Int? = null,
-        onComplete: (() -> Unit)? = null,
-        onError: ((Throwable) -> Unit)? = null,
-    ) = showSubscriptionScreenRx(type, id, activity, theme)
-        .doOnComplete { onComplete?.invoke() }
-        .doOnError { onError?.invoke(it) }
-        .subscribe(DefaultCompletableObserver())
-
-    /**
-     * Show Activity with subscription screen
-     */
-    @kotlin.jvm.JvmStatic
-    fun showSubscriptionScreenRx(
-        type: ScreenType? = null,
-        id: String? = null,
-        activity: Activity? = null,
-        theme: Int? = null,
-    ): Completable =
-        panda.getSubscriptionScreen(type, id)
-            .subscribeOn(Schedulers.io())
-            .observeOn(Schedulers.mainThread())
-            .doOnSuccess {
-                val launchContext = activity ?: this.context
-                val intent =
-                    SubscriptionActivity.createIntent(launchContext, ScreenExtra.create(it), theme)
-                if (activity == null) {
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                }
-                launchContext.startActivity(intent)
-            }
-            .ignoreElement()
+    ): SubscriptionScreen =
+        panda.getCachedOrDefaultSubscriptionScreen(type, id).await()
 
     @JvmStatic
     suspend fun getProductsDetails(requests: Map<String, List<String>>): List<ProductDetails> =
@@ -315,8 +189,9 @@ object Panda {
         }
 
     @JvmStatic
-    fun dropData() = panda.stopNetwork()
+    suspend fun dropData() = panda.stopNetwork()
         .andThen(panda.clearLocalData())
+        .await()
 
     fun addDismissListener(onDismiss: () -> Unit) {
         dismissListeners.add(onDismiss)
@@ -370,10 +245,36 @@ object Panda {
         dismissListeners.forEach { it() }
         pandaListeners.forEach { it.onDismissClick() }
         analyticsListeners.forEach {
-            it(PandaEvent.DismissClick(
-                screenId = screen.id,
-                screenName = screen.name
-            ))
+            it(
+                PandaEvent.DismissClick(
+                    screenId = screen.id,
+                    screenName = screen.name,
+                )
+            )
+        }
+    }
+
+    internal fun onShowCloseConfirmation(screenExtra: ScreenExtra) {
+        pandaListeners.forEach { it.onShowCloseConfirmation() }
+        analyticsListeners.forEach {
+            it(
+                PandaEvent.ShowCloseConfirmation(
+                    screenId = screenExtra.id,
+                    screenName = screenExtra.name,
+                )
+            )
+        }
+    }
+
+    internal fun onBackClick(screen: ScreenExtra) {
+        pandaListeners.forEach { it.onBackClick() }
+        analyticsListeners.forEach {
+            it(
+                PandaEvent.BackClick(
+                    screenId = screen.id,
+                    screenName = screen.name,
+                )
+            )
         }
     }
 
@@ -395,48 +296,56 @@ object Panda {
 
     internal fun onCustomEvent(screenId: String, name: String, params: Map<String, String>) {
         analyticsListeners.forEach {
-            it(PandaEvent.CustomEvent(
-                name = name,
-                screenId = screenId,
-                params = params,
-            ))
+            it(
+                PandaEvent.CustomEvent(
+                    name = name,
+                    screenId = screenId,
+                    params = params,
+                )
+            )
         }
     }
 
     fun onAction(name: String, json: String) {
         analyticsListeners.forEach {
-            it(PandaEvent.Action(
-                name = name,
-                json = json,
-            ))
+            it(
+                PandaEvent.Action(
+                    name = name,
+                    json = json,
+                )
+            )
         }
     }
 
     fun onScreenChanged(id: String, screenName: String) {
         analyticsListeners.forEach {
-            it(PandaEvent.ScreenChanged(
-                screenId = id,
-                screenName = screenName,
-            ))
+            it(
+                PandaEvent.ScreenChanged(
+                    screenId = id,
+                    screenName = screenName,
+                )
+            )
         }
     }
 
-    internal fun restore(screenExtra: ScreenExtra): Single<List<String>> =
-        restore()
-            .doOnSuccess { ids ->
-                notifyRestore(ids)
-                if (ids.isNotEmpty()) {
-                    notifyPurchase(screenExtra, ids.first())
-                }
+    internal suspend fun restore(screenExtra: ScreenExtra): List<String> {
+        try {
+            val ids = restore()
+            notifyRestore(ids)
+            if (ids.isNotEmpty()) {
+                notifyPurchase(screenExtra, ids.first())
             }
-            .doOnError { e ->
-                notifyError(e)
-            }
+            return ids
+        } catch (e: Throwable) {
+            notifyError(e)
+            throw e
+        }
+    }
 
-    fun restore(): Single<List<String>> =
+    suspend fun restore(): List<String> =
         panda.restore()
             .subscribeOn(Schedulers.io())
-            .observeOn(Schedulers.mainThread())
+            .await()
 
     internal fun onPurchase(
         screenExtra: ScreenExtra,
@@ -454,7 +363,8 @@ object Panda {
                 //todo
                 orderId = purchase.orderId!!,
                 token = purchase.purchaseToken
-            ))
+            )
+        )
             .subscribeOn(Schedulers.io())
             .observeOn(Schedulers.mainThread())
             .doOnError { t ->
@@ -470,20 +380,24 @@ object Panda {
 
     internal fun screenShowed(screenExtra: ScreenExtra) {
         analyticsListeners.forEach {
-            it(PandaEvent.ScreenShowed(
-                screenId = screenExtra.id,
-                screenName = screenExtra.name
-            ))
+            it(
+                PandaEvent.ScreenShowed(
+                    screenId = screenExtra.id,
+                    screenName = screenExtra.name,
+                )
+            )
         }
     }
 
     internal fun subscriptionSelect(screenExtra: ScreenExtra, id: String) {
         analyticsListeners.forEach {
-            it(PandaEvent.SubscriptionSelect(
-                productId = id,
-                screenId = screenExtra.id,
-                screenName = screenExtra.name
-            ))
+            it(
+                PandaEvent.SubscriptionSelect(
+                    productId = id,
+                    screenId = screenExtra.id,
+                    screenName = screenExtra.name,
+                )
+            )
         }
     }
 
@@ -498,11 +412,13 @@ object Panda {
     ) {
         pandaListeners.forEach { it.onPurchase(skuId) }
         analyticsListeners.forEach {
-            it(PandaEvent.SuccessfulPurchase(
-                screenId = screenExtra.id,
-                screenName = screenExtra.name,
-                productId = skuId
-            ))
+            it(
+                PandaEvent.SuccessfulPurchase(
+                    screenId = screenExtra.id,
+                    screenName = screenExtra.name,
+                    productId = skuId,
+                )
+            )
         }
         purchaseListeners.forEach { it(skuId) }
     }
@@ -532,7 +448,8 @@ object Panda {
                     debug = debug,
                     apiKey = apiKey,
                     networkLogLevel = networkLogLevel,
-                ))
+                )
+            )
             .build()
         pandaComponent.inject(wrapper)
         panda = wrapper.panda

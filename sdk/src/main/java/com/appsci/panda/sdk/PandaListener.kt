@@ -3,6 +3,8 @@ package com.appsci.panda.sdk
 interface PandaListener {
     fun onError(t: Throwable)
     fun onDismissClick()
+    fun onShowCloseConfirmation()
+    fun onBackClick()
     fun onPurchase(id: String)
     fun onRestore(ids: List<String>)
 }
@@ -13,6 +15,12 @@ open class SimplePandaListener : PandaListener {
     }
 
     override fun onDismissClick() {
+    }
+
+    override fun onShowCloseConfirmation() {
+    }
+
+    override fun onBackClick() {
     }
 
     override fun onPurchase(id: String) {

@@ -35,14 +35,11 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import io.reactivex.disposables.CompositeDisposable
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.rx2.await
 import kotlinx.parcelize.Parcelize
 import org.json.JSONObject
 import timber.log.Timber
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class SubscriptionFragment : Fragment() {
@@ -74,7 +71,7 @@ class SubscriptionFragment : Fragment() {
         }
     }
 
-    private var showTrial = CompletableDeferred<Boolean>()
+    private var showTrialCompletable = CompletableDeferred<Boolean>()
 
     companion object {
         const val EXTRA_SCREEN = "screenExtra"
@@ -93,13 +90,14 @@ class SubscriptionFragment : Fragment() {
         lifecycle.addObserver(BillingConnectionManager(billing))
         billing.getPurchaseHistory(BillingClient.ProductType.SUBS)
             .subscribeOn(Schedulers.io())
+            .timeout(5, TimeUnit.SECONDS)
             .subscribe(
                 {
-                    showTrial.complete(it.isEmpty())
+                    showTrialCompletable.complete(it.isEmpty())
                 },
                 {
-                    showTrial.complete(false)
-                    Timber.d("cannot load subscriptions' purchase history")
+                    showTrialCompletable.complete(false)
+                    Timber.d("cannot load subscriptions' purchase history in time")
                 }
             ).apply(disposeOnDestroyView::add)
 
@@ -108,7 +106,7 @@ class SubscriptionFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         return PandaFragmentSubscriptionBinding.inflate(inflater).apply {
             _binding = this
@@ -127,11 +125,12 @@ class SubscriptionFragment : Fragment() {
                         val handled = it.toBoolean()
                         Timber.d("onBackPressed result $it")
                         if (!handled) {
-                            Panda.onDismiss(screenExtra)
+                            Panda.onBackClick(screenExtra)
                         }
                     }
                 }
-            })
+            },
+        )
 
 
         binding.webView.setBackgroundColor(
@@ -238,6 +237,11 @@ class SubscriptionFragment : Fragment() {
                 Panda.onDismiss(screenExtra)
             }
 
+            override fun onShowCloseConfirmation() {
+                Timber.d("onShowCloseConfirmation")
+                Panda.onShowCloseConfirmation(screenExtra)
+            }
+
             override fun onRestore() {
                 Timber.d("onRestore")
                 restore()
@@ -259,18 +263,29 @@ class SubscriptionFragment : Fragment() {
                         Timber.d("setPayload result $it")
                     }
                 }
+                /**
+                 * @Deprecated
+                 * used for backward compatibility
+                 */
                 lifecycleScope.launchWhenStarted {
-                    if (!showTrial.await()) {
+                    if (!showTrialCompletable.await()) {
                         _binding?.webView?.evaluateJavascript("removeTrialUi();") {
                             Timber.d("removeTrialUi result $it")
                         }
+                    }
+                }
+
+                lifecycleScope.launchWhenStarted {
+                    val showTrial = showTrialCompletable.await()
+                    _binding?.webView?.evaluateJavascript("showTrial($showTrial);") {
+                        Timber.d("showTrial result $it")
                     }
                 }
             }
 
             override fun shouldOverrideUrlLoading(
                 view: WebView?,
-                request: WebResourceRequest
+                request: WebResourceRequest,
             ): Boolean {
                 Timber.d("shouldOverrideUrlLoading1 ${request.url}")
                 return handleRedirect(request.url.toString())
@@ -370,18 +385,21 @@ class SubscriptionFragment : Fragment() {
                 restore()
                 true
             }
+
             url.contains("/subscription?type=terms") -> {
                 Timber.d("terms click")
                 Panda.onTermsClick()
                 openExternalUrl(getString(R.string.panda_terms_url))
                 true
             }
+
             url.contains("/subscription?type=policy") -> {
                 Timber.d("policy click")
                 Panda.onPolicyClick()
                 openExternalUrl(getString(R.string.panda_policy_url))
                 true
             }
+
             url.contains("/subscription?type=purchase") -> {
                 val id = url.toUri().getQueryParameter("product_id")
                     ?: error("product_id should be provided")
@@ -389,27 +407,26 @@ class SubscriptionFragment : Fragment() {
                 purchaseClick(id)
                 true
             }
+
             url.contains("/dismiss?type=dismiss") -> {
                 Timber.d("dismiss click")
                 Panda.onDismiss(screenExtra)
                 true
             }
+
             else -> false
         }
     }
 
     private fun restore() {
         binding.loading.root.visibility = View.VISIBLE
-        disposeOnDestroyView.add(
-            Panda.restore(screenExtra)
-                .doOnSuccess {
-                    Timber.d("restore $it")
-                }
-                .doAfterTerminate {
-                    binding.loading.root.visibility = View.GONE
-                }
-                .subscribeWith(DefaultSingleObserver())
-        )
+        lifecycleScope.launch {
+            runCatching {
+                val list = Panda.restore(screenExtra)
+                Timber.d("restore $list")
+            }
+            binding.loading.root.visibility = View.GONE
+        }
     }
 
     private fun getType(id: String): String {
@@ -419,6 +436,7 @@ class SubscriptionFragment : Fragment() {
             products.contains(id) -> {
                 BillingClient.ProductType.INAPP
             }
+
             else -> BillingClient.ProductType.SUBS
         }
     }

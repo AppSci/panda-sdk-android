@@ -5,7 +5,7 @@ import timber.log.Timber
 
 open class DefaultSingleObserver<T> : DisposableSingleObserver<T>() {
 
-    override fun onSuccess(t: T) {
+    override fun onSuccess(t: T & Any) {
     }
 
     override fun onError(e: Throwable) {
