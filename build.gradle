@@ -4,6 +4,7 @@ apply from: 'dependencies.gradle'
 apply plugin: 'com.github.ben-manes.versions'
 
 buildscript {
+    ext.kotlin_version = "1.9.22"
     repositories {
         google()
         mavenCentral()
