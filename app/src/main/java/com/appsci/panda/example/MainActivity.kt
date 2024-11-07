@@ -30,13 +30,15 @@ class MainActivity : AppCompatActivity() {
                 startActivity(GetScreenActivity.createIntent(this@MainActivity))
             }
         }
+        Panda.addErrorListener(onError)
         lifecycleScope.launch {
-            Panda.syncUser()
-            Panda.saveCustomUserId(id = "super-unique-custom-id")
-            val subscriptionState = Panda.getSubscriptionState()
-            Timber.d("getSubscriptionState $subscriptionState")
-            Panda.prefetchSubscriptionScreen()
-            Panda.addErrorListener(onError)
+            runCatching {
+                Panda.syncUser()
+                Panda.saveCustomUserId(id = "super-unique-custom-id")
+                val subscriptionState = Panda.getSubscriptionState()
+                Timber.d("getSubscriptionState $subscriptionState")
+                Panda.prefetchSubscriptionScreen()
+            }
         }
     }
 
