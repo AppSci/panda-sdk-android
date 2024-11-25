@@ -31,11 +31,15 @@ class MainActivity : AppCompatActivity() {
             }
         }
         lifecycleScope.launch {
-            Panda.syncUser()
-            Panda.saveCustomUserId(id = "super-unique-custom-id")
-            val subscriptionState = Panda.getSubscriptionState()
-            Timber.d("getSubscriptionState $subscriptionState")
-            Panda.prefetchSubscriptionScreen()
+            try {
+                Panda.syncUser()
+                Panda.saveCustomUserId(id = "super-unique-custom-id")
+                val subscriptionState = Panda.getSubscriptionState()
+                Timber.d("getSubscriptionState $subscriptionState")
+                Panda.prefetchSubscriptionScreen()
+            }catch (e: Exception){
+                Timber.e(e)
+            }
             Panda.addErrorListener(onError)
         }
     }

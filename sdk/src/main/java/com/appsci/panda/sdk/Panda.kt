@@ -59,35 +59,44 @@ object Panda {
         get() = panda.pandaUserId
 
     @JvmStatic
-    suspend fun clearAdvId() =
+    suspend fun clearAdvId() = withContext(Dispatchers.IO) {
         panda.clearAdvId()
             .subscribeOn(Schedulers.io())
             .await()
+    }
 
     @JvmStatic
-    suspend fun syncUser(): String =
+    suspend fun syncUser(): String = withContext(Dispatchers.IO) {
         panda.authorize()
             .subscribeOn(Schedulers.io())
             .await()
+    }
 
     @JvmStatic
     suspend fun setFbIds(
         fbc: String?,
         fbp: String?,
-    ) = panda.setFbIds(fbc = fbc, fbp = fbp)
-        .subscribeOn(Schedulers.io())
-        .await()
+    ) = withContext(Dispatchers.IO) {
+        panda.setFbIds(fbc = fbc, fbp = fbp)
+            .subscribeOn(Schedulers.io())
+            .await()
+    }
+
 
     @JvmStatic
     suspend fun setProperty(
         key: String,
         value: String,
-    ) = panda.setUserProperty(key = key, value = value)
+    ) = withContext(Dispatchers.IO) {
+        panda.setUserProperty(key = key, value = value)
+    }
 
     @JvmStatic
     suspend fun setProperties(
         map: Map<String, String>,
-    ) = panda.setUserProperties(map)
+    ) = withContext(Dispatchers.IO) {
+        panda.setUserProperties(map)
+    }
 
     @JvmStatic
     suspend fun sendFeedback(
@@ -126,28 +135,31 @@ object Panda {
      * Gets subscriptions from google and sends to Panda server
      */
     @JvmStatic
-    suspend fun syncSubscriptions() =
+    suspend fun syncSubscriptions() = withContext(Dispatchers.IO) {
         panda.syncSubscriptions()
             .subscribeOn(Schedulers.io())
             .await()
+    }
 
     /**
      * Get user's subscription state from Panda server
      */
     @JvmStatic
-    suspend fun getSubscriptionState(): SubscriptionState =
+    suspend fun getSubscriptionState(): SubscriptionState = withContext(Dispatchers.IO) {
         panda.getSubscriptionState()
             .subscribeOn(Schedulers.io())
             .await()
+    }
 
     /**
      * Consume all products owned by user
      */
     @JvmStatic
-    suspend fun consumeProducts() =
+    suspend fun consumeProducts() = withContext(Dispatchers.IO) {
         panda.consumeProducts()
             .subscribeOn(Schedulers.io())
             .await()
+    }
 
     /**
      * Get subscription screen and save it to memory cache
@@ -155,10 +167,12 @@ object Panda {
     @SuppressLint("SetJavaScriptEnabled")
     @JvmStatic
     suspend fun prefetchSubscriptionScreen(type: ScreenType? = null, id: String? = null) =
-        panda.prefetchSubscriptionScreen(type, id)
-            .subscribeOn(Schedulers.io())
-            .ignoreElement()
-            .await()
+        withContext(Dispatchers.IO) {
+            panda.prefetchSubscriptionScreen(type, id)
+                .subscribeOn(Schedulers.io())
+                .ignoreElement()
+                .await()
+        }
 
     @JvmStatic
     fun getCachedSubscriptionScreen(
@@ -170,17 +184,17 @@ object Panda {
     suspend fun getSubscriptionScreen(
         type: ScreenType? = null,
         id: String? = null,
-    ): SubscriptionScreen =
+    ): SubscriptionScreen = withContext(Dispatchers.IO) {
         panda.getSubscriptionScreen(type, id)
             .subscribeOn(Schedulers.io())
             .await()
+    }
 
     @JvmStatic
     suspend fun getCachedOrDefaultSubscriptionScreen(
         type: ScreenType? = null,
         id: String? = null,
-    ): SubscriptionScreen =
-        panda.getCachedOrDefaultSubscriptionScreen(type, id).await()
+    ): SubscriptionScreen = panda.getCachedOrDefaultSubscriptionScreen(type, id).await()
 
     @JvmStatic
     suspend fun getProductsDetails(requests: Map<String, List<String>>): List<ProductDetails> =
@@ -189,9 +203,11 @@ object Panda {
         }
 
     @JvmStatic
-    suspend fun dropData() = panda.stopNetwork()
-        .andThen(panda.clearLocalData())
-        .await()
+    suspend fun dropData() = withContext(Dispatchers.IO) {
+        panda.stopNetwork()
+            .andThen(panda.clearLocalData())
+            .await()
+    }
 
     fun addDismissListener(onDismiss: () -> Unit) {
         dismissListeners.add(onDismiss)
